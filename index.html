@@ -749,20 +749,34 @@ async function renderSheet(asDataUrl) {
   const W = 1080, ROWS = 4, COLS = 2, PAD = 24, GAP = 10;
   const card = Math.floor((W - PAD * 2 - GAP) / COLS);       // 511
   const HEAD_H = 88, FOOT_H = 58;
-  const QR_SZ = 150, qrPad = 16;
-  // strip caption: 1 baris per foto unik
+  // strip caption: 1 baris per foto unik (tanpa QR — user minta download = kata² unik aja)
   const seenC = new Set(); const uniq = photos.filter(p => { if (seenC.has(p.url)) return false; seenC.add(p.url); return true; });
   const nCap = Math.min(uniq.length, 8);
   const lineH = 44, capPadY = 16;
   const capH = nCap ? nCap * lineH + capPadY * 2 : 0;
   const yBody = PAD + HEAD_H + 10;
-  const qrH = QR_SZ + qrPad * 2;
-  const H = yBody + ROWS * card + (ROWS - 1) * GAP + 14 + FOOT_H + 16 + capH + 18 + qrH + PAD;
+  const H = yBody + ROWS * card + (ROWS - 1) * GAP + 14 + FOOT_H + 16 + capH + PAD;
   const cv = document.createElement('canvas');
   cv.width = W; cv.height = H;
   const ctx = cv.getContext('2d');
-  ctx.fillStyle = '#f5eccf'; ctx.fillRect(0, 0, W, H);
-  ctx.strokeStyle = '#6b1f3a'; ctx.lineWidth = 8; ctx.strokeRect(6, 6, W - 12, H - 12);
+  // === bg: gradien cream -> #f2e7c8 + dots halus (kayak .sheet) ===
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#f5eccf'); g.addColorStop(1, '#f2e7c8');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(52,34,30,0.07)';
+  for (let dy = 10; dy < H; dy += 17)
+    for (let dx = 10; dx < W; dx += 17) ctx.fillRect(dx, dy, 2, 2);
+  // === film-strip: strip putus² kiri & kanan (kayak .sheet::before/::after) ===
+  ctx.fillStyle = 'rgba(63,90,122,0.35)';
+  for (let stripX of [26, W - 34])
+    for (let sy = 40; sy < H - 20; sy += 16)
+      ctx.fillRect(stripX, sy, 7, 9);
+  // === border maroon-deep + rounded, bayangan bawah (kayak DOM) ===
+  ctx.shadowColor = 'rgba(74,16,36,0.4)'; ctx.shadowOffsetY = 10; ctx.shadowBlur = 0;
+  roundRect(ctx, 10, 10, W - 20, H - 20, 34); ctx.fillStyle = 'rgba(74,16,36,0.25)'; ctx.fill();
+  ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+  ctx.strokeStyle = '#4a1024'; ctx.lineWidth = 5;
+  roundRect(ctx, 10, 10, W - 20, H - 20, 34); ctx.stroke();
 
   // === sheet-head: ▶ UKM EXPO UHN ✳ ===
   ctx.save(); ctx.translate(W / 2, 62); ctx.rotate(-0.035);
@@ -838,36 +852,7 @@ async function renderSheet(asDataUrl) {
     }
   }
 
-  // === QR box (kayak .qr-box): dashed border + QR 150 + teks ===
-  if (galleryUrl) {
-    const boxY = footY + FOOT_H + 16 + capH + 18;
-    ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    roundRect(ctx, 20, boxY, W - 40, qrH, 14); ctx.fill();
-    ctx.strokeStyle = '#4a1024'; ctx.lineWidth = 5; ctx.setLineDash([14, 9]);
-    roundRect(ctx, 20, boxY, W - 40, qrH, 14); ctx.stroke(); ctx.setLineDash([]);
-    // QR putih + modul
-    const qrX = 20 + qrPad, qrY = boxY + qrPad;
-    const qr = qrcode(0, 'M');
-    qr.addData(galleryUrl.indexOf('://') === -1 ? location.origin + galleryUrl : galleryUrl);
-    qr.make();
-    const n = qr.getModuleCount(), cell = Math.floor(QR_SZ / (n + 4));
-    const off = (QR_SZ - cell * n) / 2;
-    ctx.fillStyle = '#fff'; ctx.fillRect(qrX, qrY, QR_SZ, QR_SZ);
-    ctx.fillStyle = '#000';
-    for (let r2 = 0; r2 < n; r2++)
-      for (let c2 = 0; c2 < n; c2++)
-        if (qr.isDark(r2, c2)) ctx.fillRect(qrX + off + (c2 + 2) * cell, qrY + off + (r2 + 2) * cell, cell, cell);
-    // teks kanan QR
-    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#4a1024'; ctx.font = '700 30px system-ui';
-    const tx = qrX + QR_SZ + 22, ty2 = boxY + qrH / 2 - 18;
-    let t = 'Scan untuk download';
-    ctx.fillText(t, tx, ty2);
-    t = 'foto kamu.';
-    ctx.fillText(t, tx, ty2 + 38);
-    ctx.fillStyle = '#3f5a7a'; ctx.font = '600 22px system-ui';
-    ctx.fillText('⬇️ PNG (QR ke scan = langsung unduh)', tx, ty2 + 78);
-  }
+  // === QR box TIDAK ikut print/download — user minta download tanpa QR, caption aja ===
   if (asDataUrl) return cv.toDataURL('image/png');
   return await new Promise(r => cv.toBlob(r, 'image/png'));
 }

@@ -111,7 +111,7 @@ const PORT = process.env.PORT || 8123;
     return { w: img.width, h: img.height, filled, golds };
   });
   console.log('SHEET_GEO', JSON.stringify(sheetGeo));
-  // decode QR dari /download PNG (jsqr)
+  // QR TIDAK boleh ada di PNG download (user: download tanpa QR, caption aja)
   const dlRes = await page.evaluate(async (id) => {
     const r = await fetch('/download/' + id); const buf = await r.arrayBuffer();
     // chunked -> String.fromCharCode, biar gak overflow call stack di payload besar
@@ -126,7 +126,20 @@ const PORT = process.env.PORT || 8123;
   fs.writeFileSync('/tmp/dl_sheet.png', Buffer.from(dlRes.b64, 'base64'));
   const png = PNG.sync.read(Buffer.from(dlRes.b64, 'base64'));
   const dec = jsQR(new Uint8ClampedArray(png.data), png.width, png.height);
+  // bottom strip = caption strip (bukan QR box) -> region paling bawah ada teks cream, bukan modul hitam-putih
+  const bottomY = png.height - 120;
+  let bBlack = 0, bWhite = 0;
+  for (let y = bottomY; y < png.height; y++) {
+    const row = y * png.width;
+    for (let x = 0; x < png.width; x += 6) {
+      const i = (row + x) * 4; const lum = (png.data[i] + png.data[i+1] + png.data[i+2]) / 3;
+      if (lum < 60) bBlack++; else if (lum > 200) bWhite++;
+    }
+  }
   console.log('QR_DECODE', JSON.stringify({ found: !!dec, data: dec && dec.data, size: `${png.width}x${png.height}` }));
+  // bukti QR ga ada = jsqr found:false; bottom region gak dense checkerboard (QR module grid ~50/50), caption text aja
+  const bottomRatio = bWhite > 0 ? Math.round((bBlack / (bBlack + bWhite)) * 100) : 100;
+  console.log('QR_ABSENT', JSON.stringify({ bottomBlack: bBlack, bottomWhite: bWhite, bottomInkRatioPct: bottomRatio, noQr: !dec }));
 
   // 5. print media styles
   await page.emulateMediaType('print');
