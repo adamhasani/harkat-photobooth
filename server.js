@@ -146,7 +146,7 @@ function downloadSheet(req, res, id) {
     res.writeHead(200, {
       'Content-Type': MIME['.png'],
       'Content-Length': data.byteLength,
-      'Content-Disposition': `attachment; filename="harkat-foto-${id.slice(0, 8)}.png"`
+      'Content-Disposition': `attachment; filename="ukmexpo-foto-${id.slice(0, 8)}.png"`
     });
     res.write(data);
     res.end();
@@ -166,7 +166,7 @@ function galleryPage(req, res, id) {
   const files = fs.readdirSync(dir).filter(f => /\.(jpe?g|png)$/i.test(f)).sort();
   const base = publicBase(req);
   const html = `<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,">
-<title>HARKAT — Foto Kamu</title><style>
+<title>UKM EXPO UHN — Foto Kamu</title><style>
 body{font-family:system-ui,sans-serif;background:#f5eccf;color:#34221e;padding:24px;text-align:center}
 h1{color:#6b1f3a;letter-spacing:2px}
 .g{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));}
@@ -174,7 +174,7 @@ h1{color:#6b1f3a;letter-spacing:2px}
 a{color:#3f5a7a}
 small{opacity:.7}
 </style></head><body>
-<h1>HARKAT ✦ photo</h1>
+<h1>UKM EXPO UHN ✦ photo</h1>
 <p>Sesi <b>${meta.sessionId.slice(0,8)}</b> — <small>${new Date(meta.expiresAt).toLocaleString()}</small></p>
 <div class="g">${files.map(f => `<a download href="${base}/uploads/sessions/${id}/${f}" title="Unduh ${f}"><img src="${base}/uploads/sessions/${id}/${f}" alt="foto"></a>`).join('\n')}</div>
 <p><b>Tip:</b> tap/klik foto atas untuk unduh langsung — <a href="${base}/download/${id}">atau unduh sheet PNG (1 file)</a>.</p>

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="icon" href="data:,">
-<title>HARKAT — Sains Data | Photobooth</title>
+<title>UKM EXPO UHN — Photo Booth</title>
 <style>
   /* ============ FONTS (self-hosted) ============ */
   @font-face {
@@ -73,8 +73,8 @@
   .brand { display: flex; align-items: baseline; gap: 10px; }
   .brand h1 {
     font-family: 'Luckiest Guy', 'Comic Sans MS', cursive;
-    color: var(--maroon); font-size: clamp(26px, 5vw, 40px);
-    letter-spacing: 2px; line-height: 1;
+    color: var(--maroon); font-size: clamp(18px, 4.2vw, 34px);
+    letter-spacing: 1.5px; line-height: 1;
     transform: rotate(-1.5deg); text-shadow: 2px 2px 0 rgba(201,162,39,0.35);
   }
   .brand small {
@@ -271,8 +271,8 @@
 <div class="app" id="app">
   <div class="toolbar">
     <div class="brand">
-      <h1>HARKAT</h1>
-      <small>photobooth ✦</small>
+      <h1>UKM EXPO UHN</h1>
+      <small>PHOTO BOOTH ✦</small>
     </div>
     <div class="count-badge">📸 <b id="countBox">0</b>/8</div>
   </div>
@@ -307,7 +307,7 @@
         <div class="sheet" id="sheet">
           <div class="sheet-head">
             <span class="play">▶</span>
-            <h2>HARKAT</h2>
+            <h2>UKM EXPO UHN</h2>
             <span style="color:var(--maroon)">✳</span>
           </div>
           <div class="sheet-body">
@@ -751,9 +751,9 @@ async function renderSheet(asDataUrl) {
   // header
   ctx.fillStyle = '#6b1f3a'; ctx.textAlign = 'center';
   ctx.font = '700 64px Pacifico, Brush Script MT, cursive';
-  ctx.fillText('HARKAT', W / 2, 78);
+  ctx.fillText('UKM EXPO UHN', W / 2, 78);
   ctx.font = '600 22px system-ui, sans-serif'; ctx.fillStyle = '#34221e';
-  ctx.fillText('★ photo booth ★', W / 2, 108);
+  ctx.fillText('★ PHOTO BOOTH ★', W / 2, 108);
 
   // photos cover-crop + emoji badge + pct
   const imgs = await Promise.all(photos.map(p => b64ToImg(p.url)));
@@ -797,7 +797,7 @@ async function downloadSheet() {
   const blob = await renderSheet();
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = 'harkat-foto-' + Date.now() + '.png';
+  a.href = url; a.download = 'ukmexpo-foto-' + Date.now() + '.png';
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 3000);
 }
