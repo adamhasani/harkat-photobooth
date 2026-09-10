@@ -16,13 +16,19 @@ Photobooth web app inspirado del template **HARKAT — Sains Data** (vintage scr
   - Garis wajah (face mesh) — MediaPipe FaceLandmarker 478 landmarks, on-device
   - Emoji emoción dominante + **% match** en tiempo real
   - Marco encuadre cara + línea guía
+- 🔃 **Kamera depan/belakang** — preview mirrored solo en cámara frontal; live preview normal en trasera; foto guardada no se double-mirror
+- 📱 **QR download** — al pulsar **Done**/imprimir, sube las fotos a una sesión privada y dibuja un QR en la hoja: el cliente lo escanea y descarga sus fotos (sesión expira en 24h)
 
 ## 🚀 Runs
 
 ```bash
 cd harkat-photobooth
+# opción 1: solo kiosco (sin QR download)
 python3 -m http.server 8099
-# abrir http://localhost:8099
+
+# opción 2: servidor completo (QR / galería / limpieza)
+node server.js          # por defecto http://localhost:8123
+# abrir http://localhost:8123
 ```
 
 Requiere: navegador con cámara (PC/laptop/teléfono). Todo corre 100% local — modelo WebAssembly y fuentes servidos desde `assets/`, cero CDN, funciona offline. Para permiso de cámara en iPhone/teléfono, sirve por HTTPS (o usa el host local con `--allow-insecure-localhost`).

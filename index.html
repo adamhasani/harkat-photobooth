@@ -109,12 +109,14 @@
 
   /* ============ CAMERA PANEL ============ */
   .cam-wrap {
-    position: relative; margin: 12px; border-radius: 20px; overflow: hidden;
+    position: relative; margin: 12px auto; border-radius: 20px; overflow: hidden;
     border: 4px solid var(--maroon-deep);
     box-shadow: 0 6px 0 rgba(74,16,36,0.35);
     background: #1a1420; aspect-ratio: 3/4; max-height: 62vh;
+    width: calc(100% - 24px);
   }
-  #video { width: 100%; height: 100%; object-fit: contain; display: block; transform: scaleX(-1); }
+  #video { width: 100%; height: 100%; object-fit: contain; display: block; }
+  #video.mirror { transform: scaleX(-1); }
 
   /* HUD: satu bur per wajah, vertical di sebelah (emoji + label + bar + %) */
   .hud {
@@ -212,10 +214,22 @@
 
   .layout-actions { display: flex; gap: 12px; margin-top: 14px; justify-content: center; flex-wrap: wrap; }
 
+  /* QR download box on print sheet */
+  .qr-box {
+    display: flex; align-items: center; gap: 12px; margin: 2px 20px 0;
+    background: rgba(255,255,255,0.55); border: 2px dashed var(--maroon-deep);
+    border-radius: 14px; padding: 8px 12px;
+  }
+  .qr-box .qr { flex: none; width: 96px; height: 96px; }
+  .qr-box svg { width: 96px; height: 96px; display: block; }
+  .qr-box p { font-size: 13px; color: var(--maroon-deep); line-height: 1.35; letter-spacing: .3px; }
+  .qr-box .dl-link { display: none; font-size: 12px; word-break: break-all; color: var(--blue); margin-top: 3px; }
+
   .empty-state { text-align: center; margin-top: 10px; color: var(--maroon-deep); opacity: .8; font-size: 15px; letter-spacing: 1px; }
 
   /* ============ PRINT ============ */
   @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     body { background: var(--cream) !important; }
     body::before { display: none !important; }
     .app { display: block !important; }
@@ -230,6 +244,9 @@
     /* A4 portrait: 8 boxes fit nicely */
     .sheet-body { padding: 8px 16px; }
     .box { break-inside: avoid; }
+    .box img { opacity: 1 !important; filter: none !important; visibility: visible !important; }
+    .qr-box { display: flex !important; border-style: solid; }
+    .qr-box .dl-link { display: none !important; }
   }
 </style>
 </head>
@@ -295,6 +312,10 @@
             <span class="rings">⭯ ⭮</span>
             <span class="dovey">Dovey</span>
           </div>
+          <div class="qr-box" id="qrBox" hidden>
+            <div class="qr" id="qrCode" aria-label="QR download foto"></div>
+            <p>Scan untuk download foto kamu.<br><a class="dl-link" id="galleryLink" href="#" style="display:none"></a></p>
+          </div>
         </div>
         <div class="empty-state" id="emptyState">Belum ada foto — jepret dulu di tab Kamera 📸</div>
         <div class="layout-actions">
@@ -306,6 +327,7 @@
   </div>
 </div>
 
+<script src="assets/qrcode.js"></script>
 <script type="module">
 // ============ ASSETS ============
 const MODEL_URL = 'assets/model/face_landmarker.task';
@@ -365,6 +387,8 @@ async function startCamera() {
   }
   video.srcObject = stream;
   await video.play().catch(() => {});
+  // mirror preview HANYA kamera depan; kamera belakang tampil normal
+  video.classList.toggle('mirror', facing === 'user');
   video.addEventListener('loadedmetadata', adaptFrame, { once: true });
   loop();
 }
@@ -493,8 +517,8 @@ function capture() {
   const c = document.createElement('canvas');
   c.width = w; c.height = h;
   const cx = c.getContext('2d');
-  // mirror to match preview
-  cx.translate(w, 0); cx.scale(-1, 1);
+  // mirror to match preview — hanya kamera depan
+  if (facing === 'user') { cx.translate(w, 0); cx.scale(-1, 1); }
   cx.drawImage(video, 0, 0, w, h);
   const dataURL = c.toDataURL('image/jpeg', 0.92);
 
@@ -567,6 +591,49 @@ function removeAtSlot(slot) {
   renderLayout();
 }
 
+// ============ GALLERY (QR DOWNLOAD) ============
+let galleryUrl = null;
+
+async function ensureGallery() {
+  if (!photos.length) return null;
+  if (galleryUrl) return galleryUrl;
+  try {
+    const res = await fetch('/api/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ photos })
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'gagal upload');
+    galleryUrl = data.url;
+    renderQr(location.origin + galleryUrl);
+    $('qrBox').hidden = false;
+    const a = $('galleryLink');
+    a.textContent = location.origin + galleryUrl;
+    a.href = galleryUrl;
+    a.style.display = 'block';
+  } catch (e) {
+    console.error('gallery upload failed:', e);
+    toast('⚠️ QR belum siap — cek koneksi ke server');
+  }
+  return galleryUrl;
+}
+
+function renderQr(text) {
+  const qr = qrcode(0, 'M');
+  qr.addData(text);
+  qr.make();
+  $('qrCode').innerHTML = qr.createSvgTag({ cellSize: 4, margin: 1, scalable: true });
+}
+
+function invalidateGallery() {
+  galleryUrl = null;
+  $('qrBox').hidden = true;
+  $('qrCode').innerHTML = '';
+  const a = $('galleryLink');
+  a.textContent = ''; a.removeAttribute('href'); a.style.display = '';
+}
+
 // ============ NAV ============
 function setActive(panel) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.panel === panel));
@@ -578,21 +645,31 @@ $('tabCam').addEventListener('click', () => setActive('cam'));
 $('tabLayout').addEventListener('click', () => setActive('layout'));
 $('btnGoCam').addEventListener('click', () => setActive('cam'));
 $('btnShoot').addEventListener('click', capture);
-$('btnDone').addEventListener('click', () => setActive('layout'));
+$('btnDone').addEventListener('click', () => { ensureGallery(); setActive('layout'); });
 $('btnFlip').addEventListener('click', async () => {
   facing = facing === 'user' ? 'environment' : 'user';
   await startCamera();
 });
 $('btnReset').addEventListener('click', () => {
   photos = [];
+  invalidateGallery();
   renderLayout();
 });
-$('btnPrint').addEventListener('click', () => window.print());
+// print: tunggu semua foto + QR ter-decode supaya tidak ada kotak putih di hasil print
+$('btnPrint').addEventListener('click', async () => {
+  if (photos.length) await ensureGallery();
+  await new Promise(r => setTimeout(r, 150));
+  const imgs = document.querySelectorAll('.sheet img, .qr-box svg');
+  await Promise.all([...imgs].map(el => el.decode ? el.decode().catch(() => {}) : Promise.resolve()));
+  window.print();
+});
+// hapus foto (✕ di kotak) -> QR jadi stale, buat ulang saat Done/print berikutnya
 document.querySelectorAll('.box .x').forEach(x => {
   x.addEventListener('click', (e) => {
     e.stopPropagation();
     const box = x.closest('.box');
     removeAtSlot(+box.dataset.i);
+    invalidateGallery();
   });
 });
 
