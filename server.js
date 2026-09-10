@@ -114,8 +114,47 @@ function createSession(req, res) {
     }));
 
     const base = publicBase(req);
-    json(res, 200, { ok: true, url: `${base}/gallery/${id}` });
+    json(res, 200, { ok: true, id, url: `${base}/gallery/${id}` });
   });
+}
+
+// store rendered sheet PNG into session dir (from /api/sheet)
+function saveSheet(req, res) {
+  let raw = '';
+  req.on('data', (c) => raw += c);
+  req.on('end', () => {
+    let body;
+    try { body = JSON.parse(raw); } catch (e) { return json(res, 400, { error: 'bad json' }); }
+    const dir = path.join(UPLOAD_DIR, String(body.sessionId || ''));
+    const id = path.basename(String(body.sessionId || ''));
+    if (!/^[0-9a-f-]{36}$/.test(id) || !fs.existsSync(dir)) {
+      return json(res, 404, { error: 'sesi tidak ketemu' });
+    }
+    const p = decodePhoto(String(body.png || ''));
+    if (!p || p.ext !== 'png') return json(res, 400, { error: 'png required' });
+    fs.writeFileSync(path.join(dir, 'sheet.png'), p.buf);
+    json(res, 200, { ok: true });
+  });
+}
+
+// QR target: sheet.png langsung unduh; fallback redirect ke galeri
+function downloadSheet(req, res, id) {
+  const dir = path.join(UPLOAD_DIR, id);
+  const sheet = path.join(dir, 'sheet.png');
+  if (fs.existsSync(sheet)) {
+    const data = fs.readFileSync(sheet);
+    res.writeHead(200, {
+      'Content-Type': MIME['.png'],
+      'Content-Length': data.byteLength,
+      'Content-Disposition': `attachment; filename="harkat-foto-${id.slice(0, 8)}.png"`
+    });
+    res.write(data);
+    res.end();
+    return;
+  }
+  // belum ada sheet -> galeri biasa
+  res.writeHead(302, { Location: `/gallery/${id}` });
+  res.end();
 }
 
 function galleryPage(req, res, id) {
@@ -137,7 +176,8 @@ small{opacity:.7}
 </style></head><body>
 <h1>HARKAT ✦ photo</h1>
 <p>Sesi <b>${meta.sessionId.slice(0,8)}</b> — <small>${new Date(meta.expiresAt).toLocaleString()}</small></p>
-<div class="g">${files.map(f => `<img src="${base}/uploads/sessions/${id}/${f}" alt="foto">`).join('\n')}</div>
+<div class="g">${files.map(f => `<a download href="${base}/uploads/sessions/${id}/${f}" title="Unduh ${f}"><img src="${base}/uploads/sessions/${id}/${f}" alt="foto"></a>`).join('\n')}</div>
+<p><b>Tip:</b> tap/klik foto atas untuk unduh langsung — <a href="${base}/download/${id}">atau unduh sheet PNG (1 file)</a>.</p>
 <p><a href="${base}/">← Balik ke photo booth</a></p>
 </body></html>`;
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Content-Length': Buffer.byteLength(html) });
@@ -150,6 +190,9 @@ const server = http.createServer((req, res) => {
   const p = u.pathname;
   if (req.method === 'OPTIONS') return json(res, 204, {});
   if (req.method === 'POST' && p === '/api/session') return createSession(req, res);
+  if (req.method === 'POST' && p === '/api/sheet') return saveSheet(req, res);
+  const dl = /^\/download\/([0-9a-f-]+)$/.exec(p);
+  if (dl) return downloadSheet(req, res, dl[1]);
   const gal = /^\/gallery\/([0-9a-f-]+)$/.exec(p);
   if (gal) return galleryPage(req, res, gal[1]);
   return serveStatic(res, p);

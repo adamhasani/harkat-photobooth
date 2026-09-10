@@ -1,6 +1,7 @@
 // Headless E2E: fake camera (front/rear), capture JPEG, QR render+gallery, print-media styles.
 const puppeteer = require('puppeteer-core');
 const CHROME = '/snap/chromium/current/usr/lib/chromium-browser/chrome';
+const PORT = process.env.PORT || 8123;
 
 (async () => {
   const browser = await puppeteer.launch({
@@ -18,7 +19,7 @@ const CHROME = '/snap/chromium/current/usr/lib/chromium-browser/chrome';
   page.on('pageerror', e => errors.push('PAGEERROR: ' + e.message));
   page.on('console', m => { if (m.type() === 'error') errors.push('CONSOLE: ' + m.text()); });
 
-  await page.goto('http://127.0.0.1:8123/', { waitUntil: 'networkidle0', timeout: 30000 });
+  await page.goto(`http://127.0.0.1:${PORT}/`, { waitUntil: 'networkidle0', timeout: 30000 });
   await new Promise(r => setTimeout(r, 1200));
 
   // 1. front camera: video playing + .mirror applied
@@ -51,11 +52,15 @@ const CHROME = '/snap/chromium/current/usr/lib/chromium-browser/chrome';
   }));
   console.log('SHOT', JSON.stringify(shot));
 
-  // 4. Done -> ensure gallery (POST /api/session) + QR svg rendered
-  const seenPosts = [];
-  page.on('request', req => { if (req.method() === 'POST' && req.url().includes('/api/session')) seenPosts.push(req.postData()); });
+  // 4. Done -> ensure gallery (POST /api/session) + sheet (POST /api/sheet) + QR svg rendered
+  const seenPosts = []; const seenSheets = [];
+  page.on('request', req => {
+    if (req.method() !== 'POST') return;
+    if (req.url().includes('/api/session')) seenPosts.push(req.postData());
+    if (req.url().includes('/api/sheet')) seenSheets.push(req.postData());
+  });
   await page.click('#btnDone');
-  await new Promise(r => setTimeout(r, 1200));
+  await new Promise(r => setTimeout(r, 2200));
   const qr = await page.evaluate(() => ({
     qrBoxHidden: document.querySelector('#qrBox').hidden,
     hasSvg: !!document.querySelector('#qrBox svg'),
@@ -66,6 +71,16 @@ const CHROME = '/snap/chromium/current/usr/lib/chromium-browser/chrome';
   console.log('POST_SEEN', seenPosts.length, 'contains_jpeg:', seenPosts.length ? seenPosts[0].includes('data:image/jpeg') : false);
   const postPayload = seenPosts.length ? JSON.parse(seenPosts[0]) : null;
   console.log('POST_PHOTOS', postPayload ? postPayload.photos.length : 0);
+  console.log('SHEET_SEEN', seenSheets.length, seenSheets.length ? 'png:' + seenSheets[0].includes('data:image/png') : '');
+  const sheetPayload = seenSheets.length ? JSON.parse(seenSheets[0]) : null;
+  if (sheetPayload) {
+    const dl = await page.evaluate(async (id) => {
+      const r = await fetch('/download/' + id);
+      const buf = await r.arrayBuffer();
+      return { status: r.status, cd: r.headers.get('content-disposition'), ct: r.headers.get('content-type'), bytes: buf.byteLength };
+    }, sheetPayload.sessionId);
+    console.log('DL_ENDPOINT', JSON.stringify(dl));
+  }
 
   // 5. print media styles
   await page.emulateMediaType('print');
@@ -82,13 +97,16 @@ const CHROME = '/snap/chromium/current/usr/lib/chromium-browser/chrome';
   await page.emulateMediaType('screen');
   console.log('PRINT', JSON.stringify(printStyles));
 
-  // 6. custom SVG face (not OS emoji) in badge + caption + downloadSheet
-  const faceCheck = await page.evaluate(() => ({
-    badgeSvg: !![...document.querySelectorAll('.box .e')].length && [...document.querySelectorAll('.box .e')].every(e => !!e.querySelector('svg')),
-    badgeNonSvg: [...document.querySelectorAll('.box .e')].some(e => /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(e.textContent)),
-    capFaceSvg: [...document.querySelectorAll('.cap-line .cap-face svg')].length
-  }));
-  console.log('FACE_SVG', JSON.stringify(faceCheck));
+  // 6. emoji (bukan custom SVG face) di badge + caption, downloadSheet masih jalan
+  const faceCheck = await page.evaluate(() => {
+    const emojiRe = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}]/u;
+    return {
+      badgeEmoji: [...document.querySelectorAll('.box .e')].some(e => emojiRe.test(e.textContent)),
+      badgeSvgCount: document.querySelectorAll('.box .e svg').length,
+      capFaceEmoji: [...document.querySelectorAll('.cap-line .cap-face')].some(e => emojiRe.test(e.textContent))
+    };
+  });
+  console.log('FACE_EMOJI', JSON.stringify(faceCheck));
 
   await page.evaluate(() => { window.__test_dl = window.__h.downloadSheet; });
   await page.evaluate(() => {

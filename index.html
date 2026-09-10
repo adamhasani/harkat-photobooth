@@ -208,7 +208,8 @@
   .box.empty .x { display: none; }
   /* emoji lucu pojok kanan atas tiap foto (SVG face, bukan emoji OS) */
   .box .e { position: absolute; top: 4px; right: 4px; width: clamp(40px, 10vw, 60px); height: clamp(40px, 10vw, 60px); z-index: 3;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,.45)); display: flex; }
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,.45)); display: flex; align-items: center; justify-content: center;
+    font-size: clamp(24px, 6vw, 40px); line-height: 1; }
   .box.empty .e { display: none; }
 
   .sheet-foot { display: flex; align-items: flex-end; justify-content: space-between; padding: 12px 20px 2px; }
@@ -235,7 +236,7 @@
     padding: 6px 12px; }
   .cap-line { font-family: 'Pacifico', cursive; color: var(--maroon-deep); font-size: clamp(11px, 2.8vw, 14px); line-height: 1.3;
     display: flex; align-items: center; gap: 6px; transform: rotate(-0.5deg); }
-  .cap-line .cap-face { flex: none; width: 26px; height: 26px; }
+  .cap-line .cap-face { flex: none; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 18px; line-height: 1; }
   .caps:empty { display: none; }
 
   .empty-state { text-align: center; margin-top: 10px; color: var(--maroon-deep); opacity: .8; font-size: 15px; letter-spacing: 1px; }
@@ -474,7 +475,7 @@ function blendshape(bs, name) {
   return c ? c.score : 0;
 }
 
-// emotion of one face based on its blendshapes -> {key,label,pct}
+// emotion of one face based on its blendshapes -> {emoji,label,pct}
 function emotion(bs) {
   const smile = Math.max(blendshape(bs, 'mouthSmileLeft'), blendshape(bs, 'mouthSmileRight'));
   const jaw = blendshape(bs, 'jawOpen');
@@ -485,61 +486,15 @@ function emotion(bs) {
   const eyesWide = Math.max(blendshape(bs, 'eyeWideLeft'), blendshape(bs, 'eyeWideRight'));
   const tongue = blendshape(bs, 'tongueOut');
 
-  if (smile > 0.45) return { key: 'grin', label: 'SENYUM', pct: Math.round(smile * 100) };
-  if (tongue > 0.35) return { key: 'tongue', label: 'CILUK BA', pct: Math.round(tongue * 100) };
-  if (jaw > 0.30) return { key: 'open', label: 'TERKEJUT', pct: Math.round(Math.min(1, jaw + smile) * 100) };
-  if (eyesWide > 0.6 && brow > 0.5) return { key: 'shock', label: 'KAGET', pct: Math.round(Math.min(1, eyesWide + brow) * 100) };
-  if (brow > 0.35) return { key: 'susp', label: 'HERAN', pct: Math.round(Math.min(1, brow + smile) * 100) };
-  if ((eyeBlinkR > 0.7) !== (eyeBlinkL > 0.7)) return { key: 'wink', label: 'KEDIP', pct: 92 };
-  if (mouthFrown > 0.25) return { key: 'pout', label: 'CEMBERUT', pct: Math.round(mouthFrown * 100) };
-  if (smile > 0.15) return { key: 'soft', label: 'TENANG', pct: Math.round(smile * 90) };
-  return { key: 'flat', label: 'POLOS', pct: Math.max(25, Math.round((1 - jaw) * 40)) };
-}
-
-// ============ CUSTOM FACES (iOS-esque SVG, no device emoji) ============
-// Tombol: tiny vector faces keyed by emotion — same on Android/iOS, no emoji font needed.
-function faceSvg(key, size) {
-  const s = size || 96, k = key || 'flat';
-  const c = (inner) => `<svg width="${s}" height="${s}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${k}">
-  <circle cx="50" cy="50" r="44" fill="#ffd699" stroke="#6b1f3a" stroke-width="4"/>
-  ${inner}
-  </svg>`;
-  const eye = (x, y, r, open) => open
-    ? `<circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="#4a1024" stroke-width="6"/>`
-    : `<path d="M ${x-8} ${y} Q ${x} ${y-5} ${x+8} ${y}" fill="none" stroke="#4a1024" stroke-width="6" stroke-linecap="round"/>`;
-  const eyeX = (x, y) => `<path d="M ${x-8} ${y+2} L ${x-2} ${y-3} L ${x+4} ${y-8}" fill="none" stroke="#4a1024" stroke-width="5" stroke-linecap="round"/>
-    <circle cx="${x+12}" cy="${y+2}" r="5" fill="#4a1024"/>`;
-  const mouth = (d, sw) => `<path d="${d}" fill="none" stroke="#4a1024" stroke-width="${sw||6}" stroke-linecap="round"/>`;
-  switch (k) {
-    case 'grin':
-      return c(eye(38,40,9,true) + eye(62,40,9,true) +
-        `<path d="M 30 74 Q 50 84 70 74" fill="none" stroke="#4a1024" stroke-width="7" stroke-linecap="round"/><path d="M 42 80 L 58 80" stroke="#4a1024" stroke-width="5" stroke-linecap="round"/>`);
-    case 'tongue':
-      return c(eyeX(36,38) + eye(64,40,8,true) +
-        `<path d="M 32 70 Q 50 82 68 70" fill="none" stroke="#4a1024" stroke-width="6"/><path d="M 46 78 L 60 80 Q 66 88 62 78" fill="#f0827a" stroke="none"/><circle cx="58" cy="86" r="5" fill="#e0574a"/>`);
-    case 'open':
-      return c(eye(38,40,10,true) + eye(62,40,10,true) +
-        `<ellipse cx="50" cy="76" rx="10" ry="15" fill="#3a1024"/><path d="M 40 62 Q 50 70 60 68" fill="none" stroke="#4a1024" stroke-width="4"/>`);
-    case 'shock':
-      return c(`<path d="M 30 28 Q 50 20 70 28" fill="none" stroke="#4a1024" stroke-width="5"/><circle cx="38" cy="44" r="7" fill="#fff"/><circle cx="38" cy="44" r="3" fill="#4a1024"/><circle cx="62" cy="44" r="7" fill="#fff"/><circle cx="62" cy="44" r="3" fill="#4a1024"/><ellipse cx="50" cy="76" rx="8" ry="12" fill="#3a1024"/>`);
-    case 'susp':
-      return c(`<path d="M 28 24 L 44 18" stroke="#4a1024" stroke-width="5" stroke-linecap="round"/><path d="M 56 18 L 72 24" stroke="#4a1024" stroke-width="5" stroke-linecap="round"/>` +
-        eye(38,42,8,true) + eye(62,42,6,true) +
-        `<path d="M 34 74 L 66 74" stroke="#4a1024" stroke-width="6" stroke-linecap="round"/>`);
-    case 'wink':
-      return c(eye(36,40,9,true) + `<path d="M 56 34 L 64 40 L 72 38" fill="none" stroke="#4a1024" stroke-width="6" stroke-linecap="round"/>` +
-        `<path d="M 38 74 Q 50 82 66 72" fill="#d9915c" stroke="#4a1024" stroke-width="6" stroke-linecap="round"/>`);
-    case 'pout':
-      return c(`<path d="M 30 26 L 48 24" stroke="#4a1024" stroke-width="5" stroke-linecap="round"/><path d="M 52 24 L 70 26" stroke="#4a1024" stroke-width="5" stroke-linecap="round"/>` +
-        eye(38,40,8,true) + eye(62,40,8,true) +
-        `<path d="M 40 76 Q 50 82 60 76" fill="none" stroke="#4a1024" stroke-width="6" stroke-linecap="round"/>`);
-    case 'soft':
-      return c(eye(38,40,8,true) + eye(62,40,8,true) +
-        `<path d="M 34 72 Q 50 78 66 72" fill="none" stroke="#4a1024" stroke-width="5" stroke-linecap="round"/><circle cx="30" cy="70" r="6" fill="#f7a9a0" opacity=".55"/><circle cx="70" cy="70" r="6" fill="#f7a9a0" opacity=".55"/>`);
-    default: // flat
-      return c(eye(38,40,7,true) + eye(62,40,7,true) +
-        `<path d="M 36 74 L 64 74" stroke="#4a1024" stroke-width="5" stroke-linecap="round"/>`);
-  }
+  if (smile > 0.45) return { emoji: '😄', label: 'SENYUM', pct: Math.round(smile * 100) };
+  if (tongue > 0.35) return { emoji: '😜', label: 'CILUK BA', pct: Math.round(tongue * 100) };
+  if (jaw > 0.30) return { emoji: '😮', label: 'TERKEJUT', pct: Math.round(Math.min(1, jaw + smile) * 100) };
+  if (eyesWide > 0.6 && brow > 0.5) return { emoji: '😳', label: 'KAGET', pct: Math.round(Math.min(1, eyesWide + brow) * 100) };
+  if (brow > 0.35) return { emoji: '🤨', label: 'HERAN', pct: Math.round(Math.min(1, brow + smile) * 100) };
+  if ((eyeBlinkR > 0.7) !== (eyeBlinkL > 0.7)) return { emoji: '😉', label: 'KEDIP', pct: 92 };
+  if (mouthFrown > 0.25) return { emoji: '😒', label: 'CEMBERUT', pct: Math.round(mouthFrown * 100) };
+  if (smile > 0.15) return { emoji: '🙂', label: 'TENANG', pct: Math.round(smile * 90) };
+  return { emoji: '😶', label: 'POLOS', pct: Math.max(25, Math.round((1 - jaw) * 40)) };
 }
 
 // one chip per face (up to 5 wajah) — each with its own emoji + persen
@@ -559,7 +514,7 @@ function renderHud(faces, blendshapes) {
     const chip = hud.children[i];
     const e = emotion(blendshapes && blendshapes[i]);
     chip.querySelector('.n').textContent = n > 1 ? (i + 1) + '' : '';
-    chip.querySelector('.emoji').innerHTML = faceSvg(e.key, 34);
+    chip.querySelector('.emoji').textContent = e.emoji;
     chip.querySelector('.label').textContent = e.label;
     chip.querySelector('.pct').textContent = e.pct + '%';
     chip.querySelector('.bar-inner').style.width = Math.min(100, e.pct) + '%';
@@ -571,8 +526,7 @@ function renderHud(faces, blendshapes) {
 window.__h = { renderHud, emotion, capture, landmarker: () => landmarker, downloadSheet };
 
 // funny corner emoji + caption per photo (dari % emoji hasil deteksi wajah)
-// fallback kalau wajah tak terdeteksi: face vector random (bukan emoji OS)
-const FUN_KEYS = ['grin','tongue','open','shock','susp','wink','pout','soft'];
+const FUN_EMOJI = ['🥳','😜','🤪','😍','🤩','😎','🥸','🤡','👻','🥴','😺','🤣','🦄','🍭','🎈','💃'];
 const CAPS_HIGH = [
   'wow {p}% kamu tersenyum — fix sih ini calon penghuni surga 😇',
   '{p}% senyummu semanis gula 🍬',
@@ -596,7 +550,7 @@ function randCap(pct, label) {
   const t = pool[Math.floor(Math.random() * pool.length)];
   return t.replace('{p}', pct).replace('{l}', label || '');
 }
-function randKey() { return FUN_KEYS[Math.floor(Math.random() * FUN_KEYS.length)]; }
+function randEmoji() { return FUN_EMOJI[Math.floor(Math.random() * FUN_EMOJI.length)]; }
 
 function capture() {
   if (!stream) return;
@@ -618,10 +572,10 @@ function capture() {
   let e = null;
   if (lastFaces.length && lastBs && lastBs[0]) e = emotion(lastBs[0]);
   const pct = e ? e.pct : 50 + Math.floor(Math.random() * 50);
-  const key = e ? e.key : null;
+  const emoji = e ? e.emoji : randEmoji();
   const cap = randCap(pct, e ? e.label : null);
 
-  photos.push({ url: dataURL, pct, key, cap });
+  photos.push({ url: dataURL, pct, emoji, cap });
   renderLayout();
   // 1 cekrek = 1 foto — tetap di KAMERA, nanti Done if finish
   toast('📸 Foto ' + photos.length + '/8 ✓');
@@ -666,7 +620,7 @@ function renderLayout() {
       if (ph) ph.style.display = 'none';
       box.classList.remove('empty');
       xBtn.style.display = 'flex';
-      if (eBadge) { eBadge.innerHTML = faceSvg(fill[i].key || randKey(), 34); eBadge.style.display = 'flex'; }
+      if (eBadge) { eBadge.textContent = fill[i].emoji || randEmoji(); eBadge.style.display = 'flex'; }
     } else {
       if (img) img.remove();
       if (ph) ph.style.display = 'flex';
@@ -689,7 +643,7 @@ function renderCaptions() {
   photos.forEach(p => {
     if (seen.has(p.url)) return;
     seen.add(p.url);
-    lines.push('<div class="cap-line"><span class="cap-face">' + faceSvg(p.key || randKey(), 26) + '</span> ' + p.cap + '</div>');
+    lines.push('<div class="cap-line"><span class="cap-face">' + (p.emoji || randEmoji()) + '</span> ' + p.cap + '</div>');
   });
   strip.innerHTML = lines.join('');
   strip.hidden = !lines.length;
@@ -711,6 +665,7 @@ function removeAtSlot(slot) {
 
 // ============ GALLERY (QR DOWNLOAD) ============
 let galleryUrl = null;
+let sheetDone = false;
 // backend public: same-origin kalau host photobooth/localhost; Pages fallback ke apa.zonalayar
 const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.hostname.endsWith('harkatpoto.my.id'))
   ? '' : 'https://apa.zonalayar.my.id/harkat';
@@ -727,7 +682,23 @@ async function ensureGallery() {
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'gagal upload');
     galleryUrl = data.url; // server balikin absolute (PUBLIC_URL) atau relative
-    const full = galleryUrl.startsWith('http') ? galleryUrl : location.origin + galleryUrl;
+    let qrTarget = galleryUrl;
+    // sheet PNG -> server; QR langsung unduh file di scan
+    try {
+      const sres = await fetch(API_BASE + '/api/sheet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: data.id, png: await renderSheet(true) })
+      });
+      const sdata = await sres.json();
+      if (sdata.ok) {
+        sheetDone = true;
+        // base dari gallery URL: works relative (localhost) & absolute (Pages->apa)
+        const base = galleryUrl.replace(/\/gallery\/[0-9a-f-]+$/, '');
+        qrTarget = base + '/download/' + data.id;
+      }
+    } catch (e2) { console.log('sheet upload failed, QR->gallery:', e2); }
+    const full = qrTarget.startsWith('http') ? qrTarget : location.origin + qrTarget;
     renderQr(full);
     $('qrBox').hidden = false;
     const a = $('galleryLink');
@@ -767,12 +738,8 @@ function b64ToImg(src) {
     img.src = src;
   });
 }
-function svgToDataUrl(svgHtml) {
-  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgHtml);
-}
-async function downloadSheet() {
-  if (!photos.length) return;
-  try { if (!galleryUrl) await ensureGallery(); } catch (e) {}
+// renderSheet(true) -> dataURL PNG (upload); renderSheet() -> Blob (download)
+async function renderSheet(asDataUrl) {
   const W = 1080, ROWS = 4, COLS = 2, PAD = 24, GAP = 14;
   const card = Math.round((W - PAD * 2 - GAP) / COLS);       // ~509
   const capH = 58;
@@ -790,9 +757,8 @@ async function downloadSheet() {
   ctx.font = '600 22px system-ui, sans-serif'; ctx.fillStyle = '#34221e';
   ctx.fillText('★ photo booth ★', W / 2, 108);
 
-  // photos cover-crop + badge + pct
+  // photos cover-crop + emoji badge + pct
   const imgs = await Promise.all(photos.map(p => b64ToImg(p.url)));
-  const badges = await Promise.all(photos.map(p => b64ToImg(svgToDataUrl(faceSvg(p.key || randKey(), 100)))));
   const y0 = 130;
   for (let i = 0; i < ROWS * COLS && i < photos.length; i++) {
     const r = Math.floor(i / COLS), cC = i % COLS;
@@ -800,9 +766,13 @@ async function downloadSheet() {
     drawCover(ctx, imgs[i], x, y, card, card);
     ctx.strokeStyle = '#6b1f3a'; ctx.lineWidth = 4;
     ctx.strokeRect(x + 2, y + 2, card - 4, card - 4);
-    // badge kiri-atas
+    // badge kiri-atas: circle + emoji (bukan image, kesan langsung di canvas)
     const bS = 74;
-    ctx.drawImage(badges[i], x + 10, y + 10, bS, bS);
+    ctx.fillStyle = '#fff'; ctx.strokeStyle = '#6b1f3a';
+    ctx.beginPath(); ctx.arc(x + 10 + bS / 2, y + 10 + bS / 2, bS / 2 - 3, 0, Math.PI * 2); ctx.fill();
+    ctx.lineWidth = 4; ctx.stroke();
+    ctx.font = '48px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText(photos[i].emoji || '😄', x + 10 + bS / 2, y + 10 + bS / 2 + 17);
     ctx.fillStyle = '#fff'; ctx.strokeStyle = '#6b1f3a';
     ctx.font = '700 24px system-ui'; ctx.textAlign = 'right';
     const p = photos[i].pct;
@@ -820,7 +790,13 @@ async function downloadSheet() {
     ctx.font = 'italic 22px Pacifico, cursive'; ctx.fillStyle = '#34221e';
     ctx.fillText('✧ ' + p.cap, PAD + 8, capY); capY += 30;
   });
-  const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
+  if (asDataUrl) return cv.toDataURL('image/png');
+  return await new Promise(r => cv.toBlob(r, 'image/png'));
+}
+async function downloadSheet() {
+  if (!photos.length) return;
+  try { if (!galleryUrl) await ensureGallery(); } catch (e) {}
+  const blob = await renderSheet();
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = 'harkat-foto-' + Date.now() + '.png';
