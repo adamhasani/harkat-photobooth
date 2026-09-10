@@ -129,7 +129,7 @@
   .chip { display: flex; align-items: center; gap: 8px; }
   .chip .n { width: 20px; height: 20px; border-radius: 50%; background: var(--gold); color: var(--maroon-deep);
     font-size: 12px; display: flex; align-items: center; justify-content: center; flex: none; }
-  .chip .emoji { width: 34px; height: 34px; line-height: 1; display: flex; }
+  .chip .emoji { width: 40px; height: 40px; line-height: 1; display: flex; align-items: center; justify-content: center; font-size: 32px; }
   .chip .label { font-size: 12px; color: var(--maroon-deep); letter-spacing: 1px; min-width: 74px; text-align: center; }
   .chip .pct { font-size: 17px; color: var(--maroon); min-width: 44px; text-align: right; }
   .chip .bar-outer { width: 60px; height: 12px; background: #e3d5ae; border-radius: 7px; border: 2px solid var(--maroon-deep); overflow: hidden; }
@@ -207,9 +207,9 @@
     display:flex; align-items:center; justify-content:center; cursor: pointer; z-index: 2; }
   .box.empty .x { display: none; }
   /* emoji lucu pojok kanan atas tiap foto (SVG face, bukan emoji OS) */
-  .box .e { position: absolute; top: 4px; right: 4px; width: clamp(40px, 10vw, 60px); height: clamp(40px, 10vw, 60px); z-index: 3;
+  .box .e { position: absolute; top: 4px; right: 4px; width: clamp(30px, 7vw, 40px); height: clamp(30px, 7vw, 40px); z-index: 3;
     filter: drop-shadow(0 1px 2px rgba(0,0,0,.45)); display: flex; align-items: center; justify-content: center;
-    font-size: clamp(24px, 6vw, 40px); line-height: 1; }
+    font-size: clamp(15px, 3.6vw, 20px); line-height: 1; }
   .box.empty .e { display: none; }
 
   .sheet-foot { display: flex; align-items: flex-end; justify-content: space-between; padding: 12px 20px 2px; }
@@ -771,8 +771,8 @@ async function renderSheet(asDataUrl) {
     ctx.fillStyle = '#fff'; ctx.strokeStyle = '#6b1f3a';
     ctx.beginPath(); ctx.arc(x + 10 + bS / 2, y + 10 + bS / 2, bS / 2 - 3, 0, Math.PI * 2); ctx.fill();
     ctx.lineWidth = 4; ctx.stroke();
-    ctx.font = '48px system-ui'; ctx.textAlign = 'center';
-    ctx.fillText(photos[i].emoji || '😄', x + 10 + bS / 2, y + 10 + bS / 2 + 17);
+    ctx.font = '38px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText(photos[i].emoji || '😄', x + 10 + bS / 2, y + 10 + bS / 2 + 14);
     ctx.fillStyle = '#fff'; ctx.strokeStyle = '#6b1f3a';
     ctx.font = '700 24px system-ui'; ctx.textAlign = 'right';
     const p = photos[i].pct;
