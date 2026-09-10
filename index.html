@@ -225,18 +225,18 @@
     background: rgba(255,255,255,0.55); border: 2px dashed var(--maroon-deep);
     border-radius: 14px; padding: 8px 12px;
   }
-  .qr-box .qr { flex: none; width: 96px; height: 96px; }
-  .qr-box svg { width: 96px; height: 96px; display: block; }
+  .qr-box .qr { flex: none; width: 150px; height: 150px; }
+  .qr-box svg { width: 150px; height: 150px; display: block; }
   .qr-box p { font-size: 13px; color: var(--maroon-deep); line-height: 1.35; letter-spacing: .3px; }
   .qr-box .dl-link { display: none; font-size: 12px; word-break: break-all; color: var(--blue); margin-top: 3px; }
 
   /* caption lucu — strip di atas barcode */
-  .caps { margin: 4px 20px 6px; display: flex; flex-direction: column; gap: 3px;
+  .caps { margin: 4px 20px 6px; display: flex; flex-direction: column; gap: 4px;
     background: rgba(255,255,255,0.45); border-left: 4px solid var(--gold); border-radius: 0 10px 10px 0;
-    padding: 6px 12px; }
-  .cap-line { font-family: 'Pacifico', cursive; color: var(--maroon-deep); font-size: clamp(11px, 2.8vw, 14px); line-height: 1.3;
-    display: flex; align-items: center; gap: 6px; transform: rotate(-0.5deg); }
-  .cap-line .cap-face { flex: none; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 18px; line-height: 1; }
+    padding: 8px 12px; }
+  .cap-line { font-family: system-ui, sans-serif; font-weight: 600; color: #34221e; font-size: clamp(13px, 3.4vw, 16px); line-height: 1.45;
+    display: flex; align-items: center; gap: 8px; }
+  .cap-line .cap-face { flex: none; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 16px; line-height: 1; }
   .caps:empty { display: none; }
 
   .empty-state { text-align: center; margin-top: 10px; color: var(--maroon-deep); opacity: .8; font-size: 15px; letter-spacing: 1px; }
@@ -263,7 +263,7 @@
     .qr-box { display: flex !important; border-style: solid; }
     .qr-box .dl-link { display: none !important; }
     .caps { display: flex !important; }
-    .cap-line { font-size: 12px; }
+    .cap-line { font-size: 13px; }
   }
 </style>
 </head>
@@ -525,8 +525,7 @@ function renderHud(faces, blendshapes) {
 // test hook (harmless)
 window.__h = { renderHud, emotion, capture, landmarker: () => landmarker, downloadSheet };
 
-// funny corner emoji + caption per photo (dari % emoji hasil deteksi wajah)
-const FUN_EMOJI = ['🥳','😜','🤪','😍','🤩','😎','🥸','🤡','👻','🥴','😺','🤣','🦄','🍭','🎈','💃'];
+// funny caption per photo (dari % emoji hasil deteksi wajah)
 const CAPS_HIGH = [
   'wow {p}% kamu tersenyum — fix sih ini calon penghuni surga 😇',
   '{p}% senyummu semanis gula 🍬',
@@ -550,7 +549,6 @@ function randCap(pct, label) {
   const t = pool[Math.floor(Math.random() * pool.length)];
   return t.replace('{p}', pct).replace('{l}', label || '');
 }
-function randEmoji() { return FUN_EMOJI[Math.floor(Math.random() * FUN_EMOJI.length)]; }
 
 function capture() {
   if (!stream) return;
@@ -568,11 +566,11 @@ function capture() {
   cx.drawImage(video, 0, 0, w, h);
   const dataURL = c.toDataURL('image/jpeg', 0.92);
 
-  // emoji + persen dari wajah yang terdeteksi (fallback random biar tetap lucu)
+  // emoji + persen dari wajah yang terdeteksi (fallback senyum biar tetap konsisten lucu, bukan emoji acak)
   let e = null;
   if (lastFaces.length && lastBs && lastBs[0]) e = emotion(lastBs[0]);
   const pct = e ? e.pct : 50 + Math.floor(Math.random() * 50);
-  const emoji = e ? e.emoji : randEmoji();
+  const emoji = e ? e.emoji : '😄';
   const cap = randCap(pct, e ? e.label : null);
 
   photos.push({ url: dataURL, pct, emoji, cap });
@@ -620,7 +618,7 @@ function renderLayout() {
       if (ph) ph.style.display = 'none';
       box.classList.remove('empty');
       xBtn.style.display = 'flex';
-      if (eBadge) { eBadge.textContent = fill[i].emoji || randEmoji(); eBadge.style.display = 'flex'; }
+      if (eBadge) { eBadge.textContent = fill[i].emoji || '😄'; eBadge.style.display = 'flex'; }
     } else {
       if (img) img.remove();
       if (ph) ph.style.display = 'flex';
@@ -643,7 +641,7 @@ function renderCaptions() {
   photos.forEach(p => {
     if (seen.has(p.url)) return;
     seen.add(p.url);
-    lines.push('<div class="cap-line"><span class="cap-face">' + (p.emoji || randEmoji()) + '</span> ' + p.cap + '</div>');
+    lines.push('<div class="cap-line"><span class="cap-face">' + (p.emoji || '😄') + '</span> ' + p.cap + '</div>');
   });
   strip.innerHTML = lines.join('');
   strip.hidden = !lines.length;
@@ -717,7 +715,7 @@ function renderQr(text) {
   const qr = qrcode(0, 'M');
   qr.addData(text);
   qr.make();
-  $('qrCode').innerHTML = qr.createSvgTag({ cellSize: 4, margin: 1, scalable: true });
+  $('qrCode').innerHTML = qr.createSvgTag({ cellSize: 6, margin: 1, scalable: true });
 }
 
 function invalidateGallery() {
