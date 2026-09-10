@@ -523,7 +523,7 @@ function renderHud(faces, blendshapes) {
 
 // ============ CAPTURE ============
 // test hook (harmless)
-window.__h = { renderHud, emotion, capture, landmarker: () => landmarker, downloadSheet };
+window.__h = { renderHud, emotion, capture, renderSheet, landmarker: () => landmarker, downloadSheet };
 
 // funny caption + emoji per photo (dari % emoji hasil deteksi wajah)
 const FUN_EMOJI = ['🥳','😜','🤪','😍','🤩','😎','🥸','🤡','👻','🥴','😺','🤣','🦄','🍭','🎈','💃'];
@@ -748,7 +748,8 @@ async function renderSheet(asDataUrl) {
   const W = 1080, ROWS = 4, COLS = 2, PAD = 24, GAP = 14;
   const card = Math.round((W - PAD * 2 - GAP) / COLS);       // ~509
   const capH = 58;
-  const H = PAD * 2 + ROWS * card + (ROWS - 1) * GAP + capH + 90;
+  const QR_SZ = 150;
+  const H = PAD * 2 + ROWS * card + (ROWS - 1) * GAP + capH + 90 + QR_SZ + 78;
   const cv = document.createElement('canvas');
   cv.width = W; cv.height = H;
   const ctx = cv.getContext('2d');
@@ -762,39 +763,67 @@ async function renderSheet(asDataUrl) {
   ctx.font = '600 22px system-ui, sans-serif'; ctx.fillStyle = '#34221e';
   ctx.fillText('★ PHOTO BOOTH ★', W / 2, 108);
 
-  // photos cover-crop + emoji badge + pct
+  // photos cover-crop + emoji badge + pct — repeat sama kayak preview DOM (1 foto -> 8 kotak)
   const imgs = await Promise.all(photos.map(p => b64ToImg(p.url)));
+  let fill = [];
+  if (photos.length === 1) fill = Array(8).fill(0);
+  else for (let i = 0; i < 8; i++) fill.push(i % photos.length);
   const y0 = 130;
-  for (let i = 0; i < ROWS * COLS && i < photos.length; i++) {
+  for (let i = 0; i < ROWS * COLS; i++) {
+    const src = fill[i];
+    if (src === undefined) break;
     const r = Math.floor(i / COLS), cC = i % COLS;
     const x = PAD + cC * (card + GAP), y = y0 + r * (card + GAP);
-    drawCover(ctx, imgs[i], x, y, card, card);
+    drawCover(ctx, imgs[src], x, y, card, card);
     ctx.strokeStyle = '#6b1f3a'; ctx.lineWidth = 4;
     ctx.strokeRect(x + 2, y + 2, card - 4, card - 4);
-    // badge kiri-atas: circle + emoji (bukan image, kesan langsung di canvas)
+    // badge kiri-atas: circle + emoji
     const bS = 74;
     ctx.fillStyle = '#fff'; ctx.strokeStyle = '#6b1f3a';
     ctx.beginPath(); ctx.arc(x + 10 + bS / 2, y + 10 + bS / 2, bS / 2 - 3, 0, Math.PI * 2); ctx.fill();
     ctx.lineWidth = 4; ctx.stroke();
     ctx.font = '38px system-ui'; ctx.textAlign = 'center';
-    ctx.fillText(photos[i].emoji || '😄', x + 10 + bS / 2, y + 10 + bS / 2 + 14);
+    ctx.fillText(photos[src].emoji || '😄', x + 10 + bS / 2, y + 10 + bS / 2 + 14);
     ctx.fillStyle = '#fff'; ctx.strokeStyle = '#6b1f3a';
     ctx.font = '700 24px system-ui'; ctx.textAlign = 'right';
-    const p = photos[i].pct;
+    const p = photos[src].pct;
     roundRect(ctx, x + card - 78, y + 12, 66, 34, 8); ctx.fill();
     ctx.fillStyle = '#6b1f3a'; ctx.fillText(p + '%', x + card - 22, y + 37);
   }
 
-  // caption lucu (unique)
-  const lsH = Math.min(photos.length, ROWS * COLS);
+  // caption lucu (unique) — wrap biar ga ketimpa QR, maxW = kiri QR
+  // QR_SZ declared di atas renderSheet (konstanta H pakai); pakai ulang supaya ga redeclare
+  const capMaxW = W - PAD - QR_SZ - 40;
+  const qrX = W - PAD - QR_SZ, qrY = H - PAD - QR_SZ - 58;
   const seen = new Set(); let capY = y0 + ROWS * (card + GAP) - GAP + capH - 40;
   ctx.textAlign = 'left';
-  photos.slice(0, lsH).forEach(p => {
-    if (seen.has(p.url)) return; seen.add(p.url);
-    if (capY > cv.height - 60) return;
-    ctx.font = 'italic 22px Pacifico, cursive'; ctx.fillStyle = '#34221e';
-    ctx.fillText('✧ ' + p.cap, PAD + 8, capY); capY += 30;
-  });
+  ctx.font = 'italic 22px Pacifico, cursive'; ctx.fillStyle = '#34221e';
+  for (const p of photos) {
+    if (seen.has(p.url)) continue; seen.add(p.url);
+    if (capY > qrY - 34) break;
+    let t = '✧ ' + p.cap;
+    if (ctx.measureText(t).width > capMaxW) {
+      while (t.length > 3 && ctx.measureText(t + '…').width > capMaxW) t = t.slice(0, -1);
+      t += '…';
+    }
+    ctx.fillText(t, PAD + 8, capY); capY += 30;
+  }
+
+  // QR di kanan-bawah (mirror DOM preview) — module manual, ga pakai SVG
+  if (galleryUrl) {
+    const qr = qrcode(0, 'M');
+    qr.addData(galleryUrl.indexOf('://') === -1 ? location.origin + galleryUrl : galleryUrl);
+    qr.make();
+    const n = qr.getModuleCount(), cell = Math.floor(QR_SZ / (n + 4));
+    const off = (QR_SZ - cell * n) / 2;
+    ctx.fillStyle = '#fff'; ctx.fillRect(qrX, qrY, QR_SZ, QR_SZ);
+    ctx.fillStyle = '#000';
+    for (let r2 = 0; r2 < n; r2++)
+      for (let c2 = 0; c2 < n; c2++)
+        if (qr.isDark(r2, c2)) ctx.fillRect(qrX + off + (c2 + 2) * cell, qrY + off + (r2 + 2) * cell, cell, cell);
+    ctx.fillStyle = '#34221e'; ctx.font = '600 26px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText('Scan buat download fotomu', qrX + QR_SZ / 2, qrY + QR_SZ + 32);
+  }
   if (asDataUrl) return cv.toDataURL('image/png');
   return await new Promise(r => cv.toBlob(r, 'image/png'));
 }

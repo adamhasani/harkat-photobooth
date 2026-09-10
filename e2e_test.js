@@ -88,6 +88,33 @@ const PORT = process.env.PORT || 8123;
     console.log('DL_ENDPOINT', JSON.stringify(dl));
   }
 
+  // 4b. sheet PNG asli: 8 kotak foto terisi + QR ada (scan pixel canvas render ulang = renderSheet(dataUrl))
+  const sheetGeo = await page.evaluate(async () => {
+    const du = await window.__h.renderSheet(true);
+    const img = new Image();
+    img.src = du;
+    await new Promise(res => img.onload = res);
+    // sampel 8 sel (kanvas W=1080, card=509, PAD=24, GAP=14, y0=130)
+    const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+    const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0);
+    const card = Math.round((1080 - 24 * 2 - 14) / 2);
+    const px = (x, y) => { const d = ctx.getImageData(x, y, 1, 1).data; return [d[0], d[1], d[2]]; };
+    const filled = [];
+    for (let r = 0; r < 4; r++) for (let col = 0; col < 2; col++) {
+      const x = 24 + col * (card + 14) + card / 2, y = 130 + r * (card + 14) + card / 2;
+      filled.push(px(x, y));
+    }
+    // QR region kanan-bawah: harus ada pixel hitam & putih (std tinggi)
+    let black = 0, white = 0;
+    for (let qy = img.height - 190; qy < img.height - 40; qy += 4)
+      for (let qx = img.width - 200; qx < img.width - 24; qx += 4) {
+        const p = px(qx, qy); const lum = (p[0] + p[1] + p[2]) / 3;
+        if (lum < 60) black++; else if (lum > 200) white++;
+      }
+    return { w: img.width, h: img.height, filled, qrBlack: black, qrWhite: white };
+  });
+  console.log('SHEET_GEO', JSON.stringify(sheetGeo));
+
   // 5. print media styles
   await page.emulateMediaType('print');
   const printStyles = await page.evaluate(() => {
