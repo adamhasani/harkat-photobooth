@@ -60,10 +60,12 @@ function serveStatic(res, urlPath) {
     return json(res, 404, { error: 'not found' });
   }
   const data = fs.readFileSync(file);
+  // heavy static (wasm/model/fonts) cacheable; html stays no-cache so fixes propagate
+  const cacheable = urlPath.startsWith('/assets/') || urlPath.includes('/uploads/sessions/');
   res.writeHead(200, {
     'Content-Type': MIME[path.extname(file).toLowerCase()] || 'application/octet-stream',
     'Content-Length': data.byteLength,
-    'Cache-Control': 'no-cache'
+    'Cache-Control': cacheable ? 'public, max-age=604800' : 'no-cache'
   });
   res.write(data);
   res.end();
@@ -77,6 +79,13 @@ function decodePhoto(dataURL) {
   let buf;
   try { buf = Buffer.from(m[2], 'base64'); } catch (e) { return null; }
   return { ext, buf };
+}
+
+// public base: header X-Public-Url (Caddy per-vhost) > PUBLIC_URL env > request Host
+function publicBase(req) {
+  const h = req.headers['x-public-url'];
+  if (h) return h.replace(/\/$/, '');
+  return (PUBLIC || `http://${req.headers.host}`).replace(/\/$/, '');
 }
 
 function createSession(req, res) {
@@ -104,7 +113,7 @@ function createSession(req, res) {
       photos: valid.length
     }));
 
-    const base = (PUBLIC || `http://${req.headers.host}`).replace(/\/$/, '');
+    const base = publicBase(req);
     json(res, 200, { ok: true, url: `${base}/gallery/${id}` });
   });
 }
@@ -116,7 +125,7 @@ function galleryPage(req, res, id) {
   try { meta = JSON.parse(fs.readFileSync(path.join(dir, 'metadata.json'), 'utf-8')); }
   catch (e) { return json(res, 500, { error: 'corrupt metadata' }); }
   const files = fs.readdirSync(dir).filter(f => /\.(jpe?g|png)$/i.test(f)).sort();
-  const base = ((PUBLIC || `http://${req.headers.host}`)).replace(/\/$/, '');
+  const base = publicBase(req);
   const html = `<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,">
 <title>HARKAT — Foto Kamu</title><style>
 body{font-family:system-ui,sans-serif;background:#f5eccf;color:#34221e;padding:24px;text-align:center}

@@ -82,12 +82,31 @@ const CHROME = '/snap/chromium/current/usr/lib/chromium-browser/chrome';
   await page.emulateMediaType('screen');
   console.log('PRINT', JSON.stringify(printStyles));
 
-  // 6. gallery URL valid (from QR link)
-  if (qr.linkHref) {
-    const resp = await page.goto('http://127.0.0.1:8123' + qr.linkHref, { waitUntil: 'networkidle0' });
-    const body = await page.evaluate(() => ({ imgs: document.querySelectorAll('img').length, title: document.title }));
-    console.log('GALLERY_PAGE', resp.status(), JSON.stringify(body));
-  }
+  // 6. custom SVG face (not OS emoji) in badge + caption + downloadSheet
+  const faceCheck = await page.evaluate(() => ({
+    badgeSvg: !![...document.querySelectorAll('.box .e')].length && [...document.querySelectorAll('.box .e')].every(e => !!e.querySelector('svg')),
+    badgeNonSvg: [...document.querySelectorAll('.box .e')].some(e => /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(e.textContent)),
+    capFaceSvg: [...document.querySelectorAll('.cap-line .cap-face svg')].length
+  }));
+  console.log('FACE_SVG', JSON.stringify(faceCheck));
+
+  await page.evaluate(() => { window.__test_dl = window.__h.downloadSheet; });
+  await page.evaluate(() => {
+    const origClick = HTMLAnchorElement.prototype.click;
+    let got = null;
+    HTMLAnchorElement.prototype.click = function () {
+      if (this.download && this.download.endsWith('.png')) got = this.download;
+      return;
+    };
+    window.__test_dl().then(() => {
+      HTMLAnchorElement.prototype.click = origClick;
+      window.__test_result = got;
+    }).catch(e => { window.__test_result = 'ERR ' + e.message; });
+    return 'started';
+  });
+  await new Promise(r => setTimeout(r, 2500));
+  const dlResult = await page.evaluate(() => window.__test_result);
+  console.log('DOWNLOAD', JSON.stringify(dlResult));
 
   console.log('JS_ERRORS', JSON.stringify(errors));
   await browser.close();
