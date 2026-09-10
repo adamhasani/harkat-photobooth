@@ -206,6 +206,10 @@
     background: var(--cream); color: var(--maroon); border: 2px solid var(--maroon-deep); font-size: 15px;
     display:flex; align-items:center; justify-content:center; cursor: pointer; z-index: 2; }
   .box.empty .x { display: none; }
+  /* emoji lucu pojok kanan atas tiap foto */
+  .box .e { position: absolute; top: 6px; right: 6px; font-size: clamp(16px, 4vw, 22px); z-index: 3;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,.45)); line-height: 1; }
+  .box.empty .e { display: none; }
 
   .sheet-foot { display: flex; align-items: flex-end; justify-content: space-between; padding: 12px 20px 2px; }
   .sheet-foot .sains { font-family: 'Luckiest Guy', cursive; color: var(--maroon); font-size: clamp(14px, 3.4vw, 18px); letter-spacing: 2px; transform: rotate(1.5deg); }
@@ -224,6 +228,14 @@
   .qr-box svg { width: 96px; height: 96px; display: block; }
   .qr-box p { font-size: 13px; color: var(--maroon-deep); line-height: 1.35; letter-spacing: .3px; }
   .qr-box .dl-link { display: none; font-size: 12px; word-break: break-all; color: var(--blue); margin-top: 3px; }
+
+  /* caption lucu — strip di atas barcode */
+  .caps { margin: 4px 20px 6px; display: flex; flex-direction: column; gap: 3px;
+    background: rgba(255,255,255,0.45); border-left: 4px solid var(--gold); border-radius: 0 10px 10px 0;
+    padding: 6px 12px; }
+  .cap-line { font-family: 'Pacifico', cursive; color: var(--maroon-deep); font-size: clamp(11px, 2.8vw, 14px); line-height: 1.3;
+    transform: rotate(-0.5deg); }
+  .caps:empty { display: none; }
 
   .empty-state { text-align: center; margin-top: 10px; color: var(--maroon-deep); opacity: .8; font-size: 15px; letter-spacing: 1px; }
 
@@ -245,8 +257,11 @@
     .sheet-body { padding: 8px 16px; }
     .box { break-inside: avoid; }
     .box img { opacity: 1 !important; filter: none !important; visibility: visible !important; }
+    .box .x { display: none !important; }  /* tombol hapus nggak ikut cetak */
     .qr-box { display: flex !important; border-style: solid; }
     .qr-box .dl-link { display: none !important; }
+    .caps { display: flex !important; }
+    .cap-line { font-size: 12px; }
   }
 </style>
 </head>
@@ -295,16 +310,16 @@
           </div>
           <div class="sheet-body">
             <div class="sheet-col" id="colA">
-              <div class="box empty" data-i="0"><div class="n">1</div><div class="x">✕</div><div class="ph">✦</div></div>
-              <div class="box empty" data-i="2"><div class="n">3</div><div class="x">✕</div><div class="ph">✦</div></div>
-              <div class="box empty" data-i="4"><div class="n">5</div><div class="x">✕</div><div class="ph">✦</div></div>
-              <div class="box empty" data-i="6"><div class="n">7</div><div class="x">✕</div><div class="ph">✦</div></div>
+              <div class="box empty" data-i="0"><div class="n">1</div><div class="x">✕</div><div class="e" style="display:none"></div><div class="ph">✦</div></div>
+              <div class="box empty" data-i="2"><div class="n">3</div><div class="x">✕</div><div class="e" style="display:none"></div><div class="ph">✦</div></div>
+              <div class="box empty" data-i="4"><div class="n">5</div><div class="x">✕</div><div class="e" style="display:none"></div><div class="ph">✦</div></div>
+              <div class="box empty" data-i="6"><div class="n">7</div><div class="x">✕</div><div class="e" style="display:none"></div><div class="ph">✦</div></div>
             </div>
             <div class="sheet-col" id="colB">
-              <div class="box empty" data-i="1"><div class="n">2</div><div class="x">✕</div><div class="ph">✦</div></div>
-              <div class="box empty" data-i="3"><div class="n">4</div><div class="x">✕</div><div class="ph">✦</div></div>
-              <div class="box empty" data-i="5"><div class="n">6</div><div class="x">✕</div><div class="ph">✦</div></div>
-              <div class="box empty" data-i="7"><div class="n">8</div><div class="x">✕</div><div class="ph">✦</div></div>
+              <div class="box empty" data-i="1"><div class="n">2</div><div class="x">✕</div><div class="e" style="display:none"></div><div class="ph">✦</div></div>
+              <div class="box empty" data-i="3"><div class="n">4</div><div class="x">✕</div><div class="e" style="display:none"></div><div class="ph">✦</div></div>
+              <div class="box empty" data-i="5"><div class="n">6</div><div class="x">✕</div><div class="e" style="display:none"></div><div class="ph">✦</div></div>
+              <div class="box empty" data-i="7"><div class="n">8</div><div class="x">✕</div><div class="e" style="display:none"></div><div class="ph">✦</div></div>
             </div>
           </div>
           <div class="sheet-foot">
@@ -312,6 +327,7 @@
             <span class="rings">⭯ ⭮</span>
             <span class="dovey">Dovey</span>
           </div>
+          <div class="caps" id="capStrip" hidden></div>
           <div class="qr-box" id="qrBox" hidden>
             <div class="qr" id="qrCode" aria-label="QR download foto"></div>
             <p>Scan untuk download foto kamu.<br><a class="dl-link" id="galleryLink" href="#" style="display:none"></a></p>
@@ -506,6 +522,34 @@ function renderHud(faces, blendshapes) {
 // ============ CAPTURE ============
 // test hook (harmless)
 window.__h = { renderHud, emotion, capture, landmarker: () => landmarker };
+
+// funny corner emoji + caption per photo (dari % emoji hasil deteksi wajah)
+const FUN_EMOJI = ['🥳','😜','🤪','😍','🤩','😎','🥸','🤡','👻','🥴','😺','🤣','🦄','🍭','🎈','💃'];
+const CAPS_HIGH = [
+  'wow {p}% kamu tersenyum — fix sih ini calon penghuni surga 😇',
+  '{p}% senyummu semanis gula 🍬',
+  '{p}% kece — bintang iklan nggak pake kontrak ⭐',
+  '{p}% hepi — foto ini wajib dibingkai 🖼️'
+];
+const CAPS_MID = [
+  '{p}% senyum — lumayan, pabrik senyum lagi produksi 😄',
+  '{p}% happy — dikit lagi jadi artis 🎬',
+  '{p}% lucu — kalo ketawa dikasih ongkos, lo udah kaya 💸',
+  '{p}% cakep — jangan senyum gitu dong, hati meleleh 🫠'
+];
+const CAPS_LOW = [
+  '{p}% aja? serius? ayo senyum dong 😅',
+  '{p}% — masih malu-malu, wajar kok 🥹',
+  '{p}% — nggak apa, stone face juga ada fansnya 🗿',
+  '{p}% — besok senyumnya di-update ya 🔄'
+];
+function randCap(pct, label) {
+  const pool = pct >= 90 ? CAPS_HIGH : pct >= 70 ? CAPS_MID : CAPS_LOW;
+  const t = pool[Math.floor(Math.random() * pool.length)];
+  return t.replace('{p}', pct).replace('{l}', label || '');
+}
+function randEmoji() { return FUN_EMOJI[Math.floor(Math.random() * FUN_EMOJI.length)]; }
+
 function capture() {
   if (!stream) return;
   if (photos.length >= 8) {
@@ -522,7 +566,14 @@ function capture() {
   cx.drawImage(video, 0, 0, w, h);
   const dataURL = c.toDataURL('image/jpeg', 0.92);
 
-  photos.push(dataURL);
+  // emoji + persen dari wajah yang terdeteksi (fallback random biar tetap lucu)
+  let e = null;
+  if (lastFaces.length && lastBs && lastBs[0]) e = emotion(lastBs[0]);
+  const pct = e ? e.pct : 50 + Math.floor(Math.random() * 50);
+  const emoji = e ? e.emoji : randEmoji();
+  const cap = randCap(pct, e ? e.label : null);
+
+  photos.push({ url: dataURL, pct, emoji, cap });
   renderLayout();
   // 1 cekrek = 1 foto — tetap di KAMERA, nanti Done if finish
   toast('📸 Foto ' + photos.length + '/8 ✓');
@@ -556,25 +607,44 @@ function renderLayout() {
     const img = box.querySelector('img');
     const ph = box.querySelector('.ph');
     const xBtn = box.querySelector('.x');
+    const eBadge = box.querySelector('.e');
     if (fill[i]) {
       if (!img) {
         const im = document.createElement('img');
         im.alt = 'foto';
         box.appendChild(im);
       }
-      box.querySelector('img').src = fill[i];
+      box.querySelector('img').src = fill[i].url;
       if (ph) ph.style.display = 'none';
       box.classList.remove('empty');
       xBtn.style.display = 'flex';
+      if (eBadge) { eBadge.textContent = fill[i].emoji; eBadge.style.display = 'flex'; }
     } else {
       if (img) img.remove();
       if (ph) ph.style.display = 'flex';
       box.classList.add('empty');
       xBtn.style.display = 'none';
+      if (eBadge) eBadge.style.display = 'none';
     }
   });
   countBox.textContent = photos.length;
   $('emptyState').style.display = photos.length ? 'none' : '';
+  renderCaptions();
+}
+
+// caption lucu per foto — strip di ATAS barcode (QR)
+function renderCaptions() {
+  const strip = $('capStrip');
+  if (!strip) return;
+  const seen = new Set();
+  const lines = [];
+  photos.forEach(p => {
+    if (seen.has(p.url)) return;
+    seen.add(p.url);
+    lines.push('<div class="cap-line">' + p.emoji + ' ' + p.cap + '</div>');
+  });
+  strip.innerHTML = lines.join('');
+  strip.hidden = !lines.length;
 }
 
 // remove one photo (index in original list by deleting last slot of that photo is tricky;
@@ -593,23 +663,27 @@ function removeAtSlot(slot) {
 
 // ============ GALLERY (QR DOWNLOAD) ============
 let galleryUrl = null;
+// backend public (Caddy /harkat) kalau bukan localhost; local pakai relative
+const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? '' : 'https://apa.zonalayar.my.id/harkat';
 
 async function ensureGallery() {
   if (!photos.length) return null;
   if (galleryUrl) return galleryUrl;
   try {
-    const res = await fetch('/api/session', {
+    const res = await fetch(API_BASE + '/api/session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ photos })
+      body: JSON.stringify({ photos: photos.map(p => p.url) })
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'gagal upload');
-    galleryUrl = data.url;
-    renderQr(location.origin + galleryUrl);
+    galleryUrl = data.url; // server balikin absolute (PUBLIC_URL) atau relative
+    const full = galleryUrl.startsWith('http') ? galleryUrl : location.origin + galleryUrl;
+    renderQr(full);
     $('qrBox').hidden = false;
     const a = $('galleryLink');
-    a.textContent = location.origin + galleryUrl;
+    a.textContent = full;
     a.href = galleryUrl;
     a.style.display = 'block';
   } catch (e) {

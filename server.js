@@ -30,7 +30,14 @@ const MIME = {
 
 function json(res, code, obj) {
   const body = JSON.stringify(obj);
-  res.writeHead(code, { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) });
+  const h = {
+    'Content-Type': 'application/json',
+    'Content-Length': Buffer.byteLength(body),
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type'
+  };
+  res.writeHead(code, h);
   res.write(body);
   res.end();
 }
@@ -97,8 +104,8 @@ function createSession(req, res) {
       photos: valid.length
     }));
 
-    const base = PUBLIC || `${req.protocol}://${req.headers.host}`;
-    json(res, 200, { ok: true, url: `/gallery/${id}` });
+    const base = (PUBLIC || `http://${req.headers.host}`).replace(/\/$/, '');
+    json(res, 200, { ok: true, url: `${base}/gallery/${id}` });
   });
 }
 
@@ -109,6 +116,7 @@ function galleryPage(req, res, id) {
   try { meta = JSON.parse(fs.readFileSync(path.join(dir, 'metadata.json'), 'utf-8')); }
   catch (e) { return json(res, 500, { error: 'corrupt metadata' }); }
   const files = fs.readdirSync(dir).filter(f => /\.(jpe?g|png)$/i.test(f)).sort();
+  const base = ((PUBLIC || `http://${req.headers.host}`)).replace(/\/$/, '');
   const html = `<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,">
 <title>HARKAT — Foto Kamu</title><style>
 body{font-family:system-ui,sans-serif;background:#f5eccf;color:#34221e;padding:24px;text-align:center}
@@ -120,8 +128,8 @@ small{opacity:.7}
 </style></head><body>
 <h1>HARKAT ✦ photo</h1>
 <p>Sesi <b>${meta.sessionId.slice(0,8)}</b> — <small>${new Date(meta.expiresAt).toLocaleString()}</small></p>
-<div class="g">${files.map(f => `<img src="/uploads/sessions/${id}/${f}" alt="foto">`).join('\n')}</div>
-<p><a href="/">← Balik ke photo booth</a></p>
+<div class="g">${files.map(f => `<img src="${base}/uploads/sessions/${id}/${f}" alt="foto">`).join('\n')}</div>
+<p><a href="${base}/">← Balik ke photo booth</a></p>
 </body></html>`;
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Content-Length': Buffer.byteLength(html) });
   res.write(html);
@@ -131,6 +139,7 @@ small{opacity:.7}
 const server = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x');
   const p = u.pathname;
+  if (req.method === 'OPTIONS') return json(res, 204, {});
   if (req.method === 'POST' && p === '/api/session') return createSession(req, res);
   const gal = /^\/gallery\/([0-9a-f-]+)$/.exec(p);
   if (gal) return galleryPage(req, res, gal[1]);
