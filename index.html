@@ -114,20 +114,24 @@
     box-shadow: 0 6px 0 rgba(74,16,36,0.35);
     background: #1a1420; aspect-ratio: 3/4; max-height: 62vh;
   }
-  #video { width: 100%; height: 100%; object-fit: cover; display: block; transform: scaleX(-1); }
+  #video { width: 100%; height: 100%; object-fit: contain; display: block; transform: scaleX(-1); }
 
-  /* HUD badge: emoji + persen di samping (live) */
+  /* HUD: satu bur per wajah, vertical di sebelah (emoji + label + bar + %) */
   .hud {
-    position: absolute; top: 12px; left: 12px; z-index: 5;
-    background: rgba(255,250,236,0.94); border: 3px solid var(--maroon-deep);
-    border-radius: 14px; padding: 8px 14px; display: flex; align-items: center; gap: 10px;
+    position: absolute; top: 10px; left: 10px; z-index: 5;
+    background: rgba(255,250,236,0.92); border: 3px solid var(--maroon-deep);
+    border-radius: 14px; padding: 8px 12px; display: flex;
+    flex-direction: column; gap: 6px; max-height: 78%;
     box-shadow: 3px 3px 0 rgba(74,16,36,0.35); font-family: 'Luckiest Guy', cursive;
   }
-  .hud .emoji { font-size: 26px; line-height: 1; }
-  .hud .bar-outer { width: 96px; height: 14px; background: #e3d5ae; border-radius: 8px; border: 2px solid var(--maroon-deep); overflow: hidden; }
-  .hud .bar-inner { height: 100%; width: 0%; background: linear-gradient(90deg, #7a1f3f, #e0a63f); border-radius: 6px; transition: width .25s; }
-  .hud .pct { font-size: 20px; color: var(--maroon); min-width: 58px; text-align: right; }
-  .hud .label { font-size: 11px; color: var(--maroon-deep); letter-spacing: 1px; text-align: center; margin-top: 2px; opacity: .85; }
+  .chip { display: flex; align-items: center; gap: 8px; }
+  .chip .n { width: 20px; height: 20px; border-radius: 50%; background: var(--gold); color: var(--maroon-deep);
+    font-size: 12px; display: flex; align-items: center; justify-content: center; flex: none; }
+  .chip .emoji { font-size: 24px; line-height: 1; }
+  .chip .label { font-size: 12px; color: var(--maroon-deep); letter-spacing: 1px; min-width: 74px; text-align: center; }
+  .chip .pct { font-size: 17px; color: var(--maroon); min-width: 44px; text-align: right; }
+  .chip .bar-outer { width: 60px; height: 12px; background: #e3d5ae; border-radius: 7px; border: 2px solid var(--maroon-deep); overflow: hidden; }
+  .chip .bar-inner { height: 100%; width: 0%; background: linear-gradient(90deg, #7a1f3f, #e0a63f); border-radius: 5px; }
 
   /* scanning guide frame */
   .scan-hint { position: absolute; top: 8px; right: 12px; z-index: 4; pointer-events: none;
@@ -250,17 +254,7 @@
       <div class="cam-wrap" id="camWrap">
         <video id="video" autoplay playsinline muted></video>
         <div class="scan-hint" id="scanHint">🔍 Cari wajah &hellip;</div>
-        <div class="hud" id="hud" style="display:none">
-          <div style="text-align:center">
-            <div class="emoji" id="hudEmoji">😐</div>
-            <div class="label" id="hudLabel">NETRAL</div>
-          </div>
-          <div>
-            <div class="bar-outer"><div class="bar-inner" id="hudBar"></div></div>
-            <div class="label">EKSPRESI</div>
-          </div>
-          <div class="pct" id="hudPct">0%</div>
-        </div>
+        <div class="hud" id="hud" style="display:none"></div>
         <div class="toast" id="toast"></div>
       </div>
       <div class="cam-controls">
@@ -326,41 +320,27 @@ let frameT = null;
 
 // ============ DOM ============
 const $ = (id) => document.getElementById(id);
-const video = $('video'), hud = $('hud'), hudEmoji = $('hudEmoji'), hudBar = $('hudBar'), hudPct = $('hudPct'), hudLabel = $('hudLabel');
+const video = $('video'), hud = $('hud');
 const countBox = $('countBox'), scanHint = $('scanHint'), camWrap = $('camWrap');
 
 // ============ MEDIAPIPE FACE LANDMARKER (local assets) ============
 async function initVision() {
+  // CPU only: WASM+GPU delegate hangs on many phones / headless; CPU is reliable everywhere
   try {
     const { FilesetResolver, FaceLandmarker } = await import('./assets/wasm/vision_bundle.mjs');
     const vision = await FilesetResolver.forVisionTasks('./assets/wasm/');
     landmarker = await FaceLandmarker.createFromOptions(vision, {
-      baseOptions: { modelAssetPath: MODEL_URL, delegate: 'GPU' },
+      baseOptions: { modelAssetPath: MODEL_URL, delegate: 'CPU' },
       runningMode: 'VIDEO',
-      numFaces: 1,
+      numFaces: 5,
       outputFaceBlendshapes: true
     });
     faceMode = true;
-    console.log('FaceLandmarker ready');
-    setHint('💡 Posisikan wajah di tengah');
+    console.log('FaceLandmarker ready (CPU)');
+    setHint('💡 Arah ke kamera');
   } catch (e) {
-    console.warn('GPU delegate failed, retry CPU:', e);
-    try {
-      const { FilesetResolver, FaceLandmarker } = await import('./assets/wasm/vision_bundle.mjs');
-      const vision = await FilesetResolver.forVisionTasks('./assets/wasm/');
-      landmarker = await FaceLandmarker.createFromOptions(vision, {
-        baseOptions: { modelAssetPath: MODEL_URL, delegate: 'CPU' },
-        runningMode: 'VIDEO',
-        numFaces: 1,
-        outputFaceBlendshapes: true
-      });
-      faceMode = true;
-      console.log('FaceLandmarker ready (CPU)');
-      setHint('💡 Posisikan wajah di tengah');
-    } catch (e2) {
-      console.error('MediaPipe init failed:', e2);
-      setHint('⚠️ Face-track gagal —&nbsp;tetap bisa jepret');
-    }
+    console.error('MediaPipe init failed:', e);
+    setHint('⚠️ AI wajah tadi start — foto tetap jalan');
   }
 }
 
@@ -372,8 +352,9 @@ function setHint(html) {
 async function startCamera() {
   stopCamera();
   const facingMode = facing === 'environment' ? { exact: 'environment' } : 'user';
+  // No resolution constraint: camera native FOV -> framing normal aja kamera biasa (head+shoulders)
   const opts = {
-    video: { facingMode, width: { ideal: 960 }, height: { ideal: 1280 } },
+    video: { facingMode },
     audio: false
   };
   try {
@@ -384,13 +365,16 @@ async function startCamera() {
   }
   video.srcObject = stream;
   await video.play().catch(() => {});
-  // adapt cam box to the camera's real aspect (no crop/zoom: whole face + shoulders fit)
-  video.addEventListener('loadedmetadata', () => {
-    if (video.videoWidth && video.videoHeight) {
-      camWrap.style.aspectRatio = video.videoWidth + ' / ' + video.videoHeight;
-    }
-  }, { once: true });
+  video.addEventListener('loadedmetadata', adaptFrame, { once: true });
   loop();
+}
+
+// keep the cam box in sync with the real stream aspect (contain => never crop)
+function adaptFrame() {
+  if (video.videoWidth && video.videoHeight) {
+    const a = video.videoWidth + ' / ' + video.videoHeight;
+    if (camWrap.style.aspectRatio !== a) camWrap.style.aspectRatio = a;
+  }
 }
 
 function stopCamera() {
@@ -402,29 +386,32 @@ function stopCamera() {
 }
 
 // ============ OVERLAY LOOP ============
+let lastFaces = [], lastBs = null, lastDet = 0;
 function loop() {
   if (!faceMode || !landmarker) {
     return requestAnimationFrame(loop);
   }
   if (video.readyState >= 2 && video.videoWidth) {
-    // ensure cam box matches the real camera aspect (no crop/zoom)
-    if (!camWrap.dataset.adapt && video.videoHeight) {
-      camWrap.dataset.adapt = '1';
-      camWrap.style.aspectRatio = video.videoWidth + ' / ' + video.videoHeight;
-    }
+    adaptFrame();
+    // throttle detection: CPU wasm ~12fps is smooth enough, keeps phone cool
     const now = performance.now();
-    let result;
-    try {
-      result = landmarker.detectForVideo(video, now);
-    } catch (e) { /* skip frame */ }
+    if (now - lastDet >= 80) {
+      lastDet = now;
+      let result;
+      try {
+        result = landmarker.detectForVideo(video, now);
+      } catch (e) { /* skip frame */ }
+      lastFaces = (result && result.faceLandmarks) || [];
+      lastBs = result ? result.faceBlendshapes : null;
+    }
 
-    if (result && result.faceLandmarks && result.faceLandmarks.length) {
-      const lm = result.faceLandmarks[0];
+    if (lastFaces.length) {
       hud.style.display = 'flex';
       setHint('');
-      updateHud(lm, result.faceBlendshapes);
+      renderHud(lastFaces, lastBs);
     } else {
       hud.style.display = 'none';
+      hud.innerHTML = '';
       if (!scanHint.innerHTML) setHint('🔍 Cari wajah &hellip;');
     }
   }
@@ -432,13 +419,22 @@ function loop() {
 }
 
 // ============ EMOJI + PERSEN (live, cam only) ============
+// faceBlendshapes[i] = CategoryMask { categories:[{categoryName,score}] };
+// be tolerant of both shapes (some builds return [CategoryMask])
+function categoriesOf(bs) {
+  if (!bs) return null;
+  if (Array.isArray(bs) && bs.length && bs[0] && bs[0].categories) return bs[0].categories;
+  return bs.categories || null;
+}
 function blendshape(bs, name) {
-  if (!bs || !bs.length || !bs[0].categories) return 0;
-  const c = bs[0].categories.find(x => x.categoryName === name);
+  const cats = categoriesOf(bs);
+  if (!cats) return 0;
+  const c = cats.find(x => x.categoryName === name);
   return c ? c.score : 0;
 }
 
-function updateHud(lm, bs) {
+// emotion of one face based on its blendshapes -> {emoji,label,pct}
+function emotion(bs) {
   const smile = Math.max(blendshape(bs, 'mouthSmileLeft'), blendshape(bs, 'mouthSmileRight'));
   const jaw = blendshape(bs, 'jawOpen');
   const brow = Math.max(blendshape(bs, 'browInnerUp'), blendshape(bs, 'browOuterUpLeft') + blendshape(bs, 'browOuterUpRight'));
@@ -448,24 +444,44 @@ function updateHud(lm, bs) {
   const eyesWide = Math.max(blendshape(bs, 'eyeWideLeft'), blendshape(bs, 'eyeWideRight'));
   const tongue = blendshape(bs, 'tongueOut');
 
-  let emoji, label, pct;
-  if (smile > 0.45) { emoji = '😄'; label = 'SENYUM'; pct = Math.round(smile * 100); }
-  else if (tongue > 0.35) { emoji = '😜'; label = 'CILUK BA'; pct = Math.round(tongue * 100); }
-  else if (jaw > 0.30) { emoji = '😮'; label = 'TERKEJUT'; pct = Math.round(Math.min(1, jaw + smile) * 100); }
-  else if (eyesWide > 0.6 && brow > 0.5) { emoji = '😳'; label = 'KAGET'; pct = Math.round(Math.min(1, eyesWide + brow) * 100); }
-  else if (brow > 0.35) { emoji = '🤨'; label = 'HERAN'; pct = Math.round(Math.min(1, brow + smile) * 100); }
-  else if ((eyeBlinkR > 0.7) !== (eyeBlinkL > 0.7)) { emoji = '😉'; label = 'KEDIP'; pct = 92; }
-  else if (mouthFrown > 0.25) { emoji = '😒'; label = 'CEMBERUT'; pct = Math.round(mouthFrown * 100); }
-  else if (smile > 0.15) { emoji = '🙂'; label = 'TENANG'; pct = Math.round(smile * 90); }
-  else { emoji = '😶'; label = 'POLOS'; pct = Math.max(25, Math.round((1 - jaw) * 40)); }
+  if (smile > 0.45) return { emoji: '😄', label: 'SENYUM', pct: Math.round(smile * 100) };
+  if (tongue > 0.35) return { emoji: '😜', label: 'CILUK BA', pct: Math.round(tongue * 100) };
+  if (jaw > 0.30) return { emoji: '😮', label: 'TERKEJUT', pct: Math.round(Math.min(1, jaw + smile) * 100) };
+  if (eyesWide > 0.6 && brow > 0.5) return { emoji: '😳', label: 'KAGET', pct: Math.round(Math.min(1, eyesWide + brow) * 100) };
+  if (brow > 0.35) return { emoji: '🤨', label: 'HERAN', pct: Math.round(Math.min(1, brow + smile) * 100) };
+  if ((eyeBlinkR > 0.7) !== (eyeBlinkL > 0.7)) return { emoji: '😉', label: 'KEDIP', pct: 92 };
+  if (mouthFrown > 0.25) return { emoji: '😒', label: 'CEMBERUT', pct: Math.round(mouthFrown * 100) };
+  if (smile > 0.15) return { emoji: '🙂', label: 'TENANG', pct: Math.round(smile * 90) };
+  return { emoji: '😶', label: 'POLOS', pct: Math.max(25, Math.round((1 - jaw) * 40)) };
+}
 
-  hudEmoji.textContent = emoji;
-  hudLabel.textContent = label;
-  hudPct.textContent = pct + '%';
-  hudBar.style.width = Math.min(100, pct) + '%';
+// one chip per face (up to 5 wajah) — each with its own emoji + persen
+function renderHud(faces, blendshapes) {
+  const n = Math.min(faces.length, 5);
+  // ensure exact chip count
+  while (hud.children.length < n) {
+    const c = document.createElement('div');
+    c.className = 'chip';
+    c.innerHTML = '<span class="n"></span><span class="emoji"></span><span class="label"></span>' +
+      '<span class="bar-outer"><span class="bar-inner"></span></span><span class="pct"></span>';
+    hud.appendChild(c);
+  }
+  while (hud.children.length > n) hud.removeChild(hud.lastChild);
+
+  for (let i = 0; i < n; i++) {
+    const chip = hud.children[i];
+    const e = emotion(blendshapes && blendshapes[i]);
+    chip.querySelector('.n').textContent = n > 1 ? (i + 1) + '' : '';
+    chip.querySelector('.emoji').textContent = e.emoji;
+    chip.querySelector('.label').textContent = e.label;
+    chip.querySelector('.pct').textContent = e.pct + '%';
+    chip.querySelector('.bar-inner').style.width = Math.min(100, e.pct) + '%';
+  }
 }
 
 // ============ CAPTURE ============
+// test hook (harmless)
+window.__h = { renderHud, emotion, capture, landmarker: () => landmarker };
 function capture() {
   if (!stream) return;
   if (photos.length >= 8) {
