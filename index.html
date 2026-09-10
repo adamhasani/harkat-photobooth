@@ -112,13 +112,9 @@
     position: relative; margin: 12px; border-radius: 20px; overflow: hidden;
     border: 4px solid var(--maroon-deep);
     box-shadow: 0 6px 0 rgba(74,16,36,0.35);
-    background: #1a1420; aspect-ratio: 3/4; max-height: 60vh;
+    background: #1a1420; aspect-ratio: 3/4; max-height: 62vh;
   }
   #video { width: 100%; height: 100%; object-fit: cover; display: block; transform: scaleX(-1); }
-  #overlay {
-    position: absolute; inset: 0; width: 100%; height: 100%;
-    transform: scaleX(-1); pointer-events: none;
-  }
 
   /* HUD badge: emoji + persen di samping (live) */
   .hud {
@@ -126,7 +122,6 @@
     background: rgba(255,250,236,0.94); border: 3px solid var(--maroon-deep);
     border-radius: 14px; padding: 8px 14px; display: flex; align-items: center; gap: 10px;
     box-shadow: 3px 3px 0 rgba(74,16,36,0.35); font-family: 'Luckiest Guy', cursive;
-    transform: scaleX(-1); /* counter-scale */
   }
   .hud .emoji { font-size: 26px; line-height: 1; }
   .hud .bar-outer { width: 96px; height: 14px; background: #e3d5ae; border-radius: 8px; border: 2px solid var(--maroon-deep); overflow: hidden; }
@@ -138,7 +133,13 @@
   .scan-hint { position: absolute; top: 8px; right: 12px; z-index: 4; pointer-events: none;
     color: rgba(255,237,200,0.85); font-size: 12px; letter-spacing: 1.5px; text-align: right; }
 
-  .cam-controls { display: flex; gap: 12px; justify-content: center; padding: 6px 12px 14px; align-items: center; flex-wrap: wrap; }
+  .toast { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 6;
+    background: rgba(107,31,58,0.94); color: #fff6e2; font-family: 'Luckiest Guy', cursive;
+    padding: 8px 18px; border-radius: 14px; border: 2px solid var(--gold);
+    font-size: 15px; letter-spacing: 1px; opacity: 0; transition: opacity .3s; pointer-events: none; }
+
+  .cam-controls { display: flex; gap: 12px; justify-content: center; padding: 6px 12px 6px; align-items: center; flex-wrap: wrap; }
+  .cam-shoot-row { display: flex; justify-content: center; padding: 4px 12px 14px; }
   .btn {
     font-family: 'Luckiest Guy', cursive; font-size: 18px; letter-spacing: 1px;
     border: none; border-radius: 999px; padding: 13px 26px; cursor: pointer;
@@ -246,9 +247,8 @@
   <div class="panels">
     <!-- ============ CAMERA ============ -->
     <div class="panel active" id="panel-cam">
-      <div class="cam-wrap">
+      <div class="cam-wrap" id="camWrap">
         <video id="video" autoplay playsinline muted></video>
-        <canvas id="overlay" width="480" height="640"></canvas>
         <div class="scan-hint" id="scanHint">🔍 Cari wajah &hellip;</div>
         <div class="hud" id="hud" style="display:none">
           <div style="text-align:center">
@@ -261,11 +261,15 @@
           </div>
           <div class="pct" id="hudPct">0%</div>
         </div>
+        <div class="toast" id="toast"></div>
       </div>
       <div class="cam-controls">
         <button class="btn ghost" id="btnFlip">🔄 Kamera</button>
-        <button class="btn big" id="btnShoot">📸 JEPRET!</button>
+        <button class="btn gold" id="btnDone">✅ Done</button>
         <button class="btn blue" id="btnReset">🗑️ Reset</button>
+      </div>
+      <div class="cam-shoot-row">
+        <button class="btn big" id="btnShoot">📸 JEPRET!</button>
       </div>
     </div>
 
@@ -318,14 +322,12 @@ let faceMode = false;     // mediapipe ready?
 let stream = null;
 let facing = 'user';      // 'user' | 'environment'
 let landmarker = null;
-let lastFaceBox = null;   // {x,y,w,h} in normalized coords
 let frameT = null;
 
 // ============ DOM ============
 const $ = (id) => document.getElementById(id);
-const video = $('video'), overlay = $('overlay'), ctxOver = overlay.getContext('2d');
-const hud = $('hud'), hudEmoji = $('hudEmoji'), hudBar = $('hudBar'), hudPct = $('hudPct'), hudLabel = $('hudLabel');
-const countBox = $('countBox'), scanHint = $('scanHint');
+const video = $('video'), hud = $('hud'), hudEmoji = $('hudEmoji'), hudBar = $('hudBar'), hudPct = $('hudPct'), hudLabel = $('hudLabel');
+const countBox = $('countBox'), scanHint = $('scanHint'), camWrap = $('camWrap');
 
 // ============ MEDIAPIPE FACE LANDMARKER (local assets) ============
 async function initVision() {
@@ -382,10 +384,11 @@ async function startCamera() {
   }
   video.srcObject = stream;
   await video.play().catch(() => {});
-  // size overlay to stream
+  // adapt cam box to the camera's real aspect (no crop/zoom: whole face + shoulders fit)
   video.addEventListener('loadedmetadata', () => {
-    overlay.width = video.videoWidth || 480;
-    overlay.height = video.videoHeight || 640;
+    if (video.videoWidth && video.videoHeight) {
+      camWrap.style.aspectRatio = video.videoWidth + ' / ' + video.videoHeight;
+    }
   }, { once: true });
   loop();
 }
@@ -396,7 +399,6 @@ function stopCamera() {
     stream = null;
   }
   if (frameT) { cancelAnimationFrame(frameT); frameT = null; }
-  ctxOver.clearRect(0, 0, overlay.width, overlay.height);
 }
 
 // ============ OVERLAY LOOP ============
@@ -405,9 +407,11 @@ function loop() {
     return requestAnimationFrame(loop);
   }
   if (video.readyState >= 2 && video.videoWidth) {
-    const w = overlay.width = video.videoWidth;
-    const h = overlay.height = video.videoHeight;
-    ctxOver.clearRect(0, 0, w, h);
+    // ensure cam box matches the real camera aspect (no crop/zoom)
+    if (!camWrap.dataset.adapt && video.videoHeight) {
+      camWrap.dataset.adapt = '1';
+      camWrap.style.aspectRatio = video.videoWidth + ' / ' + video.videoHeight;
+    }
     const now = performance.now();
     let result;
     try {
@@ -418,7 +422,6 @@ function loop() {
       const lm = result.faceLandmarks[0];
       hud.style.display = 'flex';
       setHint('');
-      drawMesh(lm, w, h);
       updateHud(lm, result.faceBlendshapes);
     } else {
       hud.style.display = 'none';
@@ -426,70 +429,6 @@ function loop() {
     }
   }
   frameT = requestAnimationFrame(loop);
-}
-
-// FACEMESH_TESSELATION (subset for outline) — 468->478 indexes
-const FACE_OVAL = [
-  10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,
-  377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109
-];
-const FOREHEAD = [10, 109, 67, 103, 54, 21, 162, 127, 234, 93, 132, 58, 172, 136, 150, 149, 176, 148, 152];
-const R_EYE = [33,7,163,144,145,153,154,155,133];
-const L_EYE = [362,382,381,380,374,373,390,249,263];
-const BROW_L = [70,63,105,66,107];
-const BROW_R = [336,296,334,293,300];
-const NOSE = [1,2,98,327,326,168,6,197,195];
-const LIPS = [61,185,40,39,37,0,267,269,270,409,291,375,321,405,314,17,84,181,91,146];
-
-function drawMesh(lm, w, h) {
-  const s = Math.min(w, h) / 2; // scale factor for line width (relative)
-  ctxOver.lineJoin = 'round';
-  ctxOver.lineCap = 'round';
-
-  // face oval (garis wajah) — the key "garis-garis di muka"
-  curve(FACE_OVAL, lm, w, h, 'rgba(224,166,63,0.95)', Math.max(2, s * 0.045));
-  // soft second pass for glow
-  curve(FACE_OVAL, lm, w, h, 'rgba(107,31,58,0.5)', Math.max(4, s * 0.09));
-
-  // brows
-  curve(BROW_L, lm, w, h, 'rgba(107,31,58,0.75)', Math.max(1.6, s * 0.03));
-  curve(BROW_R, lm, w, h, 'rgba(107,31,58,0.75)', Math.max(1.6, s * 0.03));
-  // eyes
-  curve(R_EYE, lm, w, h, '#6b1f3a', Math.max(1.8, s * 0.03));
-  curve(L_EYE, lm, w, h, '#6b1f3a', Math.max(1.8, s * 0.03));
-  // nose bridge
-  line([168,6,197,195], lm, w, h, 'rgba(107,31,58,0.55)', Math.max(1.4, s * 0.025));
-  // lips
-  curve(LIPS, lm, w, h, 'rgba(160,40,60,0.85)', Math.max(1.8, s * 0.03));
-}
-
-function P(lm, i, w, h) {
-  const p = lm[i];
-  return [p.x * w, p.y * h];
-}
-function line(ids, lm, w, h, color, lw) {
-  ctxOver.beginPath();
-  const [x0, y0] = P(lm, ids[0], w, h);
-  ctxOver.moveTo(x0, y0);
-  for (let i = 1; i < ids.length; i++) {
-    const [x, y] = P(lm, ids[i], w, h);
-    ctxOver.lineTo(x, y);
-  }
-  ctxOver.strokeStyle = color;
-  ctxOver.lineWidth = lw;
-  ctxOver.stroke();
-}
-function curve(ids, lm, w, h, color, lw) {
-  ctxOver.beginPath();
-  for (let i = 0; i < ids.length; i++) {
-    const [x, y] = P(lm, ids[i], w, h);
-    if (i === 0) ctxOver.moveTo(x, y);
-    else ctxOver.lineTo(x, y);
-  }
-  ctxOver.closePath();
-  ctxOver.strokeStyle = color;
-  ctxOver.lineWidth = lw;
-  ctxOver.stroke();
 }
 
 // ============ EMOJI + PERSEN (live, cam only) ============
@@ -529,7 +468,11 @@ function updateHud(lm, bs) {
 // ============ CAPTURE ============
 function capture() {
   if (!stream) return;
-  // Clean frame: draw video WITHOUT overlay (garis tidak ikut ke foto)
+  if (photos.length >= 8) {
+    toast('⛔ 8 kotak penuh — tap Reset atau Done');
+    return;
+  }
+  // Clean frame: video WITHOUT any overlay (jangan pas jadi)
   const w = video.videoWidth, h = video.videoHeight;
   const c = document.createElement('canvas');
   c.width = w; c.height = h;
@@ -539,10 +482,21 @@ function capture() {
   cx.drawImage(video, 0, 0, w, h);
   const dataURL = c.toDataURL('image/jpeg', 0.92);
 
-  if (photos.length >= 8) photos = [];
   photos.push(dataURL);
   renderLayout();
-  moveToLayout();
+  // 1 cekrek = 1 foto — tetap di KAMERA, nanti Done if finish
+  toast('📸 Foto ' + photos.length + '/8 ✓');
+  if (photos.length >= 8) toast('🎉 Penuh! Tap Done buat cetak');
+}
+
+// transient message at bottom of camera
+let toastT = null;
+function toast(msg) {
+  const t = $('toast');
+  t.innerHTML = msg;
+  t.style.opacity = 1;
+  clearTimeout(toastT);
+  toastT = setTimeout(() => { t.style.opacity = 0; }, 2000);
 }
 
 // ============ LAYOUT RENDER ============
@@ -598,9 +552,6 @@ function removeAtSlot(slot) {
 }
 
 // ============ NAV ============
-function moveToLayout() {
-  setActive('layout');
-}
 function setActive(panel) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.panel === panel));
   document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + panel));
@@ -611,6 +562,7 @@ $('tabCam').addEventListener('click', () => setActive('cam'));
 $('tabLayout').addEventListener('click', () => setActive('layout'));
 $('btnGoCam').addEventListener('click', () => setActive('cam'));
 $('btnShoot').addEventListener('click', capture);
+$('btnDone').addEventListener('click', () => setActive('layout'));
 $('btnFlip').addEventListener('click', async () => {
   facing = facing === 'user' ? 'environment' : 'user';
   await startCamera();
