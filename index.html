@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="icon" href="data:,">
+<title>HARKAT — Sains Data | Photobooth</title>
+<style>
+  /* ============ FONTS (self-hosted) ============ */
+  @font-face {
+    font-family: 'Luckiest Guy';
+    src: url('assets/fonts/LuckiestGuy.ttf') format('truetype');
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Pacifico';
+    src: url('assets/fonts/Pacifico.ttf') format('truetype');
+    font-display: swap;
+  }
+
+  :root {
+    --cream: #f5eccf;
+    --cream-dark: #eadfc0;
+    --maroon: #6b1f3a;
+    --maroon-deep: #4a1024;
+    --gold: #c9a227;
+    --blue: #3f5a7a;
+    --ink: #34221e;
+    --stroke: rgba(59, 20, 32, 0.55);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    background: var(--cream);
+    font-family: 'Luckiest Guy', 'Sniglet', 'Comic Sans MS', system-ui, sans-serif;
+    color: var(--ink);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    /* hand-drawn grain texture + dashed film-strip side borders */
+    background-image:
+      repeating-linear-gradient(90deg, rgba(63,90,122,0.16) 0 6px, transparent 6px 14px),
+      repeating-linear-gradient(90deg, transparent 0 calc(100% - 14px), rgba(63,90,122,0.16) calc(100% - 14px) calc(100% - 8px)),
+      radial-gradient(rgba(52,34,30,0.10) 1px, transparent 1.2px),
+      radial-gradient(rgba(52,34,30,0.08) 1px, transparent 1.4px),
+      linear-gradient(var(--cream), #f2e7c8);
+    background-size: auto, auto, 14px 14px, 22px 22px, cover;
+    background-position: 0 0, 100% 0, 0 0, 11px 7px, 0 0;
+    background-repeat: repeat, repeat, repeat, repeat, no-repeat;
+    min-height: 100dvh;
+  }
+
+  /* dashed center film strip (vertical) */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, transparent calc(50vw - 4px), rgba(63,90,122,0.10) calc(50vw - 4px), rgba(63,90,122,0.10) calc(50vw + 4px), transparent calc(50vw + 4px));
+    z-index: 0;
+  }
+
+  .app { position: relative; z-index: 1; min-height: 100dvh; display: flex; flex-direction: column; }
+
+  /* ============ TOOLBAR ============ */
+  .toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; flex-wrap: wrap; gap: 8px;
+    border-bottom: 3px dashed var(--blue);
+  }
+  .brand { display: flex; align-items: baseline; gap: 10px; }
+  .brand h1 {
+    font-family: 'Luckiest Guy', 'Comic Sans MS', cursive;
+    color: var(--maroon); font-size: clamp(26px, 5vw, 40px);
+    letter-spacing: 2px; line-height: 1;
+    transform: rotate(-1.5deg); text-shadow: 2px 2px 0 rgba(201,162,39,0.35);
+  }
+  .brand small {
+    font-family: 'Pacifico', 'Brush Script MT', cursive;
+    color: var(--maroon-deep); font-size: clamp(13px, 2.4vw, 18px); transform: rotate(2deg);
+  }
+  .count-badge {
+    background: var(--maroon); color: #ffe9c9; padding: 6px 14px;
+    border-radius: 999px; font-size: 15px; letter-spacing: 1px;
+    box-shadow: 2px 3px 0 rgba(74,16,36,0.35); white-space: nowrap;
+  }
+  .count-badge b { color: #ffd66b; font-size: 18px; }
+
+  /* ============ TABS ============ */
+  .tabs { display: flex; gap: 0; padding: 0 12px; margin-top: 10px; }
+  .tab {
+    flex: 1; text-align: center; padding: 10px 8px; font-size: 16px; letter-spacing: 1px;
+    background: var(--cream-dark); color: var(--maroon-deep);
+    border: 3px solid var(--maroon-deep); border-bottom: none;
+    border-radius: 16px 16px 0 0; cursor: pointer;
+    transform: translateY(3px); transition: transform .15s, background .15s;
+    user-select: none;
+  }
+  .tab.active {
+    background: var(--maroon); color: #ffe9c9; transform: translateY(0);
+    box-shadow: 0 -3px 0 var(--gold);
+  }
+
+  .panels { flex: 1; display: flex; flex-direction: column; }
+  .panel { display: none; flex-direction: column; flex: 1; }
+  .panel.active { display: flex; }
+
+  /* ============ CAMERA PANEL ============ */
+  .cam-wrap {
+    position: relative; margin: 12px; border-radius: 20px; overflow: hidden;
+    border: 4px solid var(--maroon-deep);
+    box-shadow: 0 6px 0 rgba(74,16,36,0.35);
+    background: #1a1420; aspect-ratio: 3/4; max-height: 60vh;
+  }
+  #video { width: 100%; height: 100%; object-fit: cover; display: block; transform: scaleX(-1); }
+  #overlay {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    transform: scaleX(-1); pointer-events: none;
+  }
+
+  /* HUD badge: emoji + persen di samping (live) */
+  .hud {
+    position: absolute; top: 12px; left: 12px; z-index: 5;
+    background: rgba(255,250,236,0.94); border: 3px solid var(--maroon-deep);
+    border-radius: 14px; padding: 8px 14px; display: flex; align-items: center; gap: 10px;
+    box-shadow: 3px 3px 0 rgba(74,16,36,0.35); font-family: 'Luckiest Guy', cursive;
+    transform: scaleX(-1); /* counter-scale */
+  }
+  .hud .emoji { font-size: 26px; line-height: 1; }
+  .hud .bar-outer { width: 96px; height: 14px; background: #e3d5ae; border-radius: 8px; border: 2px solid var(--maroon-deep); overflow: hidden; }
+  .hud .bar-inner { height: 100%; width: 0%; background: linear-gradient(90deg, #7a1f3f, #e0a63f); border-radius: 6px; transition: width .25s; }
+  .hud .pct { font-size: 20px; color: var(--maroon); min-width: 58px; text-align: right; }
+  .hud .label { font-size: 11px; color: var(--maroon-deep); letter-spacing: 1px; text-align: center; margin-top: 2px; opacity: .85; }
+
+  /* scanning guide frame */
+  .scan-hint { position: absolute; top: 8px; right: 12px; z-index: 4; pointer-events: none;
+    color: rgba(255,237,200,0.85); font-size: 12px; letter-spacing: 1.5px; text-align: right; }
+
+  .cam-controls { display: flex; gap: 12px; justify-content: center; padding: 6px 12px 14px; align-items: center; flex-wrap: wrap; }
+  .btn {
+    font-family: 'Luckiest Guy', cursive; font-size: 18px; letter-spacing: 1px;
+    border: none; border-radius: 999px; padding: 13px 26px; cursor: pointer;
+    color: #fff6e2; background: var(--maroon);
+    box-shadow: 0 4px 0 var(--maroon-deep), 0 6px 10px rgba(0,0,0,0.2);
+    transition: transform .1s, box-shadow .1s; touch-action: manipulation;
+  }
+  .btn:active { transform: translateY(4px); box-shadow: 0 0 0 var(--maroon-deep); }
+  .btn.gold { background: #c98a20; box-shadow: 0 4px 0 #7c5310; }
+  .btn.ghost { background: var(--cream-dark); color: var(--maroon-deep); box-shadow: 0 4px 0 rgba(74,16,36,0.4); }
+  .btn.blue { background: var(--blue); box-shadow: 0 4px 0 #26384d; }
+  .btn.big { font-size: 22px; padding: 16px 36px; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+  /* ============ LAYOUT / PRINT PANEL ============ */
+  .layout-panel { padding: 12px; flex: 1; display: flex; flex-direction: column; align-items: center; }
+  .sheet {
+    width: 100%; max-width: 560px;
+    background:
+      radial-gradient(rgba(52,34,30,0.09) 1px, transparent 1.2px),
+      linear-gradient(var(--cream), #f2e7c8);
+    background-size: 15px 15px, cover;
+    border: 4px solid var(--maroon-deep);
+    border-radius: 18px; padding: 18px 14px;
+    box-shadow: 0 8px 0 rgba(74,16,36,0.35);
+    position: relative;
+  }
+  /* dashed film-strip borders on sheet */
+  .sheet::before, .sheet::after {
+    content: ''; position: absolute; top: 12px; bottom: 12px; width: 8px;
+    background: repeating-linear-gradient(180deg, rgba(63,90,122,0.35) 0 6px, transparent 6px 14px);
+  }
+  .sheet::before { left: 8px; }
+  .sheet::after { right: 8px; }
+
+  .sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 2px 18px 8px; }
+  .sheet-head h2 {
+    font-family: 'Luckiest Guy', cursive; color: var(--maroon); font-size: clamp(24px, 6.5vw, 34px);
+    letter-spacing: 2px; text-shadow: 2px 2px 0 rgba(201,162,39,0.4); transform: rotate(-2deg);
+  }
+  .sheet-head .play { color: var(--maroon); font-size: 22px; transform: rotate(-8deg); }
+
+  .sheet-body { display: flex; gap: 10px; padding: 6px 18px; }
+  .sheet-col { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+  .box {
+    aspect-ratio: 1; border-radius: 14px; position: relative; overflow: hidden;
+    background:
+      repeating-linear-gradient(45deg, #dcd3ba 0 10px, #efe6cc 10px 20px);
+    border: 3px solid var(--maroon-deep);
+  }
+  .box .ph { position: absolute; inset: 0; display:flex; align-items:center; justify-content:center; color: rgba(107,31,58,0.35); font-size: 34px; }
+  .box .ph svg { width: 100%; height: 100%; opacity: .5; }
+  .box img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+  .box .n { position: absolute; top: -10px; left: -8px; background: var(--gold); color: var(--maroon-deep);
+    min-width: 24px; height: 24px; border-radius: 8px; display:flex; align-items:center; justify-content:center;
+    font-size: 13px; border: 2px solid var(--maroon-deep); z-index: 2; }
+  .box .x { position: absolute; top: -10px; right: -8px; width: 26px; height: 26px; border-radius: 8px;
+    background: var(--cream); color: var(--maroon); border: 2px solid var(--maroon-deep); font-size: 15px;
+    display:flex; align-items:center; justify-content:center; cursor: pointer; z-index: 2; }
+  .box.empty .x { display: none; }
+
+  .sheet-foot { display: flex; align-items: flex-end; justify-content: space-between; padding: 12px 20px 2px; }
+  .sheet-foot .sains { font-family: 'Luckiest Guy', cursive; color: var(--maroon); font-size: clamp(14px, 3.4vw, 18px); letter-spacing: 2px; transform: rotate(1.5deg); }
+  .sheet-foot .dovey { font-family: 'Pacifico', 'Brush Script MT', cursive; font-size: clamp(16px, 4vw, 22px); color: #34221e; transform: rotate(-3deg); }
+  .sheet-foot .rings { display:flex; gap:2px; font-size: 18px; color: var(--maroon); }
+
+  .layout-actions { display: flex; gap: 12px; margin-top: 14px; justify-content: center; flex-wrap: wrap; }
+
+  .empty-state { text-align: center; margin-top: 10px; color: var(--maroon-deep); opacity: .8; font-size: 15px; letter-spacing: 1px; }
+
+  /* ============ PRINT ============ */
+  @media print {
+    body { background: var(--cream) !important; }
+    body::before { display: none !important; }
+    .app { display: block !important; }
+    .toolbar, .tabs, .cam-wrap, .cam-controls, .layout-actions, .empty-state, .scan-hint { display: none !important; }
+    .panels, .panel { display: block !important; }
+    .layout-panel { padding: 0 !important; }
+    .sheet {
+      max-width: 100% !important; border: 3px solid var(--maroon-deep) !important;
+      border-radius: 0 !important; box-shadow: none !important; margin: 0 auto;
+      width: 100%;
+    }
+    /* A4 portrait: 8 boxes fit nicely */
+    .sheet-body { padding: 8px 16px; }
+    .box { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="toolbar">
+    <div class="brand">
+      <h1>HARKAT</h1>
+      <small>photobooth ✦</small>
+    </div>
+    <div class="count-badge">📸 <b id="countBox">0</b>/8</div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-panel="cam" id="tabCam">📷 KAMERA</div>
+    <div class="tab" data-panel="layout" id="tabLayout">🖼️ CETAK</div>
+  </div>
+
+  <div class="panels">
+    <!-- ============ CAMERA ============ -->
+    <div class="panel active" id="panel-cam">
+      <div class="cam-wrap">
+        <video id="video" autoplay playsinline muted></video>
+        <canvas id="overlay" width="480" height="640"></canvas>
+        <div class="scan-hint" id="scanHint">🔍 Cari wajah &hellip;</div>
+        <div class="hud" id="hud" style="display:none">
+          <div style="text-align:center">
+            <div class="emoji" id="hudEmoji">😐</div>
+            <div class="label" id="hudLabel">NETRAL</div>
+          </div>
+          <div>
+            <div class="bar-outer"><div class="bar-inner" id="hudBar"></div></div>
+            <div class="label">EKSPRESI</div>
+          </div>
+          <div class="pct" id="hudPct">0%</div>
+        </div>
+      </div>
+      <div class="cam-controls">
+        <button class="btn ghost" id="btnFlip">🔄 Kamera</button>
+        <button class="btn big" id="btnShoot">📸 JEPRET!</button>
+        <button class="btn blue" id="btnReset">🗑️ Reset</button>
+      </div>
+    </div>
+
+    <!-- ============ LAYOUT ============ -->
+    <div class="panel" id="panel-layout">
+      <div class="layout-panel">
+        <div class="sheet" id="sheet">
+          <div class="sheet-head">
+            <span class="play">▶</span>
+            <h2>HARKAT</h2>
+            <span style="color:var(--maroon)">✳</span>
+          </div>
+          <div class="sheet-body">
+            <div class="sheet-col" id="colA">
+              <div class="box empty" data-i="0"><div class="n">1</div><div class="x">✕</div><div class="ph">✦</div></div>
+              <div class="box empty" data-i="2"><div class="n">3</div><div class="x">✕</div><div class="ph">✦</div></div>
+              <div class="box empty" data-i="4"><div class="n">5</div><div class="x">✕</div><div class="ph">✦</div></div>
+              <div class="box empty" data-i="6"><div class="n">7</div><div class="x">✕</div><div class="ph">✦</div></div>
+            </div>
+            <div class="sheet-col" id="colB">
+              <div class="box empty" data-i="1"><div class="n">2</div><div class="x">✕</div><div class="ph">✦</div></div>
+              <div class="box empty" data-i="3"><div class="n">4</div><div class="x">✕</div><div class="ph">✦</div></div>
+              <div class="box empty" data-i="5"><div class="n">6</div><div class="x">✕</div><div class="ph">✦</div></div>
+              <div class="box empty" data-i="7"><div class="n">8</div><div class="x">✕</div><div class="ph">✦</div></div>
+            </div>
+          </div>
+          <div class="sheet-foot">
+            <span class="sains">SAINS DATA</span>
+            <span class="rings">⭯ ⭮</span>
+            <span class="dovey">Dovey</span>
+          </div>
+        </div>
+        <div class="empty-state" id="emptyState">Belum ada foto — jepret dulu di tab Kamera 📸</div>
+        <div class="layout-actions">
+          <button class="btn blue" id="btnGoCam">📸 Ambil Foto</button>
+          <button class="btn gold big" id="btnPrint">🖨️ CETAK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+// ============ ASSETS ============
+const MODEL_URL = 'assets/model/face_landmarker.task';
+
+// ============ STATE ============
+let photos = [];          // array of dataURL, up to 8
+let faceMode = false;     // mediapipe ready?
+let stream = null;
+let facing = 'user';      // 'user' | 'environment'
+let landmarker = null;
+let lastFaceBox = null;   // {x,y,w,h} in normalized coords
+let frameT = null;
+
+// ============ DOM ============
+const $ = (id) => document.getElementById(id);
+const video = $('video'), overlay = $('overlay'), ctxOver = overlay.getContext('2d');
+const hud = $('hud'), hudEmoji = $('hudEmoji'), hudBar = $('hudBar'), hudPct = $('hudPct'), hudLabel = $('hudLabel');
+const countBox = $('countBox'), scanHint = $('scanHint');
+
+// ============ MEDIAPIPE FACE LANDMARKER (local assets) ============
+async function initVision() {
+  try {
+    const { FilesetResolver, FaceLandmarker } = await import('./assets/wasm/vision_bundle.mjs');
+    const vision = await FilesetResolver.forVisionTasks('./assets/wasm/');
+    landmarker = await FaceLandmarker.createFromOptions(vision, {
+      baseOptions: { modelAssetPath: MODEL_URL, delegate: 'GPU' },
+      runningMode: 'VIDEO',
+      numFaces: 1,
+      outputFaceBlendshapes: true
+    });
+    faceMode = true;
+    console.log('FaceLandmarker ready');
+    setHint('💡 Posisikan wajah di tengah');
+  } catch (e) {
+    console.warn('GPU delegate failed, retry CPU:', e);
+    try {
+      const { FilesetResolver, FaceLandmarker } = await import('./assets/wasm/vision_bundle.mjs');
+      const vision = await FilesetResolver.forVisionTasks('./assets/wasm/');
+      landmarker = await FaceLandmarker.createFromOptions(vision, {
+        baseOptions: { modelAssetPath: MODEL_URL, delegate: 'CPU' },
+        runningMode: 'VIDEO',
+        numFaces: 1,
+        outputFaceBlendshapes: true
+      });
+      faceMode = true;
+      console.log('FaceLandmarker ready (CPU)');
+      setHint('💡 Posisikan wajah di tengah');
+    } catch (e2) {
+      console.error('MediaPipe init failed:', e2);
+      setHint('⚠️ Face-track gagal —&nbsp;tetap bisa jepret');
+    }
+  }
+}
+
+function setHint(html) {
+  scanHint.innerHTML = html;
+}
+
+// ============ CAMERA ============
+async function startCamera() {
+  stopCamera();
+  const facingMode = facing === 'environment' ? { exact: 'environment' } : 'user';
+  const opts = {
+    video: { facingMode, width: { ideal: 960 }, height: { ideal: 1280 } },
+    audio: false
+  };
+  try {
+    stream = await navigator.mediaDevices.getUserMedia(opts);
+  } catch (e) {
+    // fallback: any camera
+    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+  }
+  video.srcObject = stream;
+  await video.play().catch(() => {});
+  // size overlay to stream
+  video.addEventListener('loadedmetadata', () => {
+    overlay.width = video.videoWidth || 480;
+    overlay.height = video.videoHeight || 640;
+  }, { once: true });
+  loop();
+}
+
+function stopCamera() {
+  if (stream) {
+    stream.getTracks().forEach(t => t.stop());
+    stream = null;
+  }
+  if (frameT) { cancelAnimationFrame(frameT); frameT = null; }
+  ctxOver.clearRect(0, 0, overlay.width, overlay.height);
+}
+
+// ============ OVERLAY LOOP ============
+function loop() {
+  if (!faceMode || !landmarker) {
+    return requestAnimationFrame(loop);
+  }
+  if (video.readyState >= 2 && video.videoWidth) {
+    const w = overlay.width = video.videoWidth;
+    const h = overlay.height = video.videoHeight;
+    ctxOver.clearRect(0, 0, w, h);
+    const now = performance.now();
+    let result;
+    try {
+      result = landmarker.detectForVideo(video, now);
+    } catch (e) { /* skip frame */ }
+
+    if (result && result.faceLandmarks && result.faceLandmarks.length) {
+      const lm = result.faceLandmarks[0];
+      hud.style.display = 'flex';
+      setHint('');
+      drawMesh(lm, w, h);
+      updateHud(lm, result.faceBlendshapes);
+    } else {
+      hud.style.display = 'none';
+      if (!scanHint.innerHTML) setHint('🔍 Cari wajah &hellip;');
+    }
+  }
+  frameT = requestAnimationFrame(loop);
+}
+
+// FACEMESH_TESSELATION (subset for outline) — 468->478 indexes
+const FACE_OVAL = [
+  10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,
+  377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109
+];
+const FOREHEAD = [10, 109, 67, 103, 54, 21, 162, 127, 234, 93, 132, 58, 172, 136, 150, 149, 176, 148, 152];
+const R_EYE = [33,7,163,144,145,153,154,155,133];
+const L_EYE = [362,382,381,380,374,373,390,249,263];
+const BROW_L = [70,63,105,66,107];
+const BROW_R = [336,296,334,293,300];
+const NOSE = [1,2,98,327,326,168,6,197,195];
+const LIPS = [61,185,40,39,37,0,267,269,270,409,291,375,321,405,314,17,84,181,91,146];
+
+function drawMesh(lm, w, h) {
+  const s = Math.min(w, h) / 2; // scale factor for line width (relative)
+  ctxOver.lineJoin = 'round';
+  ctxOver.lineCap = 'round';
+
+  // face oval (garis wajah) — the key "garis-garis di muka"
+  curve(FACE_OVAL, lm, w, h, 'rgba(224,166,63,0.95)', Math.max(2, s * 0.045));
+  // soft second pass for glow
+  curve(FACE_OVAL, lm, w, h, 'rgba(107,31,58,0.5)', Math.max(4, s * 0.09));
+
+  // brows
+  curve(BROW_L, lm, w, h, 'rgba(107,31,58,0.75)', Math.max(1.6, s * 0.03));
+  curve(BROW_R, lm, w, h, 'rgba(107,31,58,0.75)', Math.max(1.6, s * 0.03));
+  // eyes
+  curve(R_EYE, lm, w, h, '#6b1f3a', Math.max(1.8, s * 0.03));
+  curve(L_EYE, lm, w, h, '#6b1f3a', Math.max(1.8, s * 0.03));
+  // nose bridge
+  line([168,6,197,195], lm, w, h, 'rgba(107,31,58,0.55)', Math.max(1.4, s * 0.025));
+  // lips
+  curve(LIPS, lm, w, h, 'rgba(160,40,60,0.85)', Math.max(1.8, s * 0.03));
+}
+
+function P(lm, i, w, h) {
+  const p = lm[i];
+  return [p.x * w, p.y * h];
+}
+function line(ids, lm, w, h, color, lw) {
+  ctxOver.beginPath();
+  const [x0, y0] = P(lm, ids[0], w, h);
+  ctxOver.moveTo(x0, y0);
+  for (let i = 1; i < ids.length; i++) {
+    const [x, y] = P(lm, ids[i], w, h);
+    ctxOver.lineTo(x, y);
+  }
+  ctxOver.strokeStyle = color;
+  ctxOver.lineWidth = lw;
+  ctxOver.stroke();
+}
+function curve(ids, lm, w, h, color, lw) {
+  ctxOver.beginPath();
+  for (let i = 0; i < ids.length; i++) {
+    const [x, y] = P(lm, ids[i], w, h);
+    if (i === 0) ctxOver.moveTo(x, y);
+    else ctxOver.lineTo(x, y);
+  }
+  ctxOver.closePath();
+  ctxOver.strokeStyle = color;
+  ctxOver.lineWidth = lw;
+  ctxOver.stroke();
+}
+
+// ============ EMOJI + PERSEN (live, cam only) ============
+function blendshape(bs, name) {
+  if (!bs || !bs.length || !bs[0].categories) return 0;
+  const c = bs[0].categories.find(x => x.categoryName === name);
+  return c ? c.score : 0;
+}
+
+function updateHud(lm, bs) {
+  const smile = Math.max(blendshape(bs, 'mouthSmileLeft'), blendshape(bs, 'mouthSmileRight'));
+  const jaw = blendshape(bs, 'jawOpen');
+  const brow = Math.max(blendshape(bs, 'browInnerUp'), blendshape(bs, 'browOuterUpLeft') + blendshape(bs, 'browOuterUpRight'));
+  const eyeBlinkR = blendshape(bs, 'eyeBlinkRight');
+  const eyeBlinkL = blendshape(bs, 'eyeBlinkLeft');
+  const mouthFrown = Math.max(blendshape(bs, 'mouthFrownLeft'), blendshape(bs, 'mouthFrownRight'));
+  const eyesWide = Math.max(blendshape(bs, 'eyeWideLeft'), blendshape(bs, 'eyeWideRight'));
+  const tongue = blendshape(bs, 'tongueOut');
+
+  let emoji, label, pct;
+  if (smile > 0.45) { emoji = '😄'; label = 'SENYUM'; pct = Math.round(smile * 100); }
+  else if (tongue > 0.35) { emoji = '😜'; label = 'CILUK BA'; pct = Math.round(tongue * 100); }
+  else if (jaw > 0.30) { emoji = '😮'; label = 'TERKEJUT'; pct = Math.round(Math.min(1, jaw + smile) * 100); }
+  else if (eyesWide > 0.6 && brow > 0.5) { emoji = '😳'; label = 'KAGET'; pct = Math.round(Math.min(1, eyesWide + brow) * 100); }
+  else if (brow > 0.35) { emoji = '🤨'; label = 'HERAN'; pct = Math.round(Math.min(1, brow + smile) * 100); }
+  else if ((eyeBlinkR > 0.7) !== (eyeBlinkL > 0.7)) { emoji = '😉'; label = 'KEDIP'; pct = 92; }
+  else if (mouthFrown > 0.25) { emoji = '😒'; label = 'CEMBERUT'; pct = Math.round(mouthFrown * 100); }
+  else if (smile > 0.15) { emoji = '🙂'; label = 'TENANG'; pct = Math.round(smile * 90); }
+  else { emoji = '😶'; label = 'POLOS'; pct = Math.max(25, Math.round((1 - jaw) * 40)); }
+
+  hudEmoji.textContent = emoji;
+  hudLabel.textContent = label;
+  hudPct.textContent = pct + '%';
+  hudBar.style.width = Math.min(100, pct) + '%';
+}
+
+// ============ CAPTURE ============
+function capture() {
+  if (!stream) return;
+  // Clean frame: draw video WITHOUT overlay (garis tidak ikut ke foto)
+  const w = video.videoWidth, h = video.videoHeight;
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const cx = c.getContext('2d');
+  // mirror to match preview
+  cx.translate(w, 0); cx.scale(-1, 1);
+  cx.drawImage(video, 0, 0, w, h);
+  const dataURL = c.toDataURL('image/jpeg', 0.92);
+
+  if (photos.length >= 8) photos = [];
+  photos.push(dataURL);
+  renderLayout();
+  moveToLayout();
+}
+
+// ============ LAYOUT RENDER ============
+function renderLayout() {
+  // Isi 8 kotak: kalau cuma 1 foto -> semua kotak foto itu; kalau >1 -> urut, ulang sampai 8
+  const boxes = document.querySelectorAll('.box');
+  let fill = [];
+  if (photos.length === 0) {
+    fill = [];
+  } else if (photos.length === 1) {
+    fill = Array(8).fill(photos[0]);
+  } else {
+    for (let i = 0; i < 8; i++) fill.push(photos[i % photos.length]);
+  }
+  boxes.forEach(box => {
+    const i = +box.dataset.i;
+    const img = box.querySelector('img');
+    const ph = box.querySelector('.ph');
+    const xBtn = box.querySelector('.x');
+    if (fill[i]) {
+      if (!img) {
+        const im = document.createElement('img');
+        im.alt = 'foto';
+        box.appendChild(im);
+      }
+      box.querySelector('img').src = fill[i];
+      if (ph) ph.style.display = 'none';
+      box.classList.remove('empty');
+      xBtn.style.display = 'flex';
+    } else {
+      if (img) img.remove();
+      if (ph) ph.style.display = 'flex';
+      box.classList.add('empty');
+      xBtn.style.display = 'none';
+    }
+  });
+  countBox.textContent = photos.length;
+  $('emptyState').style.display = photos.length ? 'none' : '';
+}
+
+// remove one photo (index in original list by deleting last slot of that photo is tricky;
+// simplest: x on box i removes the actual photo that maps to slot i)
+function removeAtSlot(slot) {
+  if (photos.length === 0) return;
+  if (photos.length === 1) {
+    // semua kotak foto yang sama -> hapus foto
+    photos = [];
+  } else {
+    const idx = slot % photos.length;
+    photos.splice(idx, 1);
+  }
+  renderLayout();
+}
+
+// ============ NAV ============
+function moveToLayout() {
+  setActive('layout');
+}
+function setActive(panel) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.panel === panel));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + panel));
+}
+
+// ============ EVENTS ============
+$('tabCam').addEventListener('click', () => setActive('cam'));
+$('tabLayout').addEventListener('click', () => setActive('layout'));
+$('btnGoCam').addEventListener('click', () => setActive('cam'));
+$('btnShoot').addEventListener('click', capture);
+$('btnFlip').addEventListener('click', async () => {
+  facing = facing === 'user' ? 'environment' : 'user';
+  await startCamera();
+});
+$('btnReset').addEventListener('click', () => {
+  photos = [];
+  renderLayout();
+});
+$('btnPrint').addEventListener('click', () => window.print());
+document.querySelectorAll('.box .x').forEach(x => {
+  x.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const box = x.closest('.box');
+    removeAtSlot(+box.dataset.i);
+  });
+});
+
+// ESC key in print dialogs etc.
+window.addEventListener('beforeprint', () => { /* nothing special needed */ });
+
+// ============ INIT ============
+renderLayout();
+initVision();
+startCamera();
+</script>
+</body>
+</html>
