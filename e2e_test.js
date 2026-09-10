@@ -53,13 +53,19 @@ const PORT = process.env.PORT || 8123;
   console.log('SHOT', JSON.stringify(shot));
 
   // 4. Done -> ensure gallery (POST /api/session) + sheet (POST /api/sheet) + QR svg rendered
+  // (jalur user: buka tab CETAK langsung, bukan tombol Done — QR harus muncul juga)
   const seenPosts = []; const seenSheets = [];
   page.on('request', req => {
     if (req.method() !== 'POST') return;
     if (req.url().includes('/api/session')) seenPosts.push(req.postData());
     if (req.url().includes('/api/sheet')) seenSheets.push(req.postData());
   });
-  await page.click('#btnDone');
+  await page.click('#btnReset');
+  await new Promise(r => setTimeout(r, 300));
+  await page.click('#tabCam');
+  await page.click('#btnShoot');
+  await new Promise(r => setTimeout(r, 400));
+  await page.click('#tabLayout');
   await new Promise(r => setTimeout(r, 2200));
   const qr = await page.evaluate(() => ({
     qrBoxHidden: document.querySelector('#qrBox').hidden,
@@ -97,11 +103,14 @@ const PORT = process.env.PORT || 8123;
   await page.emulateMediaType('screen');
   console.log('PRINT', JSON.stringify(printStyles));
 
-  // 6. emoji (bukan custom SVG face) di badge + caption, downloadSheet masih jalan
+  // 6. emoji random (bukan custom SVG face) di badge + caption, downloadSheet masih jalan
   const faceCheck = await page.evaluate(() => {
     const emojiRe = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}]/u;
+    const badges = [...document.querySelectorAll('.box .e')].map(e => e.textContent).filter(Boolean);
     return {
-      badgeEmoji: [...document.querySelectorAll('.box .e')].some(e => emojiRe.test(e.textContent)),
+      badgeEmoji: badges.some(e => emojiRe.test(e)),
+      badgeUnique: new Set(badges).size,
+      badgeCount: badges.length,
       badgeSvgCount: document.querySelectorAll('.box .e svg').length,
       capFaceEmoji: [...document.querySelectorAll('.cap-line .cap-face')].some(e => emojiRe.test(e.textContent))
     };

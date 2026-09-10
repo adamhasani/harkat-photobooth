@@ -525,7 +525,8 @@ function renderHud(faces, blendshapes) {
 // test hook (harmless)
 window.__h = { renderHud, emotion, capture, landmarker: () => landmarker, downloadSheet };
 
-// funny caption per photo (dari % emoji hasil deteksi wajah)
+// funny caption + emoji per photo (dari % emoji hasil deteksi wajah)
+const FUN_EMOJI = ['🥳','😜','🤪','😍','🤩','😎','🥸','🤡','👻','🥴','😺','🤣','🦄','🍭','🎈','💃'];
 const CAPS_HIGH = [
   'wow {p}% kamu tersenyum — fix sih ini calon penghuni surga 😇',
   '{p}% senyummu semanis gula 🍬',
@@ -550,6 +551,8 @@ function randCap(pct, label) {
   return t.replace('{p}', pct).replace('{l}', label || '');
 }
 
+function randEmoji() { return FUN_EMOJI[Math.floor(Math.random() * FUN_EMOJI.length)]; }
+
 function capture() {
   if (!stream) return;
   if (photos.length >= 8) {
@@ -566,11 +569,11 @@ function capture() {
   cx.drawImage(video, 0, 0, w, h);
   const dataURL = c.toDataURL('image/jpeg', 0.92);
 
-  // emoji + persen dari wajah yang terdeteksi (fallback senyum biar tetap konsisten lucu, bukan emoji acak)
+  // emoji random lucu per foto + persen dari deteksi wajah (fallback acak biar tiap foto beda)
   let e = null;
   if (lastFaces.length && lastBs && lastBs[0]) e = emotion(lastBs[0]);
   const pct = e ? e.pct : 50 + Math.floor(Math.random() * 50);
-  const emoji = e ? e.emoji : '😄';
+  const emoji = randEmoji();
   const cap = randCap(pct, e ? e.label : null);
 
   photos.push({ url: dataURL, pct, emoji, cap });
@@ -822,7 +825,7 @@ function setActive(panel) {
 
 // ============ EVENTS ============
 $('tabCam').addEventListener('click', () => setActive('cam'));
-$('tabLayout').addEventListener('click', () => setActive('layout'));
+$('tabLayout').addEventListener('click', () => { setActive('layout'); if (photos.length) ensureGallery(); });
 $('btnGoCam').addEventListener('click', () => setActive('cam'));
 $('btnShoot').addEventListener('click', capture);
 $('btnDone').addEventListener('click', () => { ensureGallery(); setActive('layout'); });
