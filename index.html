@@ -551,7 +551,11 @@ function randCap(pct, label) {
   return t.replace('{p}', pct).replace('{l}', label || '');
 }
 
-function randEmoji() { return FUN_EMOJI[Math.floor(Math.random() * FUN_EMOJI.length)]; }
+function randEmoji(exclude) {
+  // anti-repeat: foto berikutnya ga boleh emoji sama dgn foto terakhir
+  const pool = exclude && FUN_EMOJI.includes(exclude) ? FUN_EMOJI.filter(e => e !== exclude) : FUN_EMOJI;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
 
 function capture() {
   if (!stream) return;
@@ -573,7 +577,7 @@ function capture() {
   let e = null;
   if (lastFaces.length && lastBs && lastBs[0]) e = emotion(lastBs[0]);
   const pct = e ? e.pct : 50 + Math.floor(Math.random() * 50);
-  const emoji = randEmoji();
+  const emoji = randEmoji(photos.length ? photos[photos.length - 1].emoji : null);
   const cap = randCap(pct, e ? e.label : null);
 
   photos.push({ url: dataURL, pct, emoji, cap });

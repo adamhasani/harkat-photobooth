@@ -104,6 +104,12 @@ const PORT = process.env.PORT || 8123;
   console.log('PRINT', JSON.stringify(printStyles));
 
   // 6. emoji random (bukan custom SVG face) di badge + caption, downloadSheet masih jalan
+  // buat 4 foto kasek biar tiap emoji unik (anti-repeat) ter-verifikasi
+  await page.click('#tabCam');
+  await new Promise(r => setTimeout(r, 300));
+  await page.click('#btnReset');
+  await new Promise(r => setTimeout(r, 300));
+  for (let k = 0; k < 4; k++) { await page.click('#btnShoot'); await new Promise(r => setTimeout(r, 150)); }
   const faceCheck = await page.evaluate(() => {
     const emojiRe = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}]/u;
     const badges = [...document.querySelectorAll('.box .e')].map(e => e.textContent).filter(Boolean);
