@@ -745,72 +745,108 @@ function b64ToImg(src) {
 }
 // renderSheet(true) -> dataURL PNG (upload); renderSheet() -> Blob (download)
 async function renderSheet(asDataUrl) {
-  const W = 1080, ROWS = 4, COLS = 2, PAD = 24, GAP = 14;
-  const card = Math.round((W - PAD * 2 - GAP) / COLS);       // ~509
-  const capH = 58;
-  const QR_SZ = 150;
-  const H = PAD * 2 + ROWS * card + (ROWS - 1) * GAP + capH + 90 + QR_SZ + 78;
+  // === clone DOM .sheet (preview CETAK) biar hasil download == yang kelihatan di web ===
+  const W = 1080, ROWS = 4, COLS = 2, PAD = 24, GAP = 10;
+  const card = Math.floor((W - PAD * 2 - GAP) / COLS);       // 511
+  const HEAD_H = 88, FOOT_H = 58;
+  const QR_SZ = 150, qrPad = 16;
+  // strip caption: 1 baris per foto unik
+  const seenC = new Set(); const uniq = photos.filter(p => { if (seenC.has(p.url)) return false; seenC.add(p.url); return true; });
+  const nCap = Math.min(uniq.length, 8);
+  const lineH = 44, capPadY = 16;
+  const capH = nCap ? nCap * lineH + capPadY * 2 : 0;
+  const yBody = PAD + HEAD_H + 10;
+  const qrH = QR_SZ + qrPad * 2;
+  const H = yBody + ROWS * card + (ROWS - 1) * GAP + 14 + FOOT_H + 16 + capH + 18 + qrH + PAD;
   const cv = document.createElement('canvas');
   cv.width = W; cv.height = H;
   const ctx = cv.getContext('2d');
   ctx.fillStyle = '#f5eccf'; ctx.fillRect(0, 0, W, H);
   ctx.strokeStyle = '#6b1f3a'; ctx.lineWidth = 8; ctx.strokeRect(6, 6, W - 12, H - 12);
 
-  // header
-  ctx.fillStyle = '#6b1f3a'; ctx.textAlign = 'center';
-  ctx.font = '700 64px Pacifico, Brush Script MT, cursive';
-  ctx.fillText('UKM EXPO UHN', W / 2, 78);
-  ctx.font = '600 22px system-ui, sans-serif'; ctx.fillStyle = '#34221e';
-  ctx.fillText('★ PHOTO BOOTH ★', W / 2, 108);
+  // === sheet-head: ▶ UKM EXPO UHN ✳ ===
+  ctx.save(); ctx.translate(W / 2, 62); ctx.rotate(-0.035);
+  ctx.fillStyle = '#6b1f3a'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = '700 66px "Luckiest Guy", "Arial Black", cursive';
+  ctx.shadowColor = 'rgba(201,162,39,0.4)'; ctx.shadowOffsetX = 4; ctx.shadowOffsetY = 4;
+  ctx.fillText('UKM EXPO UHN', 0, 0);
+  ctx.restore();
+  ctx.shadowColor = 'transparent'; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+  ctx.fillStyle = '#6b1f3a'; ctx.font = '48px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.save(); ctx.translate(20, 62); ctx.rotate(-0.14); ctx.fillText('▶', 0, 0); ctx.restore();
+  ctx.save(); ctx.translate(W - 20, 62); ctx.rotate(0); ctx.fillText('✳', 0, 0); ctx.restore();
 
-  // photos cover-crop + emoji badge + pct — repeat sama kayak preview DOM (1 foto -> 8 kotak)
+  // === sheet-body: 8 box (rounded + cover + nomor gold kiri-atas + emoji kanan-atas) ===
   const imgs = await Promise.all(photos.map(p => b64ToImg(p.url)));
   let fill = [];
   if (photos.length === 1) fill = Array(8).fill(0);
   else for (let i = 0; i < 8; i++) fill.push(i % photos.length);
-  const y0 = 130;
   for (let i = 0; i < ROWS * COLS; i++) {
-    const src = fill[i];
-    if (src === undefined) break;
-    const r = Math.floor(i / COLS), cC = i % COLS;
-    const x = PAD + cC * (card + GAP), y = y0 + r * (card + GAP);
+    const src = fill[i]; if (src === undefined) break;
+    const r = Math.floor(i / COLS), c = i % COLS;
+    const x = PAD + c * (card + GAP), y = yBody + r * (card + GAP);
+    // foto rounded (radius 26 + border 7 maroon-deep) — kayak .box
+    ctx.save();
+    roundRect(ctx, x, y, card, card, 26); ctx.clip();
+    ctx.fillStyle = '#fff'; ctx.fillRect(x, y, card, card);
     drawCover(ctx, imgs[src], x, y, card, card);
-    ctx.strokeStyle = '#6b1f3a'; ctx.lineWidth = 4;
-    ctx.strokeRect(x + 2, y + 2, card - 4, card - 4);
-    // badge kiri-atas: circle + emoji
-    const bS = 74;
-    ctx.fillStyle = '#fff'; ctx.strokeStyle = '#6b1f3a';
-    ctx.beginPath(); ctx.arc(x + 10 + bS / 2, y + 10 + bS / 2, bS / 2 - 3, 0, Math.PI * 2); ctx.fill();
-    ctx.lineWidth = 4; ctx.stroke();
-    ctx.font = '38px system-ui'; ctx.textAlign = 'center';
-    ctx.fillText(photos[src].emoji || '😄', x + 10 + bS / 2, y + 10 + bS / 2 + 14);
-    ctx.fillStyle = '#fff'; ctx.strokeStyle = '#6b1f3a';
-    ctx.font = '700 24px system-ui'; ctx.textAlign = 'right';
-    const p = photos[src].pct;
-    roundRect(ctx, x + card - 78, y + 12, 66, 34, 8); ctx.fill();
-    ctx.fillStyle = '#6b1f3a'; ctx.fillText(p + '%', x + card - 22, y + 37);
+    ctx.restore();
+    ctx.strokeStyle = '#4a1024'; ctx.lineWidth = 7;
+    roundRect(ctx, x, y, card, card, 26); ctx.stroke();
+    // nomor gold (1..8) kiri-atas — kayak .n
+    const nb = 58;
+    ctx.fillStyle = '#c9a227';
+    roundRect(ctx, x - 16, y - 16, nb, nb, 14); ctx.fill();
+    ctx.strokeStyle = '#4a1024'; ctx.lineWidth = 5; ctx.stroke();
+    ctx.fillStyle = '#4a1024'; ctx.font = '700 30px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(i + 1, x - 16 + nb / 2, y - 16 + nb / 2 + 1);
+    // emoji kanan-atas — kayak .e (top:4 right:4)
+    ctx.font = '40px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(photos[src].emoji || '😄', x + card - 40, y + 40);
   }
 
-  // caption lucu (unique) — wrap biar ga ketimpa QR, maxW = kiri QR
-  // QR_SZ declared di atas renderSheet (konstanta H pakai); pakai ulang supaya ga redeclare
-  const capMaxW = W - PAD - QR_SZ - 40;
-  const qrX = W - PAD - QR_SZ, qrY = H - PAD - QR_SZ - 58;
-  const seen = new Set(); let capY = y0 + ROWS * (card + GAP) - GAP + capH - 40;
-  ctx.textAlign = 'left';
-  ctx.font = 'italic 22px Pacifico, cursive'; ctx.fillStyle = '#34221e';
-  for (const p of photos) {
-    if (seen.has(p.url)) continue; seen.add(p.url);
-    if (capY > qrY - 34) break;
-    let t = '✧ ' + p.cap;
-    if (ctx.measureText(t).width > capMaxW) {
-      while (t.length > 3 && ctx.measureText(t + '…').width > capMaxW) t = t.slice(0, -1);
-      t += '…';
+  // === sheet-foot: SAINS DATA · ⭯ ⭮ · Dovey ===
+  const footY = yBody + ROWS * card + (ROWS - 1) * GAP + 14;
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#6b1f3a'; ctx.textAlign = 'left';
+  ctx.font = '700 40px "Luckiest Guy", "Arial Black", cursive';
+  ctx.save(); ctx.translate(PAD + 2, footY + FOOT_H / 2); ctx.rotate(0.026); ctx.fillText('SAINS DATA', 0, 0); ctx.restore();
+  ctx.font = '34px system-ui'; ctx.textAlign = 'center'; ctx.fillText('⭯ ⭮', W / 2, footY + FOOT_H / 2 + 2);
+  ctx.fillStyle = '#34221e'; ctx.textAlign = 'right';
+  ctx.font = '700 42px Pacifico, "Brush Script MT", cursive';
+  ctx.save(); ctx.translate(W - PAD - 2, footY + FOOT_H / 2); ctx.rotate(-0.052); ctx.fillText('Dovey', 0, 0); ctx.restore();
+
+  // === caption strip (kayak .caps) — semua foto unik, satu baris utuh ===
+  if (nCap) {
+    const stripX = 20, stripW = W - 40;
+    const capY0 = footY + FOOT_H + 16;
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    roundRect(ctx, stripX, capY0, stripW, capH, 15); ctx.fill();
+    ctx.fillStyle = '#c9a227'; ctx.fillRect(stripX, capY0, 7, capH);          // border-left gold
+    ctx.font = '600 30px system-ui'; ctx.fillStyle = '#34221e'; ctx.textAlign = 'left';
+    let ty = capY0 + capPadY;
+    for (const p of uniq) {
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.font = '30px system-ui';
+      ctx.fillText(p.emoji || '😄', stripX + 26, ty + lineH / 2);
+      ctx.font = '600 30px system-ui';
+      let t = p.cap;
+      const maxW = stripW - 26 - 50;
+      if (ctx.measureText(t).width > maxW) { while (t.length > 4 && ctx.measureText(t + '…').width > maxW) t = t.slice(0, -1); t += '…'; }
+      ctx.fillText(t, stripX + 26 + 50, ty + lineH / 2);
+      ty += lineH;
     }
-    ctx.fillText(t, PAD + 8, capY); capY += 30;
   }
 
-  // QR di kanan-bawah (mirror DOM preview) — module manual, ga pakai SVG
+  // === QR box (kayak .qr-box): dashed border + QR 150 + teks ===
   if (galleryUrl) {
+    const boxY = footY + FOOT_H + 16 + capH + 18;
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    roundRect(ctx, 20, boxY, W - 40, qrH, 14); ctx.fill();
+    ctx.strokeStyle = '#4a1024'; ctx.lineWidth = 5; ctx.setLineDash([14, 9]);
+    roundRect(ctx, 20, boxY, W - 40, qrH, 14); ctx.stroke(); ctx.setLineDash([]);
+    // QR putih + modul
+    const qrX = 20 + qrPad, qrY = boxY + qrPad;
     const qr = qrcode(0, 'M');
     qr.addData(galleryUrl.indexOf('://') === -1 ? location.origin + galleryUrl : galleryUrl);
     qr.make();
@@ -821,8 +857,16 @@ async function renderSheet(asDataUrl) {
     for (let r2 = 0; r2 < n; r2++)
       for (let c2 = 0; c2 < n; c2++)
         if (qr.isDark(r2, c2)) ctx.fillRect(qrX + off + (c2 + 2) * cell, qrY + off + (r2 + 2) * cell, cell, cell);
-    ctx.fillStyle = '#34221e'; ctx.font = '600 26px system-ui'; ctx.textAlign = 'center';
-    ctx.fillText('Scan buat download fotomu', qrX + QR_SZ / 2, qrY + QR_SZ + 32);
+    // teks kanan QR
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#4a1024'; ctx.font = '700 30px system-ui';
+    const tx = qrX + QR_SZ + 22, ty2 = boxY + qrH / 2 - 18;
+    let t = 'Scan untuk download';
+    ctx.fillText(t, tx, ty2);
+    t = 'foto kamu.';
+    ctx.fillText(t, tx, ty2 + 38);
+    ctx.fillStyle = '#3f5a7a'; ctx.font = '600 22px system-ui';
+    ctx.fillText('⬇️ PNG (QR ke scan = langsung unduh)', tx, ty2 + 78);
   }
   if (asDataUrl) return cv.toDataURL('image/png');
   return await new Promise(r => cv.toBlob(r, 'image/png'));
