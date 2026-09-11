@@ -50,6 +50,11 @@ function serveStatic(res, urlPath) {
     return json(res, 403, { error: 'forbidden' });
   }
   if (path.extname(file) === '') {
+    // direct html file check (e.g. /ai -> /ai.html)
+    const directHtml = file + '.html';
+    if (fs.existsSync(directHtml) && fs.statSync(directHtml).isFile()) {
+      return serveStatic(res, urlPath + '.html');
+    }
     // dir or extensionless -> index.html (SPA fallback)
     const idx = path.join(file, 'index.html');
     if (fs.existsSync(idx)) return serveStatic(res, urlPath.replace(/\/?$/, '/index.html'));
