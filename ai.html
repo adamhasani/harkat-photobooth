@@ -366,18 +366,18 @@
     <div class="hud-panel" id="hudPanel">
       <div class="hud-header">
         <div class="hud-title" id="hudTitle">🎂 PREDIKSI USIA & GENERASI</div>
-        <div class="hud-confidence" id="hudConfidence">AI Conf: 96%</div>
+        <div class="hud-confidence" id="hudConfidence">Live Tracking</div>
       </div>
       <div class="hud-body">
-        <div class="hud-avatar" id="hudAvatar">🎓</div>
+        <div class="hud-avatar" id="hudAvatar">🔍</div>
         <div class="hud-info">
-          <div class="hud-main-text" id="hudMainText">19 Tahun • Gen-Z Fresh</div>
-          <div class="hud-sub-text" id="hudSubText">Wajah baby face, aura maba siap berprestasi! ✨</div>
+          <div class="hud-main-text" id="hudMainText">Arahkan Wajah ke Kamera</div>
+          <div class="hud-sub-text" id="hudSubText">Posisikan wajah di tengah untuk mulai memindai ✨</div>
         </div>
       </div>
       <div class="hud-stats" id="hudStats">
-        <div class="stat-chip"><span id="stat1Label">Gender:</span> <b id="stat1">Perempuan 👧</b></div>
-        <div class="stat-chip"><span id="stat2Label">Ekspresi:</span> <b id="stat2">Senyum 92%</b></div>
+        <div class="stat-chip"><span id="stat1Label">Gender:</span> <b id="stat1">-</b></div>
+        <div class="stat-chip"><span id="stat2Label">Senyum:</span> <b id="stat2">-</b></div>
       </div>
     </div>
 
@@ -712,6 +712,11 @@ function renderOverlay() {
 
   if (!lastFaces.length) {
     if ($('scanHint')) $('scanHint').textContent = !landmarker ? 'Memuat AI Biometrik...' : '🔍 Cari Wajah...';
+    $('hudAvatar').textContent = '🔍';
+    $('hudMainText').textContent = 'Arahkan Wajah ke Kamera';
+    $('hudSubText').textContent = 'Posisikan wajah di tengah untuk mulai memindai ✨';
+    $('stat1').textContent = '-';
+    $('stat2').textContent = '-';
     $('hudPanel').style.opacity = '0.75';
     return;
   }
