@@ -638,10 +638,35 @@ function getFaceMetrics(landmarks, blendshapes) {
   const genderConfidence = Math.min(99, Math.round(55 + Math.abs(maleScore - 4.5) * 10));
   const genderLabel = isLikelyMale ? 'Laki-laki 👦' : 'Perempuan 👧';
 
-  // Responsive Differentiated Age Calculation
-  const maturityFactor = (noseRatio * 16) + (chinRatio * 14) + ((1 - eyeRatio) * 8) - (smileScore * 2.5);
+  // 3D Wrinkle & Dynamic Micro-Tension Detection (Glabellar lines, Crow's feet, Nasolabial depth)
+  let wrinkleTension = 0;
+  if (blendshapes && blendshapes.categories) {
+    const browDown = Math.max(
+      (blendshapes.categories.find(c => c.categoryName === 'browDownLeft') || {}).score || 0,
+      (blendshapes.categories.find(c => c.categoryName === 'browDownRight') || {}).score || 0
+    );
+    const eyeSquint = Math.max(
+      (blendshapes.categories.find(c => c.categoryName === 'eyeSquintLeft') || {}).score || 0,
+      (blendshapes.categories.find(c => c.categoryName === 'eyeSquintRight') || {}).score || 0
+    );
+    const cheekSquint = Math.max(
+      (blendshapes.categories.find(c => c.categoryName === 'cheekSquintLeft') || {}).score || 0,
+      (blendshapes.categories.find(c => c.categoryName === 'cheekSquintRight') || {}).score || 0
+    );
+    const noseSneer = Math.max(
+      (blendshapes.categories.find(c => c.categoryName === 'noseSneerLeft') || {}).score || 0,
+      (blendshapes.categories.find(c => c.categoryName === 'noseSneerRight') || {}).score || 0
+    );
+    wrinkleTension = (browDown * 0.35) + (eyeSquint * 0.3) + (cheekSquint * 0.2) + (noseSneer * 0.15);
+  }
+
+  // Wrinkle Level Label for Live HUD
+  const wrinkleLabel = wrinkleTension < 0.15 ? 'Halus & Kencang ✨' : wrinkleTension < 0.35 ? 'Garis Senyum Alami 😊' : 'Ekspresif & Matang 🧐';
+
+  // Responsive Differentiated Age Calculation (Combining Craniofacial Ratios + Wrinkle Tension)
+  const maturityFactor = (noseRatio * 15) + (chinRatio * 13) + ((1 - eyeRatio) * 8) + (wrinkleTension * 6) - (smileScore * 2);
   let estAge = Math.round(14 + maturityFactor);
-  estAge = Math.max(17, Math.min(27, estAge));
+  estAge = Math.max(17, Math.min(28, estAge));
   const gen = estAge <= 19 ? 'Gen-Z Fresh Maba 🎓' : estAge <= 23 ? 'Gen-Z Active 🌟' : 'Young Achiever 💼';
 
   // Unique Face Identity Fingerprint (Hash)
@@ -1092,11 +1117,12 @@ async function generateScanCard() {
   const finalGen = aiResult ? aiResult.generation : localM.gen;
   const finalBeauty = aiResult ? aiResult.beautyScore : localM.beautyScore;
   const finalSym = aiResult ? (aiResult.symmetryScore || 95) : localM.symmetryPct;
+  const finalWrinkle = aiResult ? (aiResult.wrinkleAnalysis || 'Kulit Halus & Kencang (Baby Face ✨)') : (localM.wrinkleLabel || 'Halus & Kencang ✨');
   const finalLookalike = aiResult ? aiResult.lookalike : localM.bestMatch.name;
   const finalMatchPct = aiResult ? (aiResult.lookalikeMatch || 94) : localM.matchPct;
   const finalComment = aiResult ? aiResult.comment : localM.bestMatch.comment;
 
-  const by = 810, bw = 800, bh = 490, bx = 140;
+  const by = 805, bw = 800, bh = 500, bx = 140;
   cCtx.fillStyle = '#ffffff';
   roundRect(cCtx, bx, by, bw, bh, 20); cCtx.fill();
   cCtx.strokeStyle = '#4a0000'; cCtx.lineWidth = 4;
@@ -1105,31 +1131,36 @@ async function generateScanCard() {
   // Content inside metrics box
   cCtx.textAlign = 'left';
   cCtx.fillStyle = '#681a34';
-  cCtx.font = '700 30px "Fredoka", sans-serif';
-  cCtx.fillText('📊 HASIL ANALISIS BIOMETRIK AI ASLI:', bx + 32, by + 46);
+  cCtx.font = '700 29px "Fredoka", sans-serif';
+  cCtx.fillText('📊 HASIL ANALISIS BIOMETRIK & KERUTAN AI:', bx + 32, by + 42);
 
   // Metric Rows
   cCtx.fillStyle = '#2d1d23';
-  cCtx.font = '700 24px "Fredoka", sans-serif';
-  cCtx.fillText('• Gender & Usia Terdeteksi:', bx + 32, by + 96);
+  cCtx.font = '700 23px "Fredoka", sans-serif';
+  cCtx.fillText('• Gender & Usia Terdeteksi:', bx + 32, by + 86);
   cCtx.fillStyle = '#681a34';
-  cCtx.fillText(`${finalGender} • ${finalAge} Thn (${finalGen})`, bx + 390, by + 96);
+  cCtx.fillText(`${finalGender} • ${finalAge} Thn (${finalGen})`, bx + 390, by + 86);
 
   cCtx.fillStyle = '#2d1d23';
-  cCtx.fillText('• Skor Pesona & Simetri:', bx + 32, by + 146);
+  cCtx.fillText('• Analisis Tekstur & Kerutan:', bx + 32, by + 130);
+  cCtx.fillStyle = '#8a5b00';
+  cCtx.fillText(`${finalWrinkle}`, bx + 390, by + 130);
+
+  cCtx.fillStyle = '#2d1d23';
+  cCtx.fillText('• Skor Pesona & Simetri:', bx + 32, by + 174);
   cCtx.fillStyle = '#0d6e5a';
-  cCtx.fillText(`${finalBeauty}% (Simetri ${finalSym}%)`, bx + 390, by + 146);
+  cCtx.fillText(`${finalBeauty}% (Simetri ${finalSym}%)`, bx + 390, by + 174);
 
   cCtx.fillStyle = '#2d1d23';
-  cCtx.fillText('• Kembaran Tokoh Terdekat:', bx + 32, by + 196);
+  cCtx.fillText('• Kembaran Tokoh Terdekat:', bx + 32, by + 218);
   cCtx.fillStyle = '#1e3a5f';
-  cCtx.fillText(`${finalMatchPct}% Mirip ${finalLookalike}`, bx + 390, by + 196);
+  cCtx.fillText(`${finalMatchPct}% Mirip ${finalLookalike}`, bx + 390, by + 218);
 
   // Quote Box
   cCtx.fillStyle = '#fbf8f0';
-  roundRect(cCtx, bx + 28, by + 235, bw - 56, 125, 12); cCtx.fill();
+  roundRect(cCtx, bx + 28, by + 252, bw - 56, 120, 12); cCtx.fill();
   cCtx.strokeStyle = '#cfa138'; cCtx.lineWidth = 2;
-  roundRect(cCtx, bx + 28, by + 235, bw - 56, 125, 12); cCtx.stroke();
+  roundRect(cCtx, bx + 28, by + 252, bw - 56, 120, 12); cCtx.stroke();
 
   cCtx.fillStyle = '#4a2832';
   cCtx.font = '600 21px "Fredoka", sans-serif';
