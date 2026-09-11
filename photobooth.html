@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔮</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📸</text></svg>">
 <title>UKM EXPO UHN — Photo Booth</title>
 <style>
   /* ============ FONTS (self-hosted) ============ */
@@ -195,49 +195,6 @@
     padding: 6px 14px; border-radius: 12px; border: 1.5px solid var(--gold);
     font-size: 14px; letter-spacing: 0.5px; opacity: 0; transition: opacity .3s; pointer-events: none; }
 
-  /* AI & Filter Controls (Accordion / Toggle Bar) */
-  .ai-bar-wrap {
-    display: flex; flex-direction: column; gap: 4px; padding: 2px 10px;
-    max-width: 520px; margin: 0 auto 4px; width: 100%;
-  }
-  .ai-toggle-row {
-    display: flex; gap: 8px; justify-content: center; align-items: center;
-  }
-  .btn-toggle {
-    font-family: 'Fredoka', sans-serif; font-size: 13px; font-weight: 700;
-    padding: 6px 14px; border-radius: 999px; border: 2px solid var(--maroon-deep);
-    background: #fbf5e6; color: var(--maroon-deep); cursor: pointer;
-    box-shadow: 0 2px 0 var(--maroon-deep); transition: all 0.15s;
-  }
-  .btn-toggle.open {
-    background: var(--maroon); color: #fff6e2;
-  }
-  .ai-popup-panel {
-    background: rgba(255, 250, 236, 0.95); border: 2px solid var(--maroon-deep);
-    border-radius: 14px; padding: 6px 8px; box-shadow: 0 3px 6px rgba(74,0,0,0.15);
-    animation: fadeIn 0.15s ease-out;
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-4px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .ai-scroll-row {
-    display: flex; gap: 6px; align-items: center;
-    overflow-x: auto; padding: 2px 2px; -webkit-overflow-scrolling: touch;
-  }
-  .ai-btn, .filter-btn {
-    font-family: 'Fredoka', sans-serif; font-size: 13px; font-weight: 700;
-    padding: 5px 12px; border-radius: 999px; border: 1.5px solid var(--maroon-deep);
-    background: #ffffff; color: var(--maroon-deep); cursor: pointer;
-    box-shadow: 0 1.5px 0 rgba(74,0,0,0.2); transition: all 0.1s;
-    white-space: nowrap; flex-shrink: 0; height: 32px;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .ai-btn.active, .filter-btn.active {
-    background: var(--maroon); color: #fff6e2; border-color: var(--maroon-deep);
-    box-shadow: 0 1.5px 0 var(--maroon-deep);
-  }
-
   .cam-controls { display: flex; gap: 8px; justify-content: center; padding: 4px 10px 4px; align-items: center; flex-wrap: wrap; }
   .cam-shoot-row { display: flex; justify-content: center; padding: 2px 10px 10px; }
   .btn {
@@ -374,7 +331,7 @@
     display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 4;
   }
   .box.empty .x { display: none; }
-  /* emoji lucu pojok kanan atas tiap foto — gelembung putih border emas */
+  /* emoji lucu pojok kanan atas tiap foto — gelembung putih border emas (sync DOM ↔ canvas) */
   .box .e {
     position: absolute; top: -4px; right: -4px; width: 30px; height: 30px; z-index: 4;
     display: inline-flex; align-items: center; justify-content: center; text-align: center;
@@ -471,14 +428,14 @@
   .qr-box .dl-link { display: none; font-size: 12px; word-break: break-all; color: var(--blue); margin-top: 3px; }
 
   /* caption lucu — strip di atas barcode */
-  .caps { margin: 4px 14px 6px; display: flex; flex-direction: column; gap: 5px;
+  .caps { margin: 4px 14px 6px; display: flex; flex-direction: column; gap: 4px;
     background: rgba(255,255,255,0.65); border-left: 3.5px solid var(--gold); border-radius: 0 10px 10px 0;
-    padding: 6px 10px; max-width: calc(100% - 28px); box-shadow: 0 1px 3px rgba(63,16,32,0.06); }
+    padding: 6px 10px; max-width: calc(100% - 28px); box-shadow: 0 1px 3px rgba(63,16,32,0.06); overflow: hidden; }
   .caps[hidden] { display: none !important; }
-  .cap-line { font-family: 'Fredoka', system-ui, sans-serif; font-weight: 600; color: var(--ink); font-size: clamp(10px, 2.5vw, 12.5px); line-height: 1.35;
-    display: flex; align-items: flex-start; gap: 6px; width: 100%; }
-  .cap-line .cap-face { flex: none; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 14px; line-height: 1; margin-top: 1px; }
-  .cap-line .cap-text { flex: 1; min-width: 0; word-break: break-word; overflow-wrap: anywhere; }
+  .cap-line { font-family: 'Fredoka', system-ui, sans-serif; font-weight: 600; color: var(--ink); font-size: clamp(10px, 2.5vw, 13px); line-height: 1.3;
+    display: flex; align-items: center; gap: 6px; width: 100%; min-width: 0; }
+  .cap-line .cap-face { flex: none; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 14px; line-height: 1; }
+  .cap-line .cap-text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .caps:empty { display: none; }
 
   .empty-state { text-align: center; margin-top: 10px; color: var(--maroon-deep); opacity: .8; font-size: 15px; letter-spacing: 1px; }
@@ -516,7 +473,7 @@
       <a href="/" class="btn-home">🏠 Menu</a>
       <div class="brand">
         <h1>UKM EXPO UHN</h1>
-        <small>AI VISION ✦</small>
+        <small>PHOTO BOOTH ✦</small>
       </div>
     </div>
     <div class="count-badge">📸 <b id="countBox">0</b>/8</div>
@@ -532,47 +489,9 @@
     <div class="panel active" id="panel-cam">
       <div class="cam-wrap" id="camWrap">
         <video id="video" autoplay playsinline muted></video>
-        <canvas id="arCanvas" style="position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:3;"></canvas>
         <div class="scan-hint" id="scanHint">SMILE! 😁</div>
         <div class="hud" id="hud" style="display:none"></div>
         <div class="toast" id="toast"></div>
-      </div>
-      <!-- AI & Filter Toggle Buttons (Popup Accordion) -->
-      <div class="ai-bar-wrap">
-        <div class="ai-toggle-row">
-          <button class="btn-toggle" id="btnToggleProp">👑 Emoji Props ▾</button>
-          <button class="btn-toggle" id="btnToggleFilter">🎨 Filter Kamera ▾</button>
-        </div>
-
-        <!-- Popup Menu Props -->
-        <div class="ai-popup-panel" id="panelProp" style="display:none;">
-          <div class="ai-scroll-row">
-            <button class="ai-btn active" data-prop="none">🚫 Off</button>
-            <button class="ai-btn" data-prop="👑">👑 Mahkota</button>
-            <button class="ai-btn" data-prop="🕶️">🕶️ Kacamata</button>
-            <button class="ai-btn" data-prop="🎀">🎀 Pita</button>
-            <button class="ai-btn" data-prop="🌸">🌸 Bunga</button>
-            <button class="ai-btn" data-prop="🐱">🐱 Kucing</button>
-            <button class="ai-btn" data-prop="🐰">🐰 Kelinci</button>
-            <button class="ai-btn" data-prop="✨">✨ Sparkle</button>
-            <button class="ai-btn" data-prop="💖">💖 Blush</button>
-            <button class="ai-btn" data-prop="🧸">🧸 Teddy</button>
-            <button class="ai-btn" data-prop="🍓">🍓 Stroberi</button>
-            <button class="ai-btn" data-prop="⭐">⭐ Bintang</button>
-            <button class="ai-btn" data-prop="🥳">🥳 Pesta</button>
-          </div>
-        </div>
-
-        <!-- Popup Menu Filter -->
-        <div class="ai-popup-panel" id="panelFilter" style="display:none;">
-          <div class="ai-scroll-row">
-            <button class="filter-btn active" data-filter="none">Normal</button>
-            <button class="filter-btn" data-filter="glow">✨ Korean Glow</button>
-            <button class="filter-btn" data-filter="vintage">📷 90s Vintage</button>
-            <button class="filter-btn" data-filter="soft">🌸 Soft Pastel</button>
-            <button class="filter-btn" data-filter="bw">🖤 Classic B&W</button>
-          </div>
-        </div>
       </div>
       <div class="cam-controls">
         <button class="btn ghost" id="btnFlip">🔄 Kamera</button>
@@ -702,13 +621,9 @@ let facing = 'user';      // 'user' | 'environment'
 let landmarker = null;
 let frameT = null;
 
-// AR & Beauty State
-let currentProp = 'none'; // 'none' | emoji char ('👑','🕶️','🎀','🌸','🐱','✨','💖','🧸','🍓','⭐','🐰','🥳')
-let currentFilter = 'none'; // 'none' | 'glow' | 'vintage' | 'bw' | 'soft'
-
 // ============ DOM ============
 const $ = (id) => document.getElementById(id);
-const video = $('video'), hud = $('hud'), arCanvas = $('arCanvas');
+const video = $('video'), hud = $('hud');
 const countBox = $('countBox'), scanHint = $('scanHint'), camWrap = $('camWrap');
 
 // ============ MEDIAPIPE FACE LANDMARKER (local assets) ============
@@ -759,20 +674,7 @@ async function startCamera() {
   loop();
 }
 
-// Apply filter styling on video live preview & capture canvas
-function applyFilterStyle(el) {
-  if (currentFilter === 'glow') {
-    el.style.filter = 'brightness(1.15) contrast(1.08) saturate(1.25)';
-  } else if (currentFilter === 'vintage') {
-    el.style.filter = 'sepia(0.45) contrast(1.15) brightness(0.95) saturate(1.2)';
-  } else if (currentFilter === 'soft') {
-    el.style.filter = 'brightness(1.18) contrast(0.95) saturate(1.15) hue-rotate(-5deg)';
-  } else if (currentFilter === 'bw') {
-    el.style.filter = 'grayscale(1) contrast(1.25) brightness(1.05)';
-  } else {
-    el.style.filter = 'none';
-  }
-}
+// keep the cam box in sync with the real stream aspect (contain => never crop)
 function adaptFrame() {
   if (video.videoWidth && video.videoHeight) {
     const a = video.videoWidth + ' / ' + video.videoHeight;
@@ -786,78 +688,6 @@ function stopCamera() {
     stream = null;
   }
   if (frameT) { cancelAnimationFrame(frameT); frameT = null; }
-}
-
-// ============ AR PROPS DRAWING ============
-function drawArProps(ctx, landmarks, w, h, isMirror, smileWinnerIdx, faceIdx) {
-  if (!landmarks || !landmarks.length) return;
-
-  const getPt = (idx) => {
-    const pt = landmarks[idx];
-    if (!pt) return { x: 0, y: 0 };
-    const px = isMirror ? (1 - pt.x) * w : pt.x * w;
-    const py = pt.y * h;
-    return { x: px, y: py };
-  };
-
-  const pA = getPt(33);
-  const pB = getPt(263);
-  const leftVisualEye = pA.x < pB.x ? pA : pB;
-  const rightVisualEye = pA.x < pB.x ? pB : pA;
-
-  const forehead = getPt(10);
-  const leftCheek = getPt(234);
-  const rightCheek = getPt(454);
-
-  const edx = rightVisualEye.x - leftVisualEye.x;
-  const edy = rightVisualEye.y - leftVisualEye.y;
-  const eyeDist = Math.hypot(edx, edy);
-  const angle = Math.atan2(edy, edx);
-
-  const activeProp = currentProp;
-  if (activeProp === 'none') return;
-
-  ctx.save();
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-
-  if (activeProp === '👑') {
-    const cw = eyeDist * 1.5;
-    ctx.translate(forehead.x, forehead.y - cw * 0.45);
-    ctx.rotate(angle);
-    ctx.font = `${Math.round(cw * 0.8)}px system-ui`;
-    ctx.fillText('👑', 0, 0);
-  } else if (activeProp === '🕶️') {
-    const gw = eyeDist * 2.2;
-    const mx = (leftVisualEye.x + rightVisualEye.x) / 2;
-    const my = (leftVisualEye.y + rightVisualEye.y) / 2;
-    ctx.translate(mx, my);
-    ctx.rotate(angle);
-    ctx.font = `${Math.round(gw * 0.7)}px system-ui`;
-    ctx.fillText('🕶️', 0, 0);
-  } else if (activeProp === '🎀' || activeProp === '🌸' || activeProp === '⭐') {
-    const propSize = eyeDist * 0.8;
-    ctx.translate(forehead.x + eyeDist * 0.6, forehead.y - propSize * 0.3);
-    ctx.rotate(angle);
-    ctx.font = `${Math.round(propSize)}px system-ui`;
-    ctx.fillText(activeProp, 0, 0);
-  } else if (activeProp === '🐱' || activeProp === '🐰' || activeProp === '🥳' || activeProp === '🧸') {
-    const cw = eyeDist * 1.6;
-    ctx.translate(forehead.x, forehead.y - cw * 0.4);
-    ctx.rotate(angle);
-    ctx.font = `${Math.round(cw * 0.75)}px system-ui`;
-    ctx.fillText(activeProp, 0, 0);
-  } else if (activeProp === '💖' || activeProp === '✨' || activeProp === '🍓') {
-    const bw = eyeDist * 0.45;
-    for (let cp of [leftCheek, rightCheek]) {
-      ctx.save();
-      ctx.translate(cp.x, cp.y);
-      ctx.font = `${Math.round(bw)}px system-ui`;
-      ctx.fillText(activeProp, 0, 0);
-      ctx.restore();
-    }
-  }
-  ctx.restore();
 }
 
 // ============ OVERLAY LOOP ============
@@ -884,23 +714,9 @@ function loop() {
       hud.style.display = 'flex';
       setHint('');
       renderHud(lastFaces, lastBs);
-
-      // Render AR Props Realtime on arCanvas
-      arCanvas.width = video.videoWidth;
-      arCanvas.height = video.videoHeight;
-      const arCtx = arCanvas.getContext('2d');
-      arCtx.clearRect(0, 0, arCanvas.width, arCanvas.height);
-
-      for (let fi = 0; fi < lastFaces.length; fi++) {
-        drawArProps(arCtx, lastFaces[fi], arCanvas.width, arCanvas.height, facing === 'user', -1, fi);
-      }
     } else {
       hud.style.display = 'none';
       hud.innerHTML = '';
-      if (arCanvas.width) {
-        const arCtx = arCanvas.getContext('2d');
-        arCtx.clearRect(0, 0, arCanvas.width, arCanvas.height);
-      }
       if (!scanHint.innerHTML) setHint('🔍 Cari wajah &hellip;');
     }
   }
@@ -1032,34 +848,14 @@ function capture() {
     toast('⛔ 8 kotak penuh — tap Reset atau Done');
     return;
   }
+  // Clean frame: video WITHOUT any overlay (jangan pas jadi)
   const w = video.videoWidth, h = video.videoHeight;
   const c = document.createElement('canvas');
   c.width = w; c.height = h;
   const cx = c.getContext('2d');
-
-  // Filter effect pada saat capture
-  if (currentFilter === 'glow') {
-    cx.filter = 'brightness(1.15) contrast(1.08) saturate(1.25)';
-  } else if (currentFilter === 'vintage') {
-    cx.filter = 'sepia(0.45) contrast(1.15) brightness(0.95) saturate(1.2)';
-  } else if (currentFilter === 'soft') {
-    cx.filter = 'brightness(1.18) contrast(0.95) saturate(1.15) hue-rotate(-5deg)';
-  } else if (currentFilter === 'bw') {
-    cx.filter = 'grayscale(1) contrast(1.25) brightness(1.05)';
-  }
-
   // mirror to match preview — hanya kamera depan
   if (facing === 'user') { cx.translate(w, 0); cx.scale(-1, 1); }
   cx.drawImage(video, 0, 0, w, h);
-  cx.filter = 'none';
-
-  // Render AR Props ke dalam foto yang ditangkap (hanya prop yang dipilih user)
-  if (lastFaces && lastFaces.length && currentProp !== 'none') {
-    for (let fi = 0; fi < lastFaces.length; fi++) {
-      drawArProps(cx, lastFaces[fi], w, h, facing === 'user', -1, fi);
-    }
-  }
-
   const dataURL = c.toDataURL('image/jpeg', 0.92);
 
   // emoji & persen dari deteksi wajah di kamera (fallback acak jika wajah tidak terdeteksi)
@@ -1790,51 +1586,8 @@ $('btnClearStickers').addEventListener('click', () => {
   invalidateGallery();
 });
 
-// Toggle Accordion Panels
-const btnToggleProp = $('btnToggleProp');
-const btnToggleFilter = $('btnToggleFilter');
-const panelProp = $('panelProp');
-const panelFilter = $('panelFilter');
-
-btnToggleProp.addEventListener('click', () => {
-  const isOpen = panelProp.style.display !== 'none';
-  panelProp.style.display = isOpen ? 'none' : 'block';
-  panelFilter.style.display = 'none';
-  btnToggleProp.classList.toggle('open', !isOpen);
-  btnToggleFilter.classList.remove('open');
-});
-
-btnToggleFilter.addEventListener('click', () => {
-  const isOpen = panelFilter.style.display !== 'none';
-  panelFilter.style.display = isOpen ? 'none' : 'block';
-  panelProp.style.display = 'none';
-  btnToggleFilter.classList.toggle('open', !isOpen);
-  btnToggleProp.classList.remove('open');
-});
-
-// AI Props Selection Buttons
-document.querySelectorAll('.ai-btn[data-prop]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.ai-btn[data-prop]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentProp = btn.dataset.prop;
-    btnToggleProp.textContent = currentProp === 'none' ? '👑 Emoji Props ▾' : `${currentProp} ${btn.textContent.trim()} ▾`;
-  });
-});
-
-// Filter Selection Buttons
-document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentFilter = btn.dataset.filter;
-    btnToggleFilter.textContent = `🎨 ${btn.textContent.trim()} ▾`;
-    applyFilterStyle(video);
-  });
-});
-
 // ============ INIT ============
-window.__h = { renderHud, emotion, capture, renderSheet, landmarker: () => landmarker, downloadSheet, getProp: () => currentProp, getFilter: () => currentFilter, drawArProps, setTestFace: (f, b) => { lastFaces = f; lastBs = b; } };
+window.__h = { renderHud, emotion, capture, renderSheet, landmarker: () => landmarker, downloadSheet, setTestFace: (f, b) => { lastFaces = f; lastBs = b; } };
 renderLayout();
 setupEmojiPicker();
 setupDragDrop();

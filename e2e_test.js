@@ -19,7 +19,16 @@ const PORT = process.env.PORT || 8123;
   page.on('pageerror', e => errors.push('PAGEERROR: ' + e.message));
   page.on('console', m => { if (m.type() === 'error') errors.push('CONSOLE: ' + m.text()); });
 
+  // 0. Verify landing page menu has 2 feature cards
   await page.goto(`http://127.0.0.1:${PORT}/`, { waitUntil: 'networkidle0', timeout: 30000 });
+  const menuInfo = await page.evaluate(() => ({
+    cards: document.querySelectorAll('.menu-card').length,
+    links: [...document.querySelectorAll('.menu-card')].map(c => c.getAttribute('href')),
+    title: document.title
+  }));
+  console.log('MENU_LANDING', JSON.stringify(menuInfo));
+
+  await page.goto(`http://127.0.0.1:${PORT}/photobooth`, { waitUntil: 'networkidle0', timeout: 30000 });
   await new Promise(r => setTimeout(r, 1200));
 
   // 1. front camera: video playing + .mirror applied
