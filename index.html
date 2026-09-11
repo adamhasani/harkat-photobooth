@@ -36,17 +36,14 @@
   }
 
   :root {
-    --cream: #fbf5e6;
-    --cream-dark: #f2e6cb;
-    --maroon: #7c1a3b;
-    --maroon-deep: #420d1e;
-    --gold: #f4b41a;
-    --gold-light: #ffd868;
-    --blue: #2f567f;
-    --coral: #e76f51;
-    --pink: #ff7597;
-    --ink: #2b1e16;
-    --stroke: rgba(66, 13, 30, 0.6);
+    --cream: #faf5ea;
+    --cream-dark: #f0e6d2;
+    --maroon: #681a34;
+    --maroon-deep: #3f1020;
+    --gold: #cfa138;
+    --gold-soft: #dfbb6c;
+    --ink: #2d1d23;
+    --stroke: rgba(63, 16, 32, 0.55);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -245,16 +242,14 @@
   .sheet-head::before { left: 8px; transform: rotate(-5deg); }
   .sheet-head::after { right: 8px; transform: rotate(5deg); }
   .sheet-head h2 {
-    font-family: 'Shrikhand', 'Luckiest Guy', cursive;
-    color: var(--maroon); font-size: clamp(22px, 6.2vw, 32px);
-    letter-spacing: 1.5px;
-    background: linear-gradient(135deg, #7c1a3b 0%, #e76f51 50%, #f4b41a 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    filter: drop-shadow(2px 2px 0px rgba(66,13,30,0.25));
+    font-family: 'Fredoka', 'Luckiest Guy', sans-serif;
+    font-weight: 700;
+    color: var(--maroon); font-size: clamp(22px, 6vw, 30px);
+    letter-spacing: 2px;
+    text-shadow: 2px 2px 0 rgba(207,161,56,0.35);
     transform: rotate(-1.5deg);
   }
-  .sheet-head .play { color: var(--coral); font-size: 20px; transform: rotate(-8deg); text-shadow: 1px 1px 0 rgba(244,180,26,0.5); }
+  .sheet-head .play { color: var(--maroon); font-size: 18px; transform: rotate(-8deg); text-shadow: 1px 1px 0 rgba(207,161,56,0.3); }
 
   .sheet-body { display: flex; gap: 12px; padding: 10px 16px; position: relative; }
   .sheet-col { flex: 1; display: flex; flex-direction: column; gap: 12px; }
@@ -375,15 +370,15 @@
   .sheet-foot { display: flex; align-items: center; justify-content: space-between; padding: 6px 18px 2px; }
   .sheet-foot .sains {
     font-family: 'Fredoka', 'Luckiest Guy', sans-serif; font-weight: 700;
-    color: var(--blue); font-size: clamp(14px, 3.4vw, 18px); letter-spacing: 2px;
-    transform: rotate(1.5deg); text-shadow: 1px 1px 0 rgba(244,180,26,0.4);
+    color: var(--maroon); font-size: clamp(14px, 3.4vw, 17px); letter-spacing: 2px;
+    transform: rotate(1.5deg); text-shadow: 1px 1px 0 rgba(207,161,56,0.3);
   }
   .sheet-foot .dovey {
-    font-family: 'Caveat', 'Pacifico', cursive; font-size: clamp(20px, 4.8vw, 26px);
-    color: var(--maroon); font-weight: 700; transform: rotate(-3deg);
-    text-shadow: 1px 1px 0 rgba(231,111,81,0.3);
+    font-family: 'Caveat', 'Pacifico', cursive; font-size: clamp(21px, 5vw, 27px);
+    color: var(--maroon-deep); font-weight: 700; transform: rotate(-3deg);
+    text-shadow: 1px 1px 0 rgba(207,161,56,0.25);
   }
-  .sheet-foot .rings { display: flex; align-items: center; gap: 4px; font-size: 15px; font-weight: 700; color: var(--coral); letter-spacing: 1px; }
+  .sheet-foot .rings { display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 700; color: var(--gold); letter-spacing: 1px; }
 
   .layout-actions { display: flex; gap: 12px; margin-top: 14px; justify-content: center; flex-wrap: wrap; }
 
@@ -401,10 +396,10 @@
 
   /* caption lucu — strip di atas barcode */
   .caps { margin: 4px 14px 6px; display: flex; flex-direction: column; gap: 4px;
-    background: rgba(255,255,255,0.7); border-left: 4px solid var(--coral); border-radius: 0 12px 12px 0;
-    padding: 6px 10px; max-width: calc(100% - 28px); box-shadow: 0 2px 4px rgba(66,13,30,0.08); }
+    background: rgba(255,255,255,0.65); border-left: 3.5px solid var(--gold); border-radius: 0 10px 10px 0;
+    padding: 6px 10px; max-width: calc(100% - 28px); box-shadow: 0 1px 3px rgba(63,16,32,0.06); }
   .caps[hidden] { display: none !important; }
-  .cap-line { font-family: 'Fredoka', system-ui, sans-serif; font-weight: 600; color: #2b1e16; font-size: clamp(11px, 2.8vw, 14px); line-height: 1.35;
+  .cap-line { font-family: 'Fredoka', system-ui, sans-serif; font-weight: 600; color: var(--ink); font-size: clamp(11px, 2.8vw, 13.5px); line-height: 1.35;
     display: flex; align-items: center; gap: 6px; word-break: break-word; overflow-wrap: anywhere; }
   .cap-line .cap-face { flex: none; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 15px; line-height: 1; }
   .caps:empty { display: none; }
@@ -1187,15 +1182,10 @@ async function renderSheet(asDataUrl) {
 
   ctx.save();
   ctx.translate(titleCenterX, titleCenterY); ctx.rotate(-0.026);
-  // Gradien warna judul kaya di CSS
-  const tg = ctx.createLinearGradient(-tRect.width / 2, 0, tRect.width / 2, 0);
-  tg.addColorStop(0, '#7c1a3b');
-  tg.addColorStop(0.5, '#e76f51');
-  tg.addColorStop(1, '#f4b41a');
-  ctx.fillStyle = tg;
+  ctx.fillStyle = '#681a34';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.font = '700 27px "Shrikhand", "Luckiest Guy", cursive';
-  ctx.shadowColor = 'rgba(66,13,30,0.25)'; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2;
+  ctx.font = '700 27px "Fredoka", "Luckiest Guy", sans-serif';
+  ctx.shadowColor = 'rgba(207,161,56,0.35)'; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2;
   ctx.fillText('UKM EXPO UHN', 0, 0);
   ctx.restore();
   ctx.shadowColor = 'transparent';
@@ -1206,13 +1196,13 @@ async function renderSheet(asDataUrl) {
     ctx.save();
     ctx.translate((pRect.left - sRect.left) + pRect.width / 2, (pRect.top - sRect.top) + pRect.height / 2);
     ctx.rotate(-0.14);
-    ctx.fillStyle = '#e76f51'; ctx.font = '18px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(244,180,26,0.5)'; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
+    ctx.fillStyle = '#681a34'; ctx.font = '18px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(207,161,56,0.3)'; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
     ctx.fillText('▶', 0, 0);
     ctx.restore();
   }
   ctx.save();
-  ctx.fillStyle = '#f4b41a'; ctx.font = '18px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#cfa138'; ctx.font = '18px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText('✳', sRect.width - 24, titleCenterY);
   ctx.restore();
 
@@ -1293,22 +1283,22 @@ async function renderSheet(asDataUrl) {
 
     ctx.save();
     ctx.translate(18, footCenterY); ctx.rotate(0.026);
-    ctx.fillStyle = '#2f567f'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#681a34'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
     ctx.font = '700 15px "Fredoka", sans-serif';
-    ctx.shadowColor = 'rgba(244,180,26,0.4)'; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
+    ctx.shadowColor = 'rgba(207,161,56,0.3)'; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
     ctx.fillText('SAINS DATA', 0, 0);
     ctx.restore();
     ctx.shadowColor = 'transparent';
 
-    ctx.font = '700 15px system-ui'; ctx.fillStyle = '#e76f51';
+    ctx.font = '700 14px system-ui'; ctx.fillStyle = '#cfa138';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText('⭯ ⭮', sRect.width / 2, footCenterY);
 
     ctx.save();
     ctx.translate(sRect.width - 18, footCenterY); ctx.rotate(-0.052);
-    ctx.fillStyle = '#7c1a3b'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#3f1020'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
     ctx.font = '700 22px "Caveat", "Pacifico", cursive';
-    ctx.shadowColor = 'rgba(231,111,81,0.3)'; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
+    ctx.shadowColor = 'rgba(207,161,56,0.25)'; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
     ctx.fillText('Dovey', 0, 0);
     ctx.restore();
     ctx.shadowColor = 'transparent';
@@ -1322,9 +1312,9 @@ async function renderSheet(asDataUrl) {
     const capW = cpRect.width;
     const capH = cpRect.height;
 
-    ctx.fillStyle = 'rgba(255,255,255,0.7)';
-    roundRect(ctx, capX, capY, capW, capH, 12); ctx.fill();
-    ctx.fillStyle = '#e76f51'; ctx.fillRect(capX, capY, 4, capH); // border-left coral
+    ctx.fillStyle = 'rgba(255,255,255,0.65)';
+    roundRect(ctx, capX, capY, capW, capH, 10); ctx.fill();
+    ctx.fillStyle = '#cfa138'; ctx.fillRect(capX, capY, 3.5, capH); // border-left gold
 
     const capLines = capsEl.querySelectorAll('.cap-line');
     capLines.forEach((cl) => {
@@ -1337,7 +1327,7 @@ async function renderSheet(asDataUrl) {
       ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
       ctx.font = '15px system-ui';
       ctx.fillText(faceTxt, capX + 10, ly);
-      ctx.fillStyle = '#2b1e16';
+      ctx.fillStyle = '#2d1d23';
       ctx.font = '600 13px "Fredoka", sans-serif';
       ctx.fillText(fullTxt, capX + 32, ly);
     });
