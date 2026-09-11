@@ -39,18 +39,20 @@
   }
 
   body {
-    /* hand-drawn grain texture + dashed film-strip side borders */
-    background-image:
-      repeating-linear-gradient(90deg, rgba(63,90,122,0.16) 0 6px, transparent 6px 14px),
-      repeating-linear-gradient(90deg, transparent 0 calc(100% - 14px), rgba(63,90,122,0.16) calc(100% - 14px) calc(100% - 8px)),
-      radial-gradient(rgba(52,34,30,0.10) 1px, transparent 1.2px),
-      radial-gradient(rgba(52,34,30,0.08) 1px, transparent 1.4px),
-      linear-gradient(var(--cream), #f2e7c8);
-    background-size: auto, auto, 14px 14px, 22px 22px, cover;
-    background-position: 0 0, 100% 0, 0 0, 11px 7px, 0 0;
-    background-repeat: repeat, repeat, repeat, repeat, no-repeat;
-    min-height: 100dvh;
-  }
+      /* hand-drawn grain texture + dashed film-strip side borders + confetti dots */
+      background-image:
+        repeating-linear-gradient(90deg, rgba(63,90,122,0.16) 0 6px, transparent 6px 14px),
+        repeating-linear-gradient(90deg, transparent 0 calc(100% - 14px), rgba(63,90,122,0.16) calc(100% - 14px) calc(100% - 8px)),
+        radial-gradient(rgba(52,34,30,0.10) 1px, transparent 1.2px),
+        radial-gradient(rgba(52,34,30,0.08) 1px, transparent 1.4px),
+        radial-gradient(rgba(201,162,39,0.30) 1px, transparent 1.6px),
+        radial-gradient(rgba(63,90,122,0.24) 1px, transparent 1.5px),
+        linear-gradient(var(--cream), #f2e7c8);
+      background-size: auto, auto, 14px 14px, 22px 22px, 37px 37px, 29px 29px, cover;
+      background-position: 0 0, 100% 0, 0 0, 11px 7px, 13px 21px, 7px 9px, 0 0;
+      background-repeat: repeat, repeat, repeat, repeat, repeat, repeat, no-repeat;
+      min-height: 100dvh;
+    }
 
   /* dashed center film strip (vertical) */
   body::before {
@@ -63,6 +65,18 @@
   }
 
   .app { position: relative; z-index: 1; min-height: 100dvh; display: flex; flex-direction: column; }
+
+  /* ============ DESKTOP: frame tengah kayak booth (film strip kiri-kanan) ============ */
+  @media (min-width: 780px) {
+    .app {
+      max-width: 720px; margin: 0 auto;
+      border-left: 8px dashed var(--blue); border-right: 8px dashed var(--blue);
+      background: rgba(245,236,207,0.35);
+    }
+    .toolbar { padding: 16px 24px; }
+    .cam-wrap { width: min(480px, calc(100% - 24px)); }
+    .sheet { max-width: 620px; }
+  }
 
   /* ============ TOOLBAR ============ */
   .toolbar {
@@ -129,15 +143,20 @@
   .chip { display: flex; align-items: center; gap: 8px; }
   .chip .n { width: 20px; height: 20px; border-radius: 50%; background: var(--gold); color: var(--maroon-deep);
     font-size: 12px; display: flex; align-items: center; justify-content: center; flex: none; }
-  .chip .emoji { width: 40px; height: 40px; line-height: 1; display: flex; align-items: center; justify-content: center; font-size: 32px; }
+  .chip .emoji { width: 42px; height: 42px; line-height: 1; display: flex; align-items: center; justify-content: center; font-size: 30px;
+    background: #fff; border: 2px solid var(--gold); border-radius: 50%; transform: rotate(-4deg);
+    box-shadow: 2px 2px 0 rgba(74,16,36,0.3); }
   .chip .label { font-size: 12px; color: var(--maroon-deep); letter-spacing: 1px; min-width: 74px; text-align: center; }
   .chip .pct { font-size: 17px; color: var(--maroon); min-width: 44px; text-align: right; }
   .chip .bar-outer { width: 60px; height: 12px; background: #e3d5ae; border-radius: 7px; border: 2px solid var(--maroon-deep); overflow: hidden; }
   .chip .bar-inner { height: 100%; width: 0%; background: linear-gradient(90deg, #7a1f3f, #e0a63f); border-radius: 5px; }
 
-  /* scanning guide frame */
-  .scan-hint { position: absolute; top: 8px; right: 12px; z-index: 4; pointer-events: none;
-    color: rgba(255,237,200,0.85); font-size: 12px; letter-spacing: 1.5px; text-align: right; }
+  /* scanning guide frame — sticker lucu "SMILE!" */
+  .scan-hint { position: absolute; top: 14px; right: 12px; z-index: 4; pointer-events: none;
+    background: var(--cream); color: var(--maroon); border: 3px solid var(--maroon-deep);
+    border-radius: 14px; padding: 8px 14px; font-size: 18px; letter-spacing: 1.5px; text-align: center;
+    box-shadow: 3px 3px 0 rgba(74,16,36,0.35); transform: rotate(3deg); max-width: 46%; line-height: 1.2; }
+  .scan-hint:empty { display: none; }
 
   .toast { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 6;
     background: rgba(107,31,58,0.94); color: #fff6e2; font-family: 'Luckiest Guy', cursive;
@@ -160,6 +179,14 @@
   .btn.big { font-size: 22px; padding: 16px 36px; }
   .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 
+  /* JEPRET pulse halus biar menggoda */
+  @keyframes jeppulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 4px 0 var(--maroon-deep), 0 6px 10px rgba(0,0,0,0.2); }
+    50% { transform: scale(1.045); box-shadow: 0 4px 0 var(--maroon-deep), 0 0 18px rgba(201,162,39,0.65); }
+  }
+  .btn.big:not(:disabled) { animation: jeppulse 1.6s ease-in-out infinite; }
+  .btn.big:not(:disabled):active { animation: none; transform: translateY(4px); }
+
   /* ============ LAYOUT / PRINT PANEL ============ */
   .layout-panel { padding: 12px; flex: 1; display: flex; flex-direction: column; align-items: center; }
   .sheet {
@@ -181,7 +208,16 @@
   .sheet::before { left: 8px; }
   .sheet::after { right: 8px; }
 
-  .sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 2px 18px 8px; }
+  .sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 2px 18px 8px; position: relative; }
+  /* washi tape scotch-style di pojok sheet */
+  .sheet-head::before, .sheet-head::after {
+    content: ''; position: absolute; top: -14px; width: 96px; height: 26px;
+    background: repeating-linear-gradient(45deg, rgba(201,162,39,0.88) 0 9px, rgba(237,211,133,0.88) 9px 18px);
+    border-radius: 3px; box-shadow: 0 2px 3px rgba(52,34,30,0.25);
+    opacity: .92;
+  }
+  .sheet-head::before { left: 6px; transform: rotate(-4deg); }
+  .sheet-head::after { right: 6px; transform: rotate(4deg); }
   .sheet-head h2 {
     font-family: 'Luckiest Guy', cursive; color: var(--maroon); font-size: clamp(24px, 6.5vw, 34px);
     letter-spacing: 2px; text-shadow: 2px 2px 0 rgba(201,162,39,0.4); transform: rotate(-2deg);
@@ -206,10 +242,12 @@
     background: var(--cream); color: var(--maroon); border: 2px solid var(--maroon-deep); font-size: 15px;
     display:flex; align-items:center; justify-content:center; cursor: pointer; z-index: 2; }
   .box.empty .x { display: none; }
-  /* emoji lucu pojok kanan atas tiap foto (SVG face, bukan emoji OS) */
-  .box .e { position: absolute; top: 4px; right: 4px; width: clamp(30px, 7vw, 40px); height: clamp(30px, 7vw, 40px); z-index: 3;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,.45)); display: flex; align-items: center; justify-content: center;
-    font-size: clamp(15px, 3.6vw, 20px); line-height: 1; }
+  /* emoji lucu pojok kanan atas tiap foto — gelembung putih border emas (sync DOM ↔ canvas) */
+  .box .e { position: absolute; top: 4px; right: 4px; width: clamp(34px, 7.5vw, 44px); height: clamp(34px, 7.5vw, 44px); z-index: 3;
+    display: flex; align-items: center; justify-content: center;
+    background: #fff; border: 2px solid var(--gold); border-radius: 50%; transform: rotate(6deg);
+    box-shadow: 2px 2px 0 rgba(74,16,36,0.3);
+    font-size: clamp(16px, 3.8vw, 22px); line-height: 1; }
   .box.empty .e { display: none; }
 
   .sheet-foot { display: flex; align-items: flex-end; justify-content: space-between; padding: 12px 20px 2px; }
@@ -287,7 +325,7 @@
     <div class="panel active" id="panel-cam">
       <div class="cam-wrap" id="camWrap">
         <video id="video" autoplay playsinline muted></video>
-        <div class="scan-hint" id="scanHint">🔍 Cari wajah &hellip;</div>
+        <div class="scan-hint" id="scanHint">SMILE! 😁</div>
         <div class="hud" id="hud" style="display:none"></div>
         <div class="toast" id="toast"></div>
       </div>
@@ -759,25 +797,60 @@ async function renderSheet(asDataUrl) {
   const cv = document.createElement('canvas');
   cv.width = W; cv.height = H;
   const ctx = cv.getContext('2d');
-  // === bg: gradien cream -> #f2e7c8 + dots halus (kayak .sheet) ===
+  // === bg: gradien cream -> #f2e7c8 + confetti dots multi-warna (kayak body DOM) ===
   const g = ctx.createLinearGradient(0, 0, 0, H);
   g.addColorStop(0, '#f5eccf'); g.addColorStop(1, '#f2e7c8');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = 'rgba(52,34,30,0.07)';
-  for (let dy = 10; dy < H; dy += 17)
-    for (let dx = 10; dx < W; dx += 17) ctx.fillRect(dx, dy, 2, 2);
-  // === film-strip: strip putus² kiri & kanan (kayak .sheet::before/::after) ===
+  // grain halus cokelat
+  ctx.fillStyle = 'rgba(52,34,30,0.08)';
+  for (let dy = 6; dy < H; dy += 22)
+    for (let dx = 6; dx < W; dx += 22) ctx.fillRect(dx, dy, 2, 2);
+  // confetti dots emas (37px period)
+  ctx.fillStyle = 'rgba(201,162,39,0.28)';
+  for (let dy = 13; dy < H; dy += 37)
+    for (let dx = 21; dx < W; dx += 37) {
+      ctx.beginPath(); ctx.arc(dx, dy, 2.5, 0, Math.PI * 2); ctx.fill();
+    }
+  // confetti dots biru (29px period)
+  ctx.fillStyle = 'rgba(63,90,122,0.22)';
+  for (let dy = 9; dy < H; dy += 29)
+    for (let dx = 7; dx < W; dx += 29) {
+      ctx.beginPath(); ctx.arc(dx, dy, 2.2, 0, Math.PI * 2); ctx.fill();
+    }
+  // === film-strip: strip putus² kiri & kanan (kayak .sheet::before/::after, tepat di tepi) ===
   ctx.fillStyle = 'rgba(63,90,122,0.35)';
-  for (let stripX of [26, W - 34])
-    for (let sy = 40; sy < H - 20; sy += 16)
-      ctx.fillRect(stripX, sy, 7, 9);
+  for (let stripX of [14, W - 22])
+    for (let sy = 24; sy < H - 24; sy += 26)
+      ctx.fillRect(stripX, sy, 8, 12);
   // === border maroon-deep + rounded, bayangan bawah (kayak DOM) ===
-  ctx.shadowColor = 'rgba(74,16,36,0.4)'; ctx.shadowOffsetY = 10; ctx.shadowBlur = 0;
+  ctx.shadowColor = 'rgba(74,16,36,0.35)'; ctx.shadowOffsetY = 10; ctx.shadowBlur = 0;
   roundRect(ctx, 10, 10, W - 20, H - 20, 34); ctx.fillStyle = 'rgba(74,16,36,0.25)'; ctx.fill();
   ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
   ctx.strokeStyle = '#4a1024'; ctx.lineWidth = 5;
   roundRect(ctx, 10, 10, W - 20, H - 20, 34); ctx.stroke();
 
+  // === sheet-head: washi tape pojok (sync .sheet-head::before/::after) ===
+  function washiTape(x, y, rot) {
+    const tw = 180, th = 48;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+    // clip ke rect tape
+    ctx.beginPath(); ctx.rect(-tw / 2, -th / 2, tw, th); ctx.clip();
+    // base light
+    ctx.fillStyle = 'rgba(237,211,133,0.95)'; ctx.fillRect(-tw / 2, -th / 2, tw, th);
+    // stripe diagonal 45deg
+    ctx.save(); ctx.rotate(Math.PI / 4);
+    const PER = 34, SW = 17, EXT = 200;
+    ctx.fillStyle = 'rgba(201,162,39,0.92)';
+    for (let sx = -EXT; sx < tw + EXT; sx += PER) ctx.fillRect(sx - SW, -EXT, SW, 2 * EXT);
+    ctx.restore();
+    ctx.restore();
+    // border tipis
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+    ctx.strokeStyle = 'rgba(201,162,39,0.7)'; ctx.lineWidth = 3;
+    ctx.strokeRect(-tw / 2, -th / 2, tw, th);
+    ctx.restore();
+  }
+  washiTape(96, 28, -0.07); washiTape(W - 96, 28, 0.07);
   // === sheet-head: ▶ UKM EXPO UHN ✳ ===
   ctx.save(); ctx.translate(W / 2, 62); ctx.rotate(-0.035);
   ctx.fillStyle = '#6b1f3a'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -814,9 +887,18 @@ async function renderSheet(asDataUrl) {
     ctx.strokeStyle = '#4a1024'; ctx.lineWidth = 5; ctx.stroke();
     ctx.fillStyle = '#4a1024'; ctx.font = '700 30px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(i + 1, x - 16 + nb / 2, y - 16 + nb / 2 + 1);
-    // emoji kanan-atas — kayak .e (top:4 right:4)
-    ctx.font = '40px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(photos[src].emoji || '😄', x + card - 40, y + 40);
+    // emoji kanan-atas — gelembung putih bulat + border gold (sync DOM .box .e)
+    const eb = 64;
+    const ex = x + card - eb / 2 - 8, ey = y + eb / 2 + 8;
+    ctx.save();
+    ctx.translate(ex, ey);
+    ctx.rotate(0.1); // rotate 6deg kayak DOM
+    ctx.beginPath(); ctx.arc(0, 0, eb / 2, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff'; ctx.fill();
+    ctx.strokeStyle = '#c9a227'; ctx.lineWidth = 4; ctx.stroke();
+    ctx.font = '36px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(photos[src].emoji || '😄', 0, 1);
+    ctx.restore();
   }
 
   // === sheet-foot: SAINS DATA · ⭯ ⭮ · Dovey ===
