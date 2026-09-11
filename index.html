@@ -1271,14 +1271,14 @@ async function renderSheet(asDataUrl) {
     }
   }
 
-  // 7. Custom Drag Stickers di atas Canvas
+  // 7. Custom Drag Stickers di atas Canvas (Presisi Skala Langsung dari DOM)
   if (customStickers && customStickers.length) {
     const sRect = sheetEl.getBoundingClientRect();
     for (const st of customStickers) {
-      const relX = st.x / sRect.width;
-      const relY = st.y / sRect.height;
-      const canvasStX = relX * W;
-      const canvasStY = relY * H;
+      // Koordinat st.x dan st.y adalah pixel offset di dalam sheet DOM
+      // Konversi langsung dengan mengalikan SCALE (bukan membagi H canvas yang berbeda karena QR/padding)
+      const canvasStX = st.x * SCALE;
+      const canvasStY = st.y * SCALE;
       ctx.save();
       ctx.translate(canvasStX, canvasStY);
       ctx.rotate(st.rot || 0);
