@@ -83,26 +83,28 @@
   /* ============ TOOLBAR ============ */
   .toolbar {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 16px; flex-wrap: wrap; gap: 8px;
+    padding: 8px 12px; gap: 6px;
     border-bottom: 3px dashed var(--blue);
   }
-  .brand { display: flex; align-items: baseline; gap: 10px; }
+  .brand { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
   .brand h1 {
     font-family: 'Luckiest Guy', 'Comic Sans MS', cursive;
-    color: var(--maroon); font-size: clamp(18px, 4.2vw, 34px);
-    letter-spacing: 1.5px; line-height: 1;
-    transform: rotate(-1.5deg); text-shadow: 2px 2px 0 rgba(201,162,39,0.35);
+    color: var(--maroon); font-size: clamp(16px, 4.5vw, 30px);
+    letter-spacing: 1px; line-height: 1.1;
+    transform: rotate(-1.5deg); text-shadow: 1.5px 1.5px 0 rgba(201,162,39,0.35);
+    white-space: nowrap;
   }
   .brand small {
     font-family: 'Pacifico', 'Brush Script MT', cursive;
-    color: var(--maroon-deep); font-size: clamp(13px, 2.4vw, 18px); transform: rotate(2deg);
+    color: var(--maroon-deep); font-size: clamp(11px, 2.5vw, 16px); transform: rotate(2deg);
+    white-space: nowrap;
   }
   .count-badge {
-    background: var(--maroon); color: #ffe9c9; padding: 6px 14px;
-    border-radius: 999px; font-size: 15px; letter-spacing: 1px;
-    box-shadow: 2px 3px 0 rgba(74,16,36,0.35); white-space: nowrap;
+    background: var(--maroon); color: #ffe9c9; padding: 4px 10px;
+    border-radius: 999px; font-size: clamp(12px, 3.2vw, 15px); letter-spacing: 0.5px;
+    box-shadow: 1.5px 2px 0 rgba(74,16,36,0.35); white-space: nowrap; flex-shrink: 0;
   }
-  .count-badge b { color: #ffd66b; font-size: 18px; }
+  .count-badge b { color: #ffd66b; font-size: clamp(14px, 3.8vw, 18px); }
 
   /* ============ TABS ============ */
   .tabs { display: flex; gap: 0; padding: 0 12px; margin-top: 10px; }
@@ -304,6 +306,16 @@
     filter: drop-shadow(1px 2px 0 rgba(74,16,36,0.25));
   }
 
+  /* Hint Interaktif */
+  .custom-hint {
+    background: rgba(255, 250, 236, 0.92); border: 2px dashed var(--maroon-deep);
+    border-radius: 12px; padding: 6px 12px; margin: 8px auto 2px;
+    font-size: clamp(11px, 2.8vw, 13px); color: var(--maroon-deep);
+    text-align: center; max-width: 520px; line-height: 1.35;
+    box-shadow: 1.5px 2px 0 rgba(74,16,36,0.18);
+  }
+  .custom-hint b { color: var(--maroon); }
+
   /* Toolbar Sticker Customizer di Tab Cetak */
   .sticker-bar {
     display: flex; align-items: center; justify-content: center; gap: 6px; margin: 10px auto 4px;
@@ -461,6 +473,11 @@
         </div>
         <div class="empty-state" id="emptyState">Belum ada foto — jepret dulu di tab Kamera 📸</div>
         
+        <!-- Hint Interaktif agar user tahu foto bisa ditukar posisi & emoji bisa diganti -->
+        <div class="custom-hint" id="customHint">
+          💡 <b>Tips:</b> Tarik/geser foto untuk tukar posisi • Tap emoji di foto untuk ganti • Tap stiker di bawah untuk menempel!
+        </div>
+
         <!-- Sticker Customizer Bar -->
         <div class="sticker-bar" id="stickerBar">
           <span>🎨 Hias Stiker:</span>
