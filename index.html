@@ -22,21 +22,22 @@
   }
 
   :root {
-    --cream: #fbf5e6;
+    --bg-page: #f6ecd2;
+    --cream-card: #fffdf7;
     --maroon: #681a34;
     --maroon-deep: #4a0000;
-    --gold: #cfa138;
-    --gold-glow: #e2b448;
+    --gold: #f5b722;
+    --gold-hover: #ffc438;
     --ink: #2d1d23;
+    --teal: #1a7a66;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: #2a0b16;
+    background: var(--bg-page);
     background-image: 
-      radial-gradient(circle at 10% 20%, rgba(207,161,56,0.18) 0%, transparent 40%),
-      radial-gradient(circle at 90% 80%, rgba(104,26,52,0.35) 0%, transparent 45%),
-      repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 8px);
+      radial-gradient(circle at 50% 10%, rgba(207,161,56,0.2) 0%, transparent 50%),
+      repeating-linear-gradient(45deg, rgba(74,0,0,0.03) 0 2px, transparent 2px 10px);
     font-family: 'Fredoka', system-ui, -apple-system, sans-serif;
     color: var(--ink);
     min-height: 100vh;
@@ -44,39 +45,40 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 20px 16px;
+    padding: 24px 16px 36px;
   }
 
   .container {
     width: 100%;
-    max-width: 440px;
+    max-width: 420px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 18px;
   }
 
   /* ============ HEADER ============ */
   .hero {
-    background: var(--cream);
+    background: #ffffff;
     border: 3px solid var(--maroon-deep);
     border-radius: 24px;
-    padding: 20px 16px 18px;
+    padding: 22px 16px 18px;
     text-align: center;
     position: relative;
-    box-shadow: 0 5px 0 var(--maroon-deep), 0 8px 16px rgba(0,0,0,0.3);
+    box-shadow: 0 5px 0 var(--maroon-deep), 0 10px 20px rgba(74,0,0,0.12);
   }
   .hero::before, .hero::after {
     content: '';
     position: absolute;
-    top: -8px;
+    top: -9px;
     width: 54px;
-    height: 16px;
-    background: rgba(207,161,56,0.85);
-    border-radius: 2px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    height: 17px;
+    background: rgba(245,183,34,0.9);
+    border: 1.5px solid var(--maroon-deep);
+    border-radius: 3px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
   }
-  .hero::before { left: 24px; transform: rotate(-6deg); }
-  .hero::after { right: 24px; transform: rotate(6deg); }
+  .hero::before { left: 24px; transform: rotate(-7deg); }
+  .hero::after { right: 24px; transform: rotate(7deg); }
 
   .hero-tag {
     display: inline-flex;
@@ -84,39 +86,39 @@
     gap: 6px;
     background: var(--maroon);
     color: #ffd66b;
-    font-size: 11px;
+    font-size: 11.5px;
     font-weight: 700;
     letter-spacing: 1px;
-    padding: 4px 12px;
+    padding: 4px 14px;
     border-radius: 999px;
     margin-bottom: 8px;
-    border: 1.5px solid var(--gold);
+    border: 1.5px solid var(--maroon-deep);
     text-transform: uppercase;
+    box-shadow: 0 1.5px 0 var(--maroon-deep);
   }
 
   .hero h1 {
     font-family: 'Luckiest Guy', cursive;
     color: var(--maroon);
-    font-size: clamp(28px, 8vw, 36px);
+    font-size: clamp(28px, 8.5vw, 36px);
     line-height: 1.1;
     letter-spacing: 1.5px;
-    text-shadow: 2px 2px 0 rgba(207,161,56,0.4);
+    text-shadow: 2px 2px 0 rgba(245,183,34,0.45);
     transform: rotate(-1deg);
   }
 
   .hero-subtitle {
     font-family: 'Pacifico', cursive;
-    color: var(--gold);
+    color: var(--maroon-deep);
     font-size: clamp(16px, 5vw, 20px);
     margin-top: 2px;
-    text-shadow: 1px 1px 0 var(--maroon-deep);
   }
 
-  /* ============ 2 BIG BUTTONS ============ */
+  /* ============ 2 BIG ACTION BUTTONS ============ */
   .button-group {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 15px;
   }
 
   .main-btn {
@@ -124,30 +126,30 @@
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 18px 20px;
-    border-radius: 20px;
-    border: 3px solid var(--maroon-deep);
+    padding: 18px 18px;
+    border-radius: 22px;
+    border: 3.5px solid var(--maroon-deep);
     position: relative;
-    box-shadow: 0 5px 0 var(--maroon-deep), 0 8px 18px rgba(0,0,0,0.25);
+    box-shadow: 0 6px 0 var(--maroon-deep), 0 8px 16px rgba(74,0,0,0.15);
     transition: transform 0.1s, box-shadow 0.1s;
     user-select: none;
   }
   .main-btn:active {
     transform: translateY(3px);
-    box-shadow: 0 2px 0 var(--maroon-deep), 0 4px 10px rgba(0,0,0,0.2);
+    box-shadow: 0 3px 0 var(--maroon-deep), 0 4px 8px rgba(74,0,0,0.12);
   }
 
-  .btn-icon {
-    font-size: 38px;
-    width: 60px;
-    height: 60px;
+  .btn-icon-box {
+    font-size: 34px;
+    width: 62px;
+    height: 62px;
     border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    border: 2px solid var(--maroon-deep);
-    box-shadow: 0 2px 0 rgba(74,0,0,0.2);
+    border: 2.5px solid var(--maroon-deep);
+    box-shadow: 0 2px 0 var(--maroon-deep);
   }
 
   .btn-text {
@@ -156,61 +158,91 @@
   }
   .btn-title {
     font-family: 'Luckiest Guy', cursive;
-    font-size: clamp(20px, 5.5vw, 24px);
+    font-size: clamp(21px, 6vw, 25px);
     line-height: 1.15;
     letter-spacing: 0.8px;
   }
   .btn-sub {
-    font-size: 13px;
-    font-weight: 600;
-    margin-top: 3px;
-    opacity: 0.9;
-  }
-
-  .btn-arrow {
-    font-size: 22px;
+    font-size: 13.5px;
     font-weight: 700;
-    flex-shrink: 0;
+    margin-top: 3px;
+    line-height: 1.25;
   }
 
-  /* Button Themes */
+  .btn-arrow-circle {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 2px solid var(--maroon-deep);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 900;
+    flex-shrink: 0;
+    box-shadow: 0 2px 0 var(--maroon-deep);
+  }
+
+  /* BUTTON 1 THEME (Vibrant Gold) */
   .btn-photobooth {
-    background: var(--gold);
+    background: #ffcc4d;
     color: var(--maroon-deep);
   }
-  .btn-photobooth .btn-icon {
+  .btn-photobooth:hover {
+    background: #ffd86b;
+  }
+  .btn-photobooth .btn-icon-box {
     background: #ffffff;
   }
-  .btn-photobooth .btn-sub {
+  .btn-photobooth .btn-title {
     color: #4a0000;
   }
-
-  .btn-ai {
-    background: var(--maroon);
-    color: #fff6e2;
+  .btn-photobooth .btn-sub {
+    color: #681a34;
   }
-  .btn-ai .btn-icon {
-    background: #2a0b16;
+  .btn-photobooth .btn-arrow-circle {
+    background: #ffffff;
+    color: var(--maroon-deep);
+  }
+
+  /* BUTTON 2 THEME (Crisp Solid Pure White / Lavender-Lilac) */
+  .btn-ai {
+    background: #ffffff;
+    color: var(--maroon-deep);
+  }
+  .btn-ai:hover {
+    background: #faf4ff;
+  }
+  .btn-ai .btn-icon-box {
+    background: #ffecb3;
+  }
+  .btn-ai .btn-title {
+    color: #4a0000;
   }
   .btn-ai .btn-sub {
-    color: #ffd66b;
+    color: #681a34;
+  }
+  .btn-ai .btn-arrow-circle {
+    background: #ffcc4d;
+    color: var(--maroon-deep);
   }
 
   /* ============ FOOTER ============ */
   .footer {
     text-align: center;
-    color: rgba(255,255,255,0.7);
-    font-size: 11.5px;
+    color: #681a34;
+    font-size: 12px;
+    font-weight: 700;
     display: flex;
     flex-direction: column;
     gap: 3px;
-    margin-top: 4px;
+    margin-top: 6px;
   }
-  .footer b { color: #ffd66b; }
+  .footer b { color: #4a0000; }
   .footer .brand-mark {
     font-family: 'Caveat', cursive;
-    font-size: 18px;
-    color: #f5eccf;
+    font-size: 20px;
+    color: #8c2849;
   }
 </style>
 </head>
@@ -223,27 +255,27 @@
     <div class="hero-subtitle">Pilih Menu Interaktif</div>
   </header>
 
-  <!-- 2 BIG PUNCHY BUTTONS -->
+  <!-- 2 BIG VIBRANT ACTION BUTTONS -->
   <div class="button-group">
     
     <!-- BUTTON 1: PHOTOBOOTH -->
     <a href="/photobooth" class="main-btn btn-photobooth">
-      <div class="btn-icon">📸</div>
+      <div class="btn-icon-box">📸</div>
       <div class="btn-text">
         <div class="btn-title">HARKAT PHOTOBOOTH</div>
         <div class="btn-sub">Cetak Strip Polaroid 8-Grid</div>
       </div>
-      <div class="btn-arrow">➔</div>
+      <div class="btn-arrow-circle">➔</div>
     </a>
 
     <!-- BUTTON 2: AI FACE SCANNER -->
     <a href="/ai" class="main-btn btn-ai">
-      <div class="btn-icon">🤖</div>
+      <div class="btn-icon-box">🔮</div>
       <div class="btn-text">
         <div class="btn-title">AI FACE SCANNER</div>
         <div class="btn-sub">Tebak Umur & Rating Wajah</div>
       </div>
-      <div class="btn-arrow">➔</div>
+      <div class="btn-arrow-circle">➔</div>
     </a>
 
   </div>
