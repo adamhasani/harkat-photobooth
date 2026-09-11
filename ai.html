@@ -544,25 +544,32 @@ async function initVision() {
 // ============ CAMERA MANAGEMENT ============
 async function startCamera() {
   stopCamera();
-  const constraints = {
-    audio: false,
+  const facingMode = facing === 'environment' ? { exact: 'environment' } : 'user';
+  const opts = {
     video: {
-      facingMode: facing,
+      facingMode,
       width: { ideal: 1280 },
       height: { ideal: 720 }
-    }
+    },
+    audio: false
   };
+
   try {
-    stream = await navigator.mediaDevices.getUserMedia(constraints);
+    try {
+      stream = await navigator.mediaDevices.getUserMedia(opts);
+    } catch (e) {
+      // Fallback: universal camera for desktop webcams & laptops
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    }
     video.srcObject = stream;
     video.classList.toggle('mirror', facing === 'user');
-    await new Promise(r => video.onloadedmetadata = r);
-    video.play();
+    await video.play().catch(() => {});
     adaptSize();
     loop();
+    $('scanStatusText').textContent = 'AI Scanning Active ✓';
   } catch (err) {
     console.error('Camera access failed:', err);
-    $('scanStatusText').textContent = 'Kamera tidak dapat diakses';
+    $('scanStatusText').innerHTML = '⚠️ <a href="javascript:startCamera()" style="color:#ffd86b;text-decoration:underline;">Tap untuk Izinkan Kamera 📷</a>';
   }
 }
 
@@ -1295,6 +1302,7 @@ $('btnScanAgain').onclick = () => {
 };
 
 // ============ INIT ============
+window.startCamera = startCamera;
 initVision();
 startCamera();
 </script>
