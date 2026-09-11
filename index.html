@@ -975,9 +975,14 @@ let sheetDone = false;
 const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.hostname.endsWith('harkatpoto.my.id'))
   ? '' : 'https://apa.zonalayar.my.id/harkat';
 
-async function ensureGallery() {
+async function generateQrNow() {
   if (!photos.length) return null;
-  if (galleryUrl) return galleryUrl;
+  const qrBox = $('qrBox');
+  const btnPrint = $('btnPrint');
+  const origText = btnPrint.textContent;
+  btnPrint.textContent = '⏳ Memproses QR...';
+  btnPrint.disabled = true;
+
   try {
     const res = await fetch(API_BASE + '/api/session', {
       method: 'POST',
@@ -986,34 +991,40 @@ async function ensureGallery() {
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'gagal upload');
-    galleryUrl = data.url; // server balikin absolute (PUBLIC_URL) atau relative
+    galleryUrl = data.url;
     let qrTarget = galleryUrl;
-    // sheet PNG -> server; QR langsung unduh file di scan
+
+    // Render sheet PNG HD dengan stiker & posisi foto terkini
     try {
+      const pngData = await renderSheet(true);
       const sres = await fetch(API_BASE + '/api/sheet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: data.id, png: await renderSheet(true) })
+        body: JSON.stringify({ sessionId: data.id, png: pngData })
       });
       const sdata = await sres.json();
       if (sdata.ok) {
         sheetDone = true;
-        // base dari gallery URL: works relative (localhost) & absolute (Pages->apa)
         const base = galleryUrl.replace(/\/gallery\/[0-9a-f-]+$/, '');
         qrTarget = base + '/download/' + data.id;
       }
     } catch (e2) { console.log('sheet upload failed, QR->gallery:', e2); }
+
     const full = qrTarget.startsWith('http') ? qrTarget : location.origin + qrTarget;
     renderQr(full);
-    $('qrBox').hidden = false;
+    qrBox.hidden = false;
     const a = $('galleryLink');
     a.textContent = '⬇️ Download foto (PNG)';
     a.href = '#';
     a.onclick = async (ev) => { ev.preventDefault(); await downloadSheet(); };
     a.style.display = 'block';
+    toast('🎉 QR Code siap di-scan!');
   } catch (e) {
     console.error('gallery upload failed:', e);
-    toast('⚠️ QR belum siap — cek koneksi ke server');
+    toast('⚠️ Gagal membuat QR — periksa koneksi');
+  } finally {
+    btnPrint.textContent = origText;
+    btnPrint.disabled = false;
   }
   return galleryUrl;
 }
@@ -1027,10 +1038,11 @@ function renderQr(text) {
 
 function invalidateGallery() {
   galleryUrl = null;
-  // Tetap buat QR baru jika ada foto di layout
-  if (photos.length) {
-    ensureGallery().catch(() => {});
-  }
+  // Saat foto/stiker berubah, QR di-reset sampai user menekan CETAK
+  $('qrBox').hidden = true;
+  $('qrCode').innerHTML = '';
+  const a = $('galleryLink');
+  a.textContent = ''; a.removeAttribute('href'); a.style.display = '';
 }
 
 // ============ DOWNLOAD SHEET (canvas, no deps) ============
@@ -1295,7 +1307,6 @@ async function renderSheet(asDataUrl) {
 }
 async function downloadSheet() {
   if (!photos.length) return;
-  try { if (!galleryUrl) await ensureGallery(); } catch (e) {}
   const blob = await renderSheet();
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1324,23 +1335,28 @@ function setActive(panel) {
 
 // ============ EVENTS ============
 $('tabCam').addEventListener('click', () => setActive('cam'));
-$('tabLayout').addEventListener('click', () => { setActive('layout'); if (photos.length) ensureGallery(); });
+$('tabLayout').addEventListener('click', () => setActive('layout'));
 $('btnGoCam').addEventListener('click', () => setActive('cam'));
 $('btnShoot').addEventListener('click', capture);
-$('btnDone').addEventListener('click', () => { ensureGallery(); setActive('layout'); });
+$('btnDone').addEventListener('click', () => setActive('layout'));
 $('btnFlip').addEventListener('click', async () => {
   facing = facing === 'user' ? 'environment' : 'user';
   await startCamera();
 });
 $('btnReset').addEventListener('click', () => {
   photos = [];
+  customStickers = [];
   invalidateGallery();
   renderLayout();
 });
-// print: tunggu semua foto + QR ter-decode supaya tidak ada kotak putih di hasil print
+// CETAK: Generate QR Code dengan posisi foto & stiker final + buka dialog cetak
 $('btnPrint').addEventListener('click', async () => {
-  if (photos.length) await ensureGallery();
-  await new Promise(r => setTimeout(r, 150));
+  if (!photos.length) {
+    toast('⚠️ Belum ada foto untuk dicetak!');
+    return;
+  }
+  await generateQrNow();
+  await new Promise(r => setTimeout(r, 200));
   const imgs = document.querySelectorAll('.sheet img, .qr-box svg');
   await Promise.all([...imgs].map(el => el.decode ? el.decode().catch(() => {}) : Promise.resolve()));
   window.print();

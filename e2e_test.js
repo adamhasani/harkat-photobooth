@@ -66,6 +66,10 @@ const PORT = process.env.PORT || 8123;
   await page.click('#btnShoot');
   await new Promise(r => setTimeout(r, 400));
   await page.click('#tabLayout');
+  await new Promise(r => setTimeout(r, 600));
+  // Sesuai alur baru: QR diproses saat tombol CETAK ditekan
+  await page.evaluate(() => window.print = () => {}); // mock print
+  await page.click('#btnPrint');
   await new Promise(r => setTimeout(r, 2200));
   const qr = await page.evaluate(() => ({
     qrBoxHidden: document.querySelector('#qrBox').hidden,
