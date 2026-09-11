@@ -336,13 +336,18 @@
   }
   /* Tag kata-kata unik & persen di bawah foto */
   .box-tag {
-    margin-top: 3px; padding: 2px 3px 0;
+    margin-top: 4px; padding: 0 2px;
     font-family: 'Fredoka', system-ui, sans-serif;
-    font-size: clamp(9px, 2.2vw, 11px); font-weight: 600;
-    color: var(--ink); line-height: 1.15;
+    font-size: clamp(9px, 2.4vw, 11px); font-weight: 600;
+    color: var(--ink); line-height: 1.2;
     text-align: center;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    min-height: 14px;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 22px;
   }
   .box.empty .box-tag { visibility: hidden; }
 
@@ -956,22 +961,28 @@ window.__h = { renderHud, emotion, capture, renderSheet, landmarker: () => landm
 // funny caption + emoji per photo (dari % emoji hasil deteksi wajah)
 const FUN_EMOJI = ['🥳','😜','🤪','😍','🤩','😎','🥸','🤡','👻','🥴','😺','🤣','🦄','🍭','🎈','💃'];
 const CAPS_HIGH = [
-  'wow {p}% kamu tersenyum — fix sih ini calon penghuni surga 😇',
-  '{p}% senyummu semanis gula 🍬',
-  '{p}% kece — bintang iklan nggak pake kontrak ⭐',
-  '{p}% hepi — foto ini wajib dibingkai 🖼️'
+  '{p}% Calon Penghuni Surga 😇',
+  '{p}% Senyum Semanis Gula 🍬',
+  '{p}% Bintang Iklan Siap Debut ⭐',
+  '{p}% Kece Wajib Dibingkai 🖼️',
+  '{p}% Cantik/Ganteng Maksimal ✨',
+  '{p}% Senyum Bikin Meleleh 💖'
 ];
 const CAPS_MID = [
-  '{p}% senyum — lumayan, pabrik senyum lagi produksi 😄',
-  '{p}% happy — dikit lagi jadi artis 🎬',
-  '{p}% lucu — kalo ketawa dikasih ongkos, lo udah kaya 💸',
-  '{p}% cakep — jangan senyum gitu dong, hati meleleh 🫠'
+  '{p}% Pabrik Senyum Beroperasi 😄',
+  '{p}% Dikit Lagi Masuk TV 🎬',
+  '{p}% Senyum Pembawa Rezeki 💸',
+  '{p}% Manisnya Bikin Meleleh 🫠',
+  '{p}% Vibes Positif Banget ✌️',
+  '{p}% Hepi Seharian Penuh 🥳'
 ];
 const CAPS_LOW = [
-  '{p}% aja? serius? ayo senyum dong 😅',
-  '{p}% — masih malu-malu, wajar kok 🥹',
-  '{p}% — nggak apa, stone face juga ada fansnya 🗿',
-  '{p}% — besok senyumnya di-update ya 🔄'
+  '{p}% Stone Face tapi Tetap Kece 🗿',
+  '{p}% Masih Malu-Malu Gemoy 🥹',
+  '{p}% Senyum Masih Loading 🔄',
+  '{p}% Kurang Senyum Dikit Lagi 😅',
+  '{p}% Mode Cool & Misterius 😎',
+  '{p}% Senyum Hemat Energi 🤫'
 ];
 function randCap(pct, label) {
   const pool = pct >= 90 ? CAPS_HIGH : pct >= 70 ? CAPS_MID : CAPS_LOW;
@@ -1500,22 +1511,41 @@ async function renderSheet(asDataUrl) {
       // Tag Caption & Persen di bawah foto (di dalam kartu polaroid)
       const tagTxt = (photos[src] && (photos[src].cap || `${photos[src].pct || 80}% Senyum`)) || '';
       if (tagTxt) {
-        const tagY = by + 5 + ph + (bh - 5 - ph) / 2;
+        const chinCenterY = by + 5 + ph + (bh - 5 - ph) / 2;
         ctx.save();
         ctx.fillStyle = '#2d1d23';
-        ctx.font = '600 10.5px "Fredoka", sans-serif';
+        ctx.font = '600 10px "Fredoka", sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         
-        let displayTxt = tagTxt;
-        const maxTW = bw - 10;
-        if (ctx.measureText(displayTxt).width > maxTW) {
-          while (displayTxt.length > 4 && ctx.measureText(displayTxt + '…').width > maxTW) {
-            displayTxt = displayTxt.slice(0, -1);
+        const maxTW = bw - 8;
+        if (ctx.measureText(tagTxt).width <= maxTW) {
+          ctx.fillText(tagTxt, bx + bw / 2, chinCenterY);
+        } else {
+          // Wrap into 2 lines
+          const words = tagTxt.split(' ');
+          let line1 = '', line2 = '';
+          for (let w of words) {
+            const test = line1 ? line1 + ' ' + w : w;
+            if (ctx.measureText(test).width <= maxTW && !line2) {
+              line1 = test;
+            } else {
+              line2 = line2 ? line2 + ' ' + w : w;
+            }
           }
-          displayTxt += '…';
+          if (line2) {
+            if (ctx.measureText(line2).width > maxTW) {
+              while (line2.length > 4 && ctx.measureText(line2 + '…').width > maxTW) {
+                line2 = line2.slice(0, -1);
+              }
+              line2 += '…';
+            }
+            ctx.fillText(line1, bx + bw / 2, chinCenterY - 5.5);
+            ctx.fillText(line2, bx + bw / 2, chinCenterY + 5.5);
+          } else {
+            ctx.fillText(line1, bx + bw / 2, chinCenterY);
+          }
         }
-        ctx.fillText(displayTxt, bx + bw / 2, tagY);
         ctx.restore();
       }
     }
