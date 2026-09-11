@@ -170,12 +170,14 @@ const PORT = process.env.PORT || 8123;
   const faceCheck = await page.evaluate(() => {
     const emojiRe = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}]/u;
     const badges = [...document.querySelectorAll('.box .e')].map(e => e.textContent).filter(Boolean);
+    const tags = [...document.querySelectorAll('.box .box-tag')].map(e => e.textContent).filter(Boolean);
     return {
       badgeEmoji: badges.some(e => emojiRe.test(e)),
       badgeUnique: new Set(badges).size,
       badgeCount: badges.length,
       badgeSvgCount: document.querySelectorAll('.box .e svg').length,
-      capFaceEmoji: [...document.querySelectorAll('.cap-line .cap-face')].some(e => emojiRe.test(e.textContent))
+      boxTagCount: tags.length,
+      boxTagEmoji: tags.some(t => emojiRe.test(t))
     };
   });
   console.log('FACE_EMOJI', JSON.stringify(faceCheck));
