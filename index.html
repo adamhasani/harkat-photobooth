@@ -226,28 +226,40 @@
   }
   .sheet-head .play { color: var(--maroon); font-size: 20px; transform: rotate(-8deg); text-shadow: 1px 1px 0 rgba(201,162,39,0.35); }
 
-  .sheet-body { display: flex; gap: 10px; padding: 6px 14px; }
-  .sheet-col { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+  .sheet-body { display: flex; gap: 12px; padding: 10px 16px; position: relative; }
+  .sheet-col { flex: 1; display: flex; flex-direction: column; gap: 12px; }
   
-  /* Polaroid-style mini card: bingkai lebih ramping & manis */
+  /* Polaroid-style mini card: foto agak dikecilkan, ada ruang scrapbook ornamen */
   .box {
-    aspect-ratio: 1; border-radius: 12px; position: relative;
+    aspect-ratio: 1; border-radius: 14px; position: relative;
     background: #ffffff;
     border: 2px solid var(--maroon-deep);
     box-shadow: 0 3px 0 rgba(74,16,36,0.18);
-    padding: 4px;
+    padding: 6px;
+    cursor: grab;
+    user-select: none;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .box.drag-over {
+    transform: scale(1.04);
+    box-shadow: 0 0 10px var(--gold);
+    border-color: var(--gold);
+  }
+  .box.dragging {
+    opacity: 0.4;
   }
   .box .ph {
-    position: absolute; inset: 4px; border-radius: 8px;
+    position: absolute; inset: 6px; border-radius: 9px;
     display: flex; align-items: center; justify-content: center;
     color: rgba(107,31,58,0.35); font-size: 34px;
     background: repeating-linear-gradient(45deg, #dcd3ba 0 10px, #efe6cc 10px 20px);
   }
   .box .ph svg { width: 100%; height: 100%; opacity: .5; }
   .box img {
-    width: calc(100% - 8px); height: calc(100% - 8px);
-    object-fit: cover; position: absolute; top: 4px; left: 4px;
-    border-radius: 8px; border: 1px solid rgba(74,16,36,0.15);
+    width: calc(100% - 12px); height: calc(100% - 12px);
+    object-fit: cover; position: absolute; top: 6px; left: 6px;
+    border-radius: 9px; border: 1px solid rgba(74,16,36,0.15);
+    pointer-events: none;
   }
   .box .n {
     position: absolute; top: -6px; left: -6px; background: var(--gold); color: var(--maroon-deep);
@@ -268,6 +280,7 @@
     background: #fff; border: 2px solid var(--gold); border-radius: 50%; transform: rotate(6deg);
     box-shadow: 1.5px 1.5px 0 rgba(74,16,36,0.22);
     font-size: clamp(14px, 3.2vw, 18px); line-height: 1;
+    cursor: pointer;
   }
   .box.empty .e { display: none; }
 
@@ -282,6 +295,38 @@
     background: rgba(201,162,39,0.75); border-radius: 2px; transform: rotate(-8deg); z-index: 3;
     box-shadow: 0 1px 2px rgba(52,34,30,0.2);
   }
+
+  /* Ornamen Scrapbook Stiker di sela-sela grid */
+  .deco-sticker {
+    position: absolute; pointer-events: none; z-index: 6; font-size: 18px;
+    filter: drop-shadow(1px 2px 0 rgba(74,16,36,0.25));
+  }
+
+  /* Toolbar Sticker Customizer di Tab Cetak */
+  .sticker-bar {
+    display: flex; align-items: center; justify-content: center; gap: 8px; margin: 10px auto 4px;
+    background: var(--cream-dark); border: 2px solid var(--maroon-deep); border-radius: 12px;
+    padding: 6px 12px; flex-wrap: wrap; max-width: 480px; box-shadow: 2px 2px 0 rgba(74,16,36,0.2);
+  }
+  .sticker-bar span { font-size: 12px; font-weight: 700; color: var(--maroon-deep); }
+  .sticker-btn {
+    font-size: 20px; background: #fff; border: 1.5px solid var(--gold); border-radius: 8px;
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: transform 0.1s;
+  }
+  .sticker-btn:active { transform: scale(0.9); }
+  .sticker-btn.clear { font-size: 13px; font-weight: 700; width: auto; padding: 0 8px; color: var(--maroon); border-color: var(--maroon); }
+
+  /* Floating drag sticker on sheet */
+  .sheet-sticker {
+    position: absolute; font-size: 24px; cursor: move; user-select: none; z-index: 10;
+    filter: drop-shadow(1px 2px 0 rgba(74,16,36,0.25));
+  }
+  .sheet-sticker .del {
+    position: absolute; top: -6px; right: -6px; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--maroon); color: #fff; font-size: 9px; display: none; align-items: center; justify-content: center;
+  }
+  .sheet-sticker:hover .del { display: flex; }
 
   .sheet-foot { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px 2px; }
   .sheet-foot .sains { font-family: 'Luckiest Guy', cursive; color: var(--maroon); font-size: clamp(14px, 3.4vw, 18px); letter-spacing: 2px; transform: rotate(1.5deg); }
@@ -407,6 +452,20 @@
           </div>
         </div>
         <div class="empty-state" id="emptyState">Belum ada foto — jepret dulu di tab Kamera 📸</div>
+        
+        <!-- Sticker Customizer Bar -->
+        <div class="sticker-bar" id="stickerBar">
+          <span>🎨 Tambah Stiker:</span>
+          <button class="sticker-btn" data-st="✨">✨</button>
+          <button class="sticker-btn" data-st="💖">💖</button>
+          <button class="sticker-btn" data-st="🌸">🌸</button>
+          <button class="sticker-btn" data-st="🎀">🎀</button>
+          <button class="sticker-btn" data-st="⭐">⭐</button>
+          <button class="sticker-btn" data-st="👑">👑</button>
+          <button class="sticker-btn" data-st="🍀">🍀</button>
+          <button class="sticker-btn clear" id="btnClearStickers">Bersihkan</button>
+        </div>
+
         <div class="layout-actions">
           <button class="btn blue" id="btnGoCam">📸 Ambil Foto</button>
           <button class="btn gold big" id="btnPrint">🖨️ CETAK</button>
@@ -423,6 +482,7 @@ const MODEL_URL = 'assets/model/face_landmarker.task';
 
 // ============ STATE ============
 let photos = [];          // array of dataURL, up to 8
+let customStickers = [];  // array of { id, emoji, x, y, rot }
 let faceMode = false;     // mediapipe ready?
 let stream = null;
 let facing = 'user';      // 'user' | 'environment'
@@ -697,17 +757,176 @@ function renderLayout() {
       box.classList.remove('empty');
       xBtn.style.display = 'flex';
       if (eBadge) { eBadge.textContent = fill[i].emoji || '😄'; eBadge.style.display = 'flex'; }
+      box.draggable = true;
     } else {
       if (img) img.remove();
       if (ph) ph.style.display = 'flex';
       box.classList.add('empty');
       xBtn.style.display = 'none';
       if (eBadge) eBadge.style.display = 'none';
+      box.draggable = false;
     }
   });
   countBox.textContent = photos.length;
   $('emptyState').style.display = photos.length ? 'none' : '';
   renderCaptions();
+  renderDomStickers();
+}
+
+// Ganti emoji acak per foto saat tap pada badge emoji
+function setupEmojiPicker() {
+  const EMOJI_LIST = ['😄', '😍', '✨', '😎', '🥳', '🥰', '😜', '👻', '🤡', '💃', '👑', '💖', '⭐', '🌸'];
+  document.querySelectorAll('.box .e').forEach(el => {
+    el.onclick = (e) => {
+      e.stopPropagation();
+      const box = el.closest('.box');
+      const slot = +box.dataset.i;
+      if (!photos.length) return;
+      const pIdx = photos.length === 1 ? 0 : (slot % photos.length);
+      const cur = photos[pIdx].emoji;
+      const next = EMOJI_LIST[(EMOJI_LIST.indexOf(cur) + 1) % EMOJI_LIST.length];
+      photos[pIdx].emoji = next;
+      renderLayout();
+      invalidateGallery();
+    };
+  });
+}
+
+// Drag and drop foto untuk tukar posisi
+let draggedSlot = null;
+function setupDragDrop() {
+  const boxes = document.querySelectorAll('.box');
+  boxes.forEach(box => {
+    box.addEventListener('dragstart', (e) => {
+      if (box.classList.contains('empty')) return;
+      draggedSlot = +box.dataset.i;
+      box.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    box.addEventListener('dragend', () => {
+      box.classList.remove('dragging');
+      boxes.forEach(b => b.classList.remove('drag-over'));
+    });
+    box.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      if (!box.classList.contains('empty') && draggedSlot !== null) {
+        box.classList.add('drag-over');
+      }
+    });
+    box.addEventListener('dragleave', () => {
+      box.classList.remove('drag-over');
+    });
+    box.addEventListener('drop', (e) => {
+      e.preventDefault();
+      box.classList.remove('drag-over');
+      const targetSlot = +box.dataset.i;
+      if (draggedSlot !== null && targetSlot !== draggedSlot && photos.length > 1) {
+        const idxA = draggedSlot % photos.length;
+        const idxB = targetSlot % photos.length;
+        if (idxA !== idxB) {
+          const temp = photos[idxA];
+          photos[idxA] = photos[idxB];
+          photos[idxB] = temp;
+          renderLayout();
+          invalidateGallery();
+        }
+      }
+      draggedSlot = null;
+    });
+  });
+}
+
+// Custom Drag Floating Stickers on Sheet
+function addSticker(emoji) {
+  const sheet = $('sheet');
+  const id = 'st_' + Date.now();
+  // Posisi default di tengah sheet
+  const x = sheet.offsetWidth / 2 + (Math.random() * 40 - 20);
+  const y = sheet.offsetHeight / 2 + (Math.random() * 40 - 20);
+  const rot = (Math.random() * 0.4 - 0.2);
+  customStickers.push({ id, emoji, x, y, rot });
+  renderDomStickers();
+  invalidateGallery();
+}
+
+function renderDomStickers() {
+  document.querySelectorAll('.sheet-sticker').forEach(el => el.remove());
+  const sheet = $('sheet');
+  customStickers.forEach(st => {
+    const el = document.createElement('div');
+    el.className = 'sheet-sticker';
+    el.id = st.id;
+    el.textContent = st.emoji;
+    el.style.left = (st.x - 12) + 'px';
+    el.style.top = (st.y - 12) + 'px';
+    el.style.transform = `rotate(${st.rot}rad)`;
+
+    const del = document.createElement('div');
+    del.className = 'del';
+    del.textContent = '✕';
+    del.onclick = (e) => {
+      e.stopPropagation();
+      customStickers = customStickers.filter(s => s.id !== st.id);
+      renderDomStickers();
+      invalidateGallery();
+    };
+    el.appendChild(del);
+
+    // Touch & Mouse Dragging for sticker
+    let isDragging = false, startX, startY, origX, origY;
+    const onStart = (cx, cy) => {
+      isDragging = true;
+      startX = cx; startY = cy;
+      origX = st.x; origY = st.y;
+    };
+    const onMove = (cx, cy) => {
+      if (!isDragging) return;
+      const dx = cx - startX;
+      const dy = cy - startY;
+      st.x = Math.max(10, Math.min(sheet.offsetWidth - 10, origX + dx));
+      st.y = Math.max(10, Math.min(sheet.offsetHeight - 10, origY + dy));
+      el.style.left = (st.x - 12) + 'px';
+      el.style.top = (st.y - 12) + 'px';
+    };
+    const onEnd = () => {
+      if (isDragging) {
+        isDragging = false;
+        invalidateGallery();
+      }
+    };
+
+    el.addEventListener('mousedown', (e) => {
+      if (e.target.classList.contains('del')) return;
+      onStart(e.clientX, e.clientY);
+      const mouseMove = (ev) => onMove(ev.clientX, ev.clientY);
+      const mouseUp = () => {
+        onEnd();
+        window.removeEventListener('mousemove', mouseMove);
+        window.removeEventListener('mouseup', mouseUp);
+      };
+      window.addEventListener('mousemove', mouseMove);
+      window.addEventListener('mouseup', mouseUp);
+    });
+
+    el.addEventListener('touchstart', (e) => {
+      if (e.target.classList.contains('del')) return;
+      const touch = e.touches[0];
+      onStart(touch.clientX, touch.clientY);
+      const touchMove = (ev) => {
+        const t = ev.touches[0];
+        onMove(t.clientX, t.clientY);
+      };
+      const touchEnd = () => {
+        onEnd();
+        window.removeEventListener('touchmove', touchMove);
+        window.removeEventListener('touchend', touchEnd);
+      };
+      window.addEventListener('touchmove', touchMove);
+      window.addEventListener('touchend', touchEnd);
+    });
+
+    sheet.appendChild(el);
+  });
 }
 
 // caption lucu per foto — strip di ATAS barcode (QR)
@@ -1042,6 +1261,25 @@ async function renderSheet(asDataUrl) {
     }
   }
 
+  // 7. Custom Drag Stickers di atas Canvas
+  if (customStickers && customStickers.length) {
+    const sRect = sheetEl.getBoundingClientRect();
+    for (const st of customStickers) {
+      const relX = st.x / sRect.width;
+      const relY = st.y / sRect.height;
+      const canvasStX = relX * W;
+      const canvasStY = relY * H;
+      ctx.save();
+      ctx.translate(canvasStX, canvasStY);
+      ctx.rotate(st.rot || 0);
+      ctx.shadowColor = 'rgba(74,16,36,0.25)'; ctx.shadowOffsetY = 2 * SCALE; ctx.shadowBlur = 1 * SCALE;
+      ctx.font = Math.round(24 * SCALE) + 'px system-ui';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(st.emoji, 0, 0);
+      ctx.restore();
+    }
+  }
+
   if (asDataUrl) return cv.toDataURL('image/png');
   return await new Promise(r => cv.toBlob(r, 'image/png'));
 }
@@ -1110,8 +1348,22 @@ document.querySelectorAll('.box .x').forEach(x => {
 // ESC key in print dialogs etc.
 window.addEventListener('beforeprint', () => { /* nothing special needed */ });
 
+// Sticker Bar Buttons
+document.querySelectorAll('.sticker-btn[data-st]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    addSticker(btn.dataset.st);
+  });
+});
+$('btnClearStickers').addEventListener('click', () => {
+  customStickers = [];
+  renderDomStickers();
+  invalidateGallery();
+});
+
 // ============ INIT ============
 renderLayout();
+setupEmojiPicker();
+setupDragDrop();
 initVision();
 startCamera();
 </script>
