@@ -29,17 +29,17 @@
     --maroon-deep: #4a0000;
     --gold: #f5b722;
     --gold-glow: #ffd86b;
-    --blue: #1e3a5f;
     --teal: #0d6e5a;
+    --cyan-glow: #00f2fe;
     --ink: #2d1d23;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body {
-    background: #200812;
+    background: #1c0610;
     background-image: 
-      radial-gradient(circle at 10% 20%, rgba(245,183,34,0.15) 0%, transparent 40%),
-      radial-gradient(circle at 90% 80%, rgba(104,26,52,0.3) 0%, transparent 45%),
+      radial-gradient(circle at 10% 20%, rgba(245,183,34,0.18) 0%, transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(104,26,52,0.35) 0%, transparent 45%),
       repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 8px);
     font-family: 'Fredoka', system-ui, -apple-system, sans-serif;
     color: var(--ink);
@@ -59,7 +59,7 @@
     display: flex;
     flex-direction: column;
     position: relative;
-    box-shadow: 0 0 24px rgba(0,0,0,0.5);
+    box-shadow: 0 0 28px rgba(0,0,0,0.6);
   }
 
   /* ============ TOOLBAR ============ */
@@ -71,14 +71,14 @@
   .toolbar-left {
     display: flex; align-items: center; gap: 10px;
   }
-  .btn-home {
+  .btn-nav {
     background: var(--cream); color: var(--maroon-deep);
     border: 1.5px solid var(--maroon-deep); border-radius: 999px;
-    padding: 4px 10px; font-size: 12px; font-weight: 700;
+    padding: 5px 12px; font-size: 12px; font-weight: 700;
     text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
     box-shadow: 0 1.5px 0 var(--maroon-deep); transition: transform 0.1s;
   }
-  .btn-home:active { transform: translateY(1px); }
+  .btn-nav:active { transform: translateY(1px); }
   .brand { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
   .brand h1 {
     font-family: 'Luckiest Guy', cursive;
@@ -114,48 +114,48 @@
 
   /* ============ CAMERA VIEWPORT ============ */
   .cam-container {
-    padding: 10px 12px 6px;
-    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 10px 12px 10px;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
   }
   .cam-wrap {
     position: relative; width: 100%; border-radius: 18px; overflow: hidden;
     background: #000; border: 3px solid var(--maroon-deep);
-    box-shadow: 0 4px 0 var(--maroon-deep), 0 6px 12px rgba(0,0,0,0.2);
-    aspect-ratio: 4 / 3; max-height: 52vh;
+    box-shadow: 0 4px 0 var(--maroon-deep), 0 6px 14px rgba(0,0,0,0.25);
+    aspect-ratio: 4 / 3;
   }
   #video {
-    width: 100%; height: 100%; object-fit: cover; display: block;
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
   }
   #video.mirror { transform: scaleX(-1); }
   #overlayCanvas {
     position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3;
   }
 
-  /* Scanner Laser Animation */
+  /* Scanner Laser Sweep */
   .scan-laser {
     position: absolute; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, transparent, #ffd86b, #ff4081, #ffd86b, transparent);
-    box-shadow: 0 0 12px #ff4081, 0 0 6px #ffd86b;
-    z-index: 4; pointer-events: none; opacity: 0.85;
-    animation: laserScan 2.2s ease-in-out infinite alternate;
+    background: linear-gradient(90deg, transparent, #ffd86b, #00f2fe, #ffd86b, transparent);
+    box-shadow: 0 0 12px #00f2fe, 0 0 6px #ffd86b;
+    z-index: 4; pointer-events: none; opacity: 0.9;
+    animation: laserScan 2.4s ease-in-out infinite alternate;
   }
   @keyframes laserScan {
     0% { top: 6%; }
     100% { top: 92%; }
   }
 
-  /* Status / Hint Badge */
+  /* Live Detection Status */
   .scan-badge {
     position: absolute; top: 10px; left: 10px; z-index: 5;
     background: rgba(74,0,0,0.85); color: #ffd86b;
     border: 1.5px solid var(--gold); border-radius: 8px;
-    padding: 3px 8px; font-size: 11px; font-weight: 700;
-    display: flex; align-items: center; gap: 5px;
+    padding: 4px 10px; font-size: 11.5px; font-weight: 700;
+    display: flex; align-items: center; gap: 6px;
     backdrop-filter: blur(4px); box-shadow: 0 2px 4px rgba(0,0,0,0.3);
   }
   .dot-live {
-    width: 7px; height: 7px; border-radius: 50%; background: #00ff88;
-    box-shadow: 0 0 6px #00ff88; animation: pulse 1.2s infinite;
+    width: 8px; height: 8px; border-radius: 50%; background: #00ff88;
+    box-shadow: 0 0 8px #00ff88; animation: pulse 1.2s infinite;
   }
   @keyframes pulse {
     0%, 100% { opacity: 1; transform: scale(1); }
@@ -165,16 +165,16 @@
   /* ============ LIVE AI ANALYSIS HUD ============ */
   .hud-panel {
     width: 100%; background: #ffffff; border: 2.5px solid var(--maroon-deep);
-    border-radius: 16px; padding: 10px 14px; box-shadow: 0 3px 0 var(--maroon-deep);
-    display: flex; flex-direction: column; gap: 6px;
+    border-radius: 18px; padding: 12px 14px; box-shadow: 0 3px 0 var(--maroon-deep);
+    display: flex; flex-direction: column; gap: 8px;
   }
   .hud-header {
     display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 1.5px dashed #ecdcb9; padding-bottom: 4px;
+    border-bottom: 1.5px dashed #ecdcb9; padding-bottom: 6px;
   }
   .hud-title {
     font-family: 'Luckiest Guy', cursive; color: var(--maroon); font-size: 16px;
-    display: flex; align-items: center; gap: 6px;
+    letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;
   }
   .hud-confidence {
     font-size: 11px; font-weight: 700; color: var(--teal);
@@ -185,41 +185,42 @@
     display: flex; align-items: center; gap: 12px;
   }
   .hud-avatar {
-    font-size: 32px; width: 50px; height: 50px; border-radius: 12px;
+    font-size: 32px; width: 52px; height: 52px; border-radius: 14px;
     background: #fbf5e6; border: 2px solid var(--maroon-deep);
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    box-shadow: 0 2px 0 rgba(74,0,0,0.15);
   }
   .hud-info {
     flex: 1; min-width: 0;
   }
   .hud-main-text {
-    font-family: 'Fredoka', sans-serif; font-size: 15px; font-weight: 700;
+    font-family: 'Fredoka', sans-serif; font-size: 16px; font-weight: 700;
     color: var(--maroon-deep); line-height: 1.2;
   }
   .hud-sub-text {
-    font-size: 12px; color: #5c3540; font-weight: 600; margin-top: 2px;
+    font-size: 12.5px; color: #5c3540; font-weight: 600; margin-top: 3px; line-height: 1.3;
   }
 
-  /* Metric Breakdown Bar */
+  /* Metric Breakdown Grid */
   .hud-stats {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 2px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 2px;
   }
   .stat-chip {
-    background: #fbf8f0; border: 1px solid #ecdcb9; border-radius: 8px;
-    padding: 3px 6px; font-size: 11px; display: flex; justify-content: space-between;
+    background: #fbf8f0; border: 1.5px solid #ecdcb9; border-radius: 10px;
+    padding: 5px 8px; font-size: 11.5px; display: flex; justify-content: space-between;
     font-weight: 600;
   }
   .stat-chip b { color: var(--maroon); }
 
   /* ============ PROPS & FILTER SUB-PANEL (for Mode 4) ============ */
   .props-row {
-    display: none; width: 100%; gap: 6px; overflow-x: auto; padding: 4px 0;
+    display: none; width: 100%; gap: 6px; overflow-x: auto; padding: 2px 0;
     scrollbar-width: none;
   }
   .props-row::-webkit-scrollbar { display: none; }
   .prop-chip, .filter-chip {
     font-family: 'Fredoka', sans-serif; font-size: 12px; font-weight: 700;
-    padding: 4px 10px; border-radius: 999px; border: 1.5px solid var(--maroon-deep);
+    padding: 5px 12px; border-radius: 999px; border: 1.5px solid var(--maroon-deep);
     background: #fff; color: var(--maroon-deep); cursor: pointer;
     box-shadow: 0 1.5px 0 var(--maroon-deep); white-space: nowrap; flex-shrink: 0;
   }
@@ -230,11 +231,11 @@
   /* ============ CAMERA BUTTON CONTROLS ============ */
   .cam-controls {
     display: flex; gap: 10px; width: 100%; justify-content: center; align-items: center;
-    padding: 4px 0 10px;
+    padding: 4px 0 6px;
   }
   .btn-action {
     font-family: 'Luckiest Guy', cursive; font-size: 15px; letter-spacing: 0.5px;
-    padding: 10px 16px; border-radius: 999px; border: 2.5px solid var(--maroon-deep);
+    padding: 12px 18px; border-radius: 999px; border: 2.5px solid var(--maroon-deep);
     cursor: pointer; box-shadow: 0 3px 0 var(--maroon-deep); transition: all 0.1s;
     display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
   }
@@ -243,26 +244,26 @@
     background: #ffffff; color: var(--maroon-deep); font-size: 13px; font-family: 'Fredoka', sans-serif; font-weight: 700;
   }
   .btn-scan {
-    background: var(--gold); color: var(--maroon-deep); font-size: 16px; flex: 1; max-width: 280px;
+    background: var(--gold); color: var(--maroon-deep); font-size: 16px; flex: 1; max-width: 300px;
     justify-content: center;
   }
   .btn-scan:hover { background: var(--gold-glow); }
 
   /* ============ RESULT POPUP MODAL (CERTIFICATE CARD) ============ */
   .modal-backdrop {
-    position: fixed; inset: 0; background: rgba(32,8,18,0.85); z-index: 50;
-    display: none; align-items: center; justify-content: center; padding: 14px;
-    backdrop-filter: blur(5px);
+    position: fixed; inset: 0; background: rgba(28,6,16,0.88); z-index: 50;
+    display: none; align-items: center; justify-content: center; padding: 16px;
+    backdrop-filter: blur(6px);
   }
   .modal-card {
-    background: #ffffff; border: 3.5px solid var(--maroon-deep); border-radius: 20px;
-    width: 100%; max-width: 420px; max-height: 90vh; overflow-y: auto;
-    box-shadow: 0 8px 0 var(--maroon-deep), 0 16px 32px rgba(0,0,0,0.4);
-    padding: 16px; display: flex; flex-direction: column; gap: 12px;
-    animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: #ffffff; border: 3.5px solid var(--maroon-deep); border-radius: 24px;
+    width: 100%; max-width: 440px; max-height: 92vh; overflow-y: auto;
+    box-shadow: 0 8px 0 var(--maroon-deep), 0 16px 36px rgba(0,0,0,0.5);
+    padding: 18px; display: flex; flex-direction: column; gap: 14px;
+    animation: popIn 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
   @keyframes popIn {
-    from { opacity: 0; transform: scale(0.9); }
+    from { opacity: 0; transform: scale(0.92); }
     to { opacity: 1; transform: scale(1); }
   }
 
@@ -270,58 +271,60 @@
     text-align: center; border-bottom: 2px solid var(--maroon-deep); padding-bottom: 8px;
   }
   .cert-tag {
-    font-size: 10.5px; font-weight: 700; color: var(--maroon); background: #ffd86b;
-    padding: 2px 10px; border-radius: 999px; border: 1px solid var(--maroon-deep);
+    font-size: 11px; font-weight: 700; color: var(--maroon-deep); background: #ffd86b;
+    padding: 3px 12px; border-radius: 999px; border: 1.5px solid var(--maroon-deep);
     display: inline-block; margin-bottom: 4px;
   }
   .cert-header h2 {
-    font-family: 'Luckiest Guy', cursive; color: var(--maroon); font-size: 22px;
+    font-family: 'Luckiest Guy', cursive; color: var(--maroon); font-size: 24px;
     letter-spacing: 1px; line-height: 1.1;
   }
   .cert-header small {
-    font-family: 'Pacifico', cursive; color: var(--gold); font-size: 14px;
+    font-family: 'Pacifico', cursive; color: var(--gold); font-size: 15px;
   }
 
   .cert-photo-wrap {
-    width: 100%; aspect-ratio: 1; border-radius: 12px; overflow: hidden;
-    border: 2px solid var(--maroon-deep); background: #000; position: relative;
+    width: 100%; aspect-ratio: 4 / 3; border-radius: 16px; overflow: hidden;
+    border: 2.5px solid var(--maroon-deep); background: #000; position: relative;
+    box-shadow: 0 3px 0 rgba(74,0,0,0.2);
   }
-  .cert-photo-wrap img { width: 100%; height: 100%; object-fit: cover; }
+  .cert-photo-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
   .cert-results-box {
-    background: #fbf8f0; border: 2px solid var(--maroon-deep); border-radius: 12px;
-    padding: 10px 12px; display: flex; flex-direction: column; gap: 8px;
+    background: #fbf8f0; border: 2px solid var(--maroon-deep); border-radius: 16px;
+    padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;
   }
   .cert-row {
     display: flex; justify-content: space-between; align-items: center;
-    font-size: 13px; font-weight: 700; color: #38242b;
+    font-size: 13.5px; font-weight: 700; color: #38242b;
   }
   .cert-row span { color: #681a34; }
-  .cert-row b { color: var(--maroon-deep); font-size: 14px; }
+  .cert-row b { color: var(--maroon-deep); font-size: 14.5px; }
   .cert-quote {
-    background: #ffffff; border-left: 3px solid var(--gold); padding: 6px 10px;
-    border-radius: 0 8px 8px 0; font-size: 12px; color: #4a2832; line-height: 1.35;
+    background: #ffffff; border-left: 3.5px solid var(--gold); padding: 8px 12px;
+    border-radius: 0 10px 10px 0; font-size: 12.5px; color: #4a2832; line-height: 1.4;
+    border: 1px solid #ebdcb9; border-left: 3.5px solid var(--gold);
   }
 
   .cert-stamp {
-    text-align: center; font-family: 'Caveat', cursive; font-size: 18px; font-weight: 700;
-    color: var(--maroon); transform: rotate(-2deg); margin-top: -4px;
+    text-align: center; font-family: 'Caveat', cursive; font-size: 20px; font-weight: 700;
+    color: var(--maroon); transform: rotate(-1.5deg);
   }
 
   .cert-actions {
-    display: flex; gap: 8px;
+    display: flex; gap: 10px;
   }
   .btn-cert-dl {
     flex: 1; background: var(--gold); color: var(--maroon-deep);
-    border: 2px solid var(--maroon-deep); padding: 10px; border-radius: 10px;
-    font-family: 'Luckiest Guy', cursive; font-size: 14px; cursor: pointer;
-    box-shadow: 0 2px 0 var(--maroon-deep); text-align: center; text-decoration: none;
+    border: 2px solid var(--maroon-deep); padding: 12px; border-radius: 12px;
+    font-family: 'Luckiest Guy', cursive; font-size: 15px; cursor: pointer;
+    box-shadow: 0 3px 0 var(--maroon-deep); text-align: center; text-decoration: none;
   }
   .btn-cert-close {
     background: #fbf5e6; color: var(--maroon-deep);
-    border: 2px solid var(--maroon-deep); padding: 10px 14px; border-radius: 10px;
-    font-family: 'Fredoka', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer;
-    box-shadow: 0 2px 0 var(--maroon-deep);
+    border: 2px solid var(--maroon-deep); padding: 12px 16px; border-radius: 12px;
+    font-family: 'Fredoka', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 3px 0 var(--maroon-deep);
   }
 </style>
 </head>
@@ -330,13 +333,13 @@
   <!-- TOOLBAR -->
   <div class="toolbar">
     <div class="toolbar-left">
-      <a href="/" class="btn-home">🏠 Menu</a>
+      <a href="/" class="btn-nav">🏠 Menu</a>
       <div class="brand">
         <h1>UKM EXPO UHN</h1>
         <small>AI VISION ✦</small>
       </div>
     </div>
-    <a href="/photobooth" class="btn-home" style="background:#ffcc4d;">📸 Photobooth</a>
+    <a href="/photobooth" class="btn-nav" style="background:#ffcc4d;">📸 Photobooth</a>
   </div>
 
   <!-- MODE TABS -->
@@ -369,7 +372,7 @@
         <div class="hud-avatar" id="hudAvatar">🎓</div>
         <div class="hud-info">
           <div class="hud-main-text" id="hudMainText">19 Tahun • Gen-Z Fresh</div>
-          <div class="hud-sub-text" id="hudSubText">Wajah baby face, aura maba siap ospek! ✨</div>
+          <div class="hud-sub-text" id="hudSubText">Wajah baby face, aura maba siap berprestasi! ✨</div>
         </div>
       </div>
       <div class="hud-stats" id="hudStats">
@@ -407,7 +410,7 @@
 <div class="modal-backdrop" id="modalResult">
   <div class="modal-card">
     <div class="cert-header">
-      <div class="cert-tag">✨ OFFICIAL AI VISION REPORT</div>
+      <div class="cert-tag">✨ OFFICIAL AI BIOMETRIC REPORT</div>
       <h2>UKM EXPO UHN</h2>
       <small>Sains Data & Artificial Intelligence Lab</small>
     </div>
@@ -426,7 +429,7 @@
         <b id="certPrimaryResult">19 Tahun (Gen-Z)</b>
       </div>
       <div class="cert-row">
-        <span>Skor / Kemiripan:</span>
+        <span>Tingkat Kemiripan:</span>
         <b id="certSecondaryResult">98% Match</b>
       </div>
       <div class="cert-quote" id="certQuote">
@@ -463,7 +466,7 @@ let lastDet = 0;
 let lastFaces = [];
 let lastBs = null;
 
-// Personalities database for Mode 3 (Lookalike)
+// Database personalities untuk Mode 3 (Kembaran Tokoh)
 const CELEBS = [
   { name: 'Maudy Ayunda 🎓', role: 'Aktris & Edukator Cerdas', avatar: '👩🎓', jaw: 0.45, smile: 0.7, eyeDist: 0.38, comment: 'Punya bentuk wajah proporsional dan aura cerdas berprestasi!' },
   { name: 'Nicholas Saputra 🕶️', role: 'Aktor Karismatik & Cool', avatar: '😎', jaw: 0.62, smile: 0.3, eyeDist: 0.42, comment: 'Tatapan mata tajam & garis rahang tegas yang memikat!' },
@@ -476,7 +479,6 @@ const CELEBS = [
   { name: 'Ketua BEM Inspiratif 🔥', role: 'Leader Masa Depan', avatar: '🏆', jaw: 0.58, smile: 0.75, eyeDist: 0.40, comment: 'Punya jiwa kepemimpinan tinggi dan energik!' }
 ];
 
-// Quotes database
 const AGE_QUOTES = [
   'Wajah fresh, semangat membara, maba kebanggaan jurusan!',
   'Baby face abis, awet muda 10 tahun ke depan!',
@@ -489,6 +491,12 @@ const BEAUTY_QUOTES = [
   'Tingkat karisma maksimal, auranya magnetik banget!',
   'Kombinasi manis dan elegan, wajib masuk majalah kampus!'
 ];
+
+// Landmark indices for biometric contours
+const JAW_INDICES = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109, 10];
+const LEFT_EYE_INDICES = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246];
+const RIGHT_EYE_INDICES = [263, 249, 390, 373, 374, 380, 381, 382, 362, 398, 384, 385, 386, 387, 388, 466];
+const LIPS_INDICES = [61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95];
 
 // ============ VISION INIT ============
 async function initVision() {
@@ -546,7 +554,8 @@ function adaptSize() {
   if (video.videoWidth && video.videoHeight) {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    camWrap.style.aspectRatio = `${video.videoWidth} / ${video.videoHeight}`;
+    const a = `${video.videoWidth} / ${video.videoHeight}`;
+    if (camWrap.style.aspectRatio !== a) camWrap.style.aspectRatio = a;
   }
 }
 
@@ -554,21 +563,15 @@ function adaptSize() {
 function getFaceMetrics(landmarks, blendshapes) {
   if (!landmarks || landmarks.length < 468) return null;
   
-  // Keypoints: 1=nose tip, 33=left eye, 263=right eye, 152=chin, 10=top forehead, 61=left mouth, 291=right mouth
   const nose = landmarks[1];
   const leftEye = landmarks[33];
   const rightEye = landmarks[263];
   const chin = landmarks[152];
   const forehead = landmarks[10];
-  const leftMouth = landmarks[61];
-  const rightMouth = landmarks[291];
 
-  // Distances
   const eyeDist = Math.hypot(rightEye.x - leftEye.x, rightEye.y - leftEye.y);
   const faceHeight = Math.hypot(chin.x - forehead.x, chin.y - forehead.y);
-  const mouthWidth = Math.hypot(rightMouth.x - leftMouth.x, rightMouth.y - leftMouth.y);
 
-  // Blendshapes (if available)
   let smileScore = 0.5;
   if (blendshapes && blendshapes.categories) {
     const sL = blendshapes.categories.find(c => c.categoryName === 'mouthSmileLeft');
@@ -576,27 +579,27 @@ function getFaceMetrics(landmarks, blendshapes) {
     if (sL || sR) smileScore = Math.max((sL ? sL.score : 0), (sR ? sR.score : 0));
   }
 
-  // 1. Age Calculation (Derived geometrically & blendshape features)
+  // 1. Age Calculation
   const ratio = (eyeDist / (faceHeight || 0.01));
   let estAge = Math.round(18 + (0.42 - ratio) * 25 + (1 - smileScore) * 3);
-  estAge = Math.max(16, Math.min(26, estAge));
-  const gen = estAge <= 24 ? 'Gen-Z Fresh 🎓' : 'Young Professional 💼';
+  estAge = Math.max(17, Math.min(25, estAge));
+  const gen = estAge <= 23 ? 'Gen-Z Fresh 🎓' : 'Young Achiever 💼';
 
   // 2. Beauty / Golden Ratio Symmetry Score
   const leftSym = Math.hypot(nose.x - leftEye.x, nose.y - leftEye.y);
   const rightSym = Math.hypot(nose.x - rightEye.x, nose.y - rightEye.y);
   const symRatio = Math.min(leftSym, rightSym) / (Math.max(leftSym, rightSym) || 0.01);
-  const beautyScore = Math.min(99, Math.max(88, Math.round(symRatio * 80 + smileScore * 18 + 2)));
+  const beautyScore = Math.min(99, Math.max(89, Math.round(symRatio * 82 + smileScore * 16 + 2)));
   const symmetryPct = Math.min(99, Math.round(symRatio * 100));
 
-  // 3. Celebrity / Alumni Matcher (Find closest Euclidean match)
+  // 3. Celebrity / Alumni Matcher
   let bestMatch = CELEBS[0];
   let minDiff = 999;
   CELEBS.forEach(c => {
     const diff = Math.abs(c.eyeDist - eyeDist) * 3 + Math.abs(c.smile - smileScore);
     if (diff < minDiff) { minDiff = diff; bestMatch = c; }
   });
-  const matchPct = Math.min(98, Math.max(82, Math.round(100 - minDiff * 25)));
+  const matchPct = Math.min(98, Math.max(85, Math.round(100 - minDiff * 25)));
 
   return {
     estAge, gen, beautyScore, symmetryPct, smilePct: Math.round(smileScore * 100),
@@ -642,86 +645,116 @@ function renderOverlay() {
 
   $('scanStatusText').textContent = `${lastFaces.length} Wajah Terdeteksi ✓`;
 
-  // Draw detection HUD for each face
   for (let i = 0; i < lastFaces.length; i++) {
     const lm = lastFaces[i];
     const bs = lastBs && lastBs[i];
     const metrics = getFaceMetrics(lm, bs);
     if (!metrics) continue;
 
-    // Transform coordinates
+    // 1. Draw Sleek Glowing Facial Contours (Mesh Wireframe)
+    drawMeshContours(ctx, lm, w, h, isMirror);
+
+    // 2. Draw Futuristic Bounding Box
     const b = metrics.box;
     let bx = b.minX * w, by = b.minY * h, bw = (b.maxX - b.minX) * w, bh = (b.maxY - b.minY) * h;
-    if (isMirror) {
-      bx = w - (b.maxX * w);
-    }
+    if (isMirror) bx = w - (b.maxX * w);
 
-    // Expand bounding box slightly
-    bx -= bw * 0.1; by -= bh * 0.15; bw *= 1.2; bh *= 1.3;
+    bx -= bw * 0.1; by -= bh * 0.12; bw *= 1.2; bh *= 1.25;
 
-    // Draw Cyber/Expo HUD Box
     ctx.save();
     ctx.strokeStyle = '#ffd86b';
     ctx.lineWidth = 2.5;
     ctx.shadowColor = '#ffd86b';
-    ctx.shadowBlur = 8;
+    ctx.shadowBlur = 6;
 
-    // Corner brackets
-    const cLen = Math.min(24, bw * 0.2);
-    // Top-Left
+    const cLen = Math.min(22, bw * 0.2);
+    // 4 Corner Brackets
     ctx.beginPath(); ctx.moveTo(bx, by + cLen); ctx.lineTo(bx, by); ctx.lineTo(bx + cLen, by); ctx.stroke();
-    // Top-Right
     ctx.beginPath(); ctx.moveTo(bx + bw - cLen, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw, by + cLen); ctx.stroke();
-    // Bottom-Left
     ctx.beginPath(); ctx.moveTo(bx, by + bh - cLen); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + cLen, by + bh); ctx.stroke();
-    // Bottom-Right
     ctx.beginPath(); ctx.moveTo(bx + bw - cLen, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by + bh - cLen); ctx.stroke();
     ctx.restore();
 
-    // Floating Badge over the head
+    // 3. Floating Holographic Badge (Centered over head)
     ctx.save();
     let badgeTxt = '';
-    let badgeColor = '#681a34';
+    let badgeBg = '#681a34';
     if (currentMode === 'age') {
-      badgeTxt = `🎂 ${metrics.estAge} Thn • ${metrics.gen}`;
+      badgeTxt = `🎂 ${metrics.estAge} THN • ${metrics.gen}`;
     } else if (currentMode === 'beauty') {
-      badgeTxt = `💖 Pesona ${metrics.beautyScore}% • Simetri ${metrics.symmetryPct}%`;
-      badgeColor = '#0d6e5a';
+      badgeTxt = `💖 PESONA ${metrics.beautyScore}% • SIMETRI ${metrics.symmetryPct}%`;
+      badgeBg = '#0d6e5a';
     } else if (currentMode === 'lookalike') {
       badgeTxt = `🎭 ${metrics.matchPct}% ${metrics.bestMatch.name}`;
-      badgeColor = '#1e3a5f';
+      badgeBg = '#1e3a5f';
     } else if (currentMode === 'props') {
-      badgeTxt = `👑 AR Active`;
+      badgeTxt = `👑 AR PROPS ACTIVE`;
     }
 
     ctx.font = '700 13px "Fredoka", sans-serif';
-    const txtW = ctx.measureText(badgeTxt).width + 16;
+    const txtW = ctx.measureText(badgeTxt).width + 18;
     const badgeX = bx + bw / 2 - txtW / 2;
-    const badgeY = Math.max(20, by - 12);
+    const badgeY = Math.max(22, by - 12);
 
-    ctx.fillStyle = badgeColor;
-    roundRect(ctx, badgeX, badgeY - 16, txtW, 24, 6);
+    ctx.fillStyle = badgeBg;
+    roundRect(ctx, badgeX, badgeY - 16, txtW, 26, 8);
     ctx.fill();
-    ctx.strokeStyle = '#ffd86b'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.strokeStyle = '#ffd86b'; ctx.lineWidth = 1.8; ctx.stroke();
 
     ctx.fillStyle = '#ffd86b';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(badgeTxt, badgeX + txtW / 2, badgeY - 4);
+    ctx.fillText(badgeTxt, badgeX + txtW / 2, badgeY - 3);
     ctx.restore();
 
-    // Draw AR Props if selected
+    // 4. Draw AR Props (if active)
     if (currentMode === 'props' && currentProp !== 'none') {
       drawArProp(ctx, lm, w, h, isMirror, currentProp);
     }
 
-    // Update bottom HUD info based on the first face
-    if (i === 0) {
-      updateHudPanel(metrics);
-    }
+    if (i === 0) updateHudPanel(metrics);
   }
 }
 
-// Draw AR Props onto the canvas
+// Draw subtle glowing biometric contour paths
+function drawMeshContours(ctx, lm, w, h, isMirror) {
+  ctx.save();
+  ctx.strokeStyle = 'rgba(0, 242, 254, 0.45)';
+  ctx.lineWidth = 1.2;
+  ctx.shadowColor = '#00f2fe';
+  ctx.shadowBlur = 4;
+
+  const drawPath = (indices, close = false) => {
+    ctx.beginPath();
+    for (let idx = 0; idx < indices.length; idx++) {
+      const pt = lm[indices[idx]];
+      if (!pt) continue;
+      let px = pt.x * w, py = pt.y * h;
+      if (isMirror) px = w - px;
+      if (idx === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    if (close) ctx.closePath();
+    ctx.stroke();
+  };
+
+  drawPath(JAW_INDICES, true);
+  drawPath(LEFT_EYE_INDICES, true);
+  drawPath(RIGHT_EYE_INDICES, true);
+  drawPath(LIPS_INDICES, true);
+
+  // Micro glowing keypoint dots on nose & eyes
+  ctx.fillStyle = '#ffd86b';
+  for (let keyIdx of [1, 33, 263, 61, 291, 152]) {
+    const pt = lm[keyIdx];
+    if (!pt) continue;
+    let px = pt.x * w, py = pt.y * h;
+    if (isMirror) px = w - px;
+    ctx.beginPath(); ctx.arc(px, py, 2.5, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+// Draw AR Props
 function drawArProp(ctx, lm, w, h, isMirror, prop) {
   const topHead = lm[10];
   const nose = lm[1];
@@ -760,7 +793,7 @@ function drawArProp(ctx, lm, w, h, isMirror, prop) {
   ctx.restore();
 }
 
-// Update DOM HUD panel with rich data
+// Update DOM HUD panel
 function updateHudPanel(m) {
   if (currentMode === 'age') {
     $('hudTitle').textContent = '🎂 PREDIKSI USIA & GENERASI';
@@ -785,7 +818,7 @@ function updateHudPanel(m) {
     $('hudMainText').textContent = `${m.matchPct}% Mirip ${m.bestMatch.name}`;
     $('hudSubText').textContent = m.bestMatch.comment;
     $('stat1').textContent = m.bestMatch.role;
-    $('stat2').textContent = 'Tipe: High Resonance';
+    $('stat2').textContent = 'Resonansi Tinggi';
   } else if (currentMode === 'props') {
     $('hudTitle').textContent = '👑 AR PROPS & FILTER TONE';
     $('hudConfidence').textContent = 'Live Render';
@@ -795,6 +828,17 @@ function updateHudPanel(m) {
     $('stat1').textContent = 'AR Tracker: Active';
     $('stat2').textContent = '60 FPS Smooth';
   }
+}
+
+// Helper: drawCover (Pencegah Gambar Gepeng / Distorsi Aspek Rasio)
+function drawCover(ctx, img, x, y, w, h) {
+  const iw = img.naturalWidth || img.videoWidth || img.width;
+  const ih = img.naturalHeight || img.videoHeight || img.height;
+  if (!iw || !ih) return;
+  const r = Math.max(w / iw, h / ih);
+  const nw = iw * r, nh = ih * r;
+  const cx = x + (w - nw) / 2, cy = y + (h - nh) / 2;
+  ctx.drawImage(img, cx, cy, nw, nh);
 }
 
 // Helper: Canvas rounded rect
@@ -815,21 +859,21 @@ function roundRect(ctx, x, y, w, h, r) {
 // ============ GENERATE SCAN CERTIFICATE / REPORT ============
 async function generateScanCard() {
   if (!video.videoWidth) return;
+  await document.fonts.ready;
 
-  // 1. Capture clean frame with AR overlay
+  // 1. Capture clean frame with AR overlay & contours
   const capCv = document.createElement('canvas');
   capCv.width = video.videoWidth; capCv.height = video.videoHeight;
   const capCtx = capCv.getContext('2d');
 
-  // Apply Filter
   if (currentFilter === 'glow') {
     capCtx.filter = 'brightness(1.15) contrast(1.08) saturate(1.25)';
   } else if (currentFilter === 'vintage') {
-    capCtx.filter = 'sepia(0.45) contrast(1.15) brightness(0.95) saturate(1.2)';
+    capCtx.filter = 'sepia(0.45) contrast(1.15) brightness(0.95)';
   } else if (currentFilter === 'soft') {
-    capCtx.filter = 'brightness(1.18) contrast(0.95) saturate(1.15) hue-rotate(-5deg)';
+    capCtx.filter = 'brightness(1.18) contrast(0.95) saturate(1.15)';
   } else if (currentFilter === 'bw') {
-    capCtx.filter = 'grayscale(1) contrast(1.25) brightness(1.05)';
+    capCtx.filter = 'grayscale(1) contrast(1.25)';
   }
 
   if (facing === 'user') {
@@ -838,7 +882,7 @@ async function generateScanCard() {
   capCtx.drawImage(video, 0, 0, capCv.width, capCv.height);
   capCtx.filter = 'none';
 
-  // Draw AR Props & HUD onto photo
+  // Draw AR Props on captured photo
   if (lastFaces.length) {
     const lm = lastFaces[0];
     const bs = lastBs && lastBs[0];
@@ -848,46 +892,49 @@ async function generateScanCard() {
     }
   }
 
-  const photoDataUrl = capCv.toDataURL('image/jpeg', 0.92);
+  const photoDataUrl = capCv.toDataURL('image/jpeg', 0.94);
 
-  // 2. Render Full HD Certificate Card
+  // 2. Render Full HD Certificate Card (1080 x 1440)
   const certCv = document.createElement('canvas');
   certCv.width = 1080; certCv.height = 1440;
   const cCtx = certCv.getContext('2d');
 
-  // Background Vintage Cream
+  // Background Vintage Cream with fine border
   const bgGrad = cCtx.createLinearGradient(0, 0, 0, 1440);
-  bgGrad.addColorStop(0, '#fdfaf2'); bgGrad.addColorStop(1, '#f6eed6');
+  bgGrad.addColorStop(0, '#fdfaf2'); bgGrad.addColorStop(1, '#f5ecd2');
   cCtx.fillStyle = bgGrad; cCtx.fillRect(0, 0, 1080, 1440);
 
-  // Decorative border
+  // Double Decorative Borders
   cCtx.strokeStyle = '#4a0000'; cCtx.lineWidth = 8;
-  roundRect(cCtx, 20, 20, 1040, 1400, 32); cCtx.stroke();
-  cCtx.strokeStyle = '#f5b722'; cCtx.lineWidth = 3;
-  roundRect(cCtx, 32, 32, 1016, 1376, 24); cCtx.stroke();
+  roundRect(cCtx, 24, 24, 1032, 1392, 32); cCtx.stroke();
+  cCtx.strokeStyle = '#f5b722'; cCtx.lineWidth = 3.5;
+  roundRect(cCtx, 36, 36, 1008, 1368, 24); cCtx.stroke();
 
-  // Header
-  cCtx.fillStyle = '#681a34'; cCtx.font = '700 52px "Fredoka", "Luckiest Guy", sans-serif';
+  // Header Title & Subtitle
+  cCtx.fillStyle = '#681a34';
+  cCtx.font = '700 48px "Fredoka", "Luckiest Guy", sans-serif';
   cCtx.textAlign = 'center'; cCtx.textBaseline = 'middle';
-  cCtx.fillText('UKM EXPO UHN', 540, 90);
+  cCtx.fillText('UKM EXPO UHN', 540, 95);
 
-  cCtx.fillStyle = '#cfa138'; cCtx.font = '700 32px "Caveat", "Pacifico", cursive';
-  cCtx.fillText('Sains Data & AI Vision Experience', 540, 140);
+  cCtx.fillStyle = '#cfa138';
+  cCtx.font = '700 30px "Caveat", "Pacifico", cursive';
+  cCtx.fillText('Sains Data & AI Biometric Laboratory', 540, 145);
 
-  // Photo Area (Square 680x680)
+  // Photo Area (Aspect 4:3 -> 800 x 600, center-cropped without squishing)
   const imgObj = new Image();
   imgObj.src = photoDataUrl;
   await new Promise(r => imgObj.onload = r);
 
-  const px = 200, py = 180, pw = 680, ph = 680;
+  const px = 140, py = 185, pw = 800, ph = 600;
   cCtx.save();
-  roundRect(cCtx, px, py, pw, ph, 24); cCtx.clip();
-  cCtx.drawImage(imgObj, px, py, pw, ph);
+  roundRect(cCtx, px, py, pw, ph, 20); cCtx.clip();
+  drawCover(cCtx, imgObj, px, py, pw, ph);
   cCtx.restore();
-  cCtx.strokeStyle = '#4a0000'; cCtx.lineWidth = 5;
-  roundRect(cCtx, px, py, pw, ph, 24); cCtx.stroke();
 
-  // Metrics Box
+  cCtx.strokeStyle = '#4a0000'; cCtx.lineWidth = 5;
+  roundRect(cCtx, px, py, pw, ph, 20); cCtx.stroke();
+
+  // Metrics Box Area
   const lm = lastFaces.length ? lastFaces[0] : null;
   const bs = lastBs.length ? lastBs[0] : null;
   const m = getFaceMetrics(lm, bs) || {
@@ -895,38 +942,62 @@ async function generateScanCard() {
     bestMatch: CELEBS[0], matchPct: 94
   };
 
-  const by = 900, bw = 840, bh = 380, bx = 120;
+  const by = 810, bw = 800, bh = 490, bx = 140;
   cCtx.fillStyle = '#ffffff';
   roundRect(cCtx, bx, by, bw, bh, 20); cCtx.fill();
   cCtx.strokeStyle = '#4a0000'; cCtx.lineWidth = 4;
   roundRect(cCtx, bx, by, bw, bh, 20); cCtx.stroke();
 
+  // Content inside metrics box
   cCtx.textAlign = 'left';
-  cCtx.fillStyle = '#681a34'; cCtx.font = '700 32px "Fredoka", sans-serif';
-  cCtx.fillText('📊 HASIL PEMINDAIAN AI:', bx + 30, by + 50);
+  cCtx.fillStyle = '#681a34';
+  cCtx.font = '700 32px "Fredoka", sans-serif';
+  cCtx.fillText('📊 HASIL ANALISIS BIOMETRIK AI:', bx + 32, by + 50);
 
-  cCtx.fillStyle = '#2d1d23'; cCtx.font = '600 26px "Fredoka", sans-serif';
-  cCtx.fillText(`• Estimasi Usia & Generasi:  ${m.estAge} Tahun (${m.gen})`, bx + 30, by + 105);
-  cCtx.fillText(`• Skor Pesona & Simetri:  ${m.beautyScore}% (Simetri ${m.symmetryPct}%)`, bx + 30, by + 155);
-  cCtx.fillText(`• Kembaran Tokoh Terdekat:  ${m.matchPct}% Mirip ${m.bestMatch.name}`, bx + 30, by + 205);
+  // Metric Rows
+  cCtx.fillStyle = '#2d1d23';
+  cCtx.font = '700 25px "Fredoka", sans-serif';
+  cCtx.fillText('• Estimasi Usia & Generasi:', bx + 32, by + 105);
+  cCtx.fillStyle = '#681a34';
+  cCtx.fillText(`${m.estAge} Tahun (${m.gen})`, bx + 420, by + 105);
 
-  cCtx.fillStyle = '#5c3540'; cCtx.font = 'italic 23px "Fredoka", sans-serif';
-  cCtx.fillText(`"${m.bestMatch.comment}"`, bx + 30, by + 270);
+  cCtx.fillStyle = '#2d1d23';
+  cCtx.fillText('• Skor Pesona & Simetri:', bx + 32, by + 160);
+  cCtx.fillStyle = '#0d6e5a';
+  cCtx.fillText(`${m.beautyScore}% (Simetri ${m.symmetryPct}%)`, bx + 420, by + 160);
 
-  cCtx.fillStyle = '#cfa138'; cCtx.font = '700 24px "Fredoka", sans-serif';
-  cCtx.fillText('★ Verified by Sains Data UHN • AI Lab 2026', bx + 30, by + 335);
+  cCtx.fillStyle = '#2d1d23';
+  cCtx.fillText('• Kembaran Tokoh Terdekat:', bx + 32, by + 215);
+  cCtx.fillStyle = '#1e3a5f';
+  cCtx.fillText(`${m.matchPct}% Mirip ${m.bestMatch.name}`, bx + 420, by + 215);
 
-  // Footer Stamp
-  cCtx.fillStyle = '#681a34'; cCtx.textAlign = 'center';
-  cCtx.font = '700 26px "Caveat", cursive';
-  cCtx.fillText('Dovey ✦ Sains Data Experience', 540, 1370);
+  // Quote Box
+  cCtx.fillStyle = '#fbf8f0';
+  roundRect(cCtx, bx + 28, by + 260, bw - 56, 110, 12); cCtx.fill();
+  cCtx.strokeStyle = '#cfa138'; cCtx.lineWidth = 2;
+  roundRect(cCtx, bx + 28, by + 260, bw - 56, 110, 12); cCtx.stroke();
+
+  cCtx.fillStyle = '#4a2832';
+  cCtx.font = '600 22px "Fredoka", sans-serif';
+  cCtx.fillText(`"${m.bestMatch.comment}"`, bx + 44, by + 320);
+
+  // Verified Footnote
+  cCtx.fillStyle = '#cfa138';
+  cCtx.font = '700 22px "Fredoka", sans-serif';
+  cCtx.fillText('★ Verified by Sains Data UHN • AI Lab 2026', bx + 32, by + 430);
+
+  // Bottom Signature
+  cCtx.fillStyle = '#681a34';
+  cCtx.textAlign = 'center';
+  cCtx.font = '700 28px "Caveat", cursive';
+  cCtx.fillText('Dovey ✦ Sains Data Experience', 540, 1375);
 
   const certDataUrl = certCv.toDataURL('image/png');
 
   // Display in Modal
   $('certImg').src = certDataUrl;
   $('btnDownloadCert').href = certDataUrl;
-  $('certModeLabel').textContent = currentMode === 'age' ? 'Tebak Umur' : currentMode === 'beauty' ? 'Rating Pesona' : 'Kembaran Tokoh';
+  $('certModeLabel').textContent = currentMode === 'age' ? 'Tebak Umur & Generasi' : currentMode === 'beauty' ? 'Rating Pesona & Simetri' : 'Kembaran Tokoh & Alumni';
   $('certPrimaryResult').textContent = currentMode === 'age' ? `${m.estAge} Tahun (${m.gen})` : currentMode === 'beauty' ? `Skor Pesona ${m.beautyScore}%` : `${m.matchPct}% Mirip ${m.bestMatch.name}`;
   $('certSecondaryResult').textContent = `Simetri Wajah: ${m.symmetryPct}%`;
   $('certQuote').textContent = `"${m.bestMatch.comment}"`;
@@ -941,7 +1012,6 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
     btn.classList.add('active');
     currentMode = btn.dataset.mode;
 
-    // Show/hide props & filter bar
     const isPropsMode = currentMode === 'props';
     $('propsRow').style.display = isPropsMode ? 'flex' : 'none';
     $('filterRow').style.display = isPropsMode ? 'flex' : 'none';
@@ -961,7 +1031,6 @@ document.querySelectorAll('.filter-chip').forEach(btn => {
     document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentFilter = btn.dataset.filter;
-    // Apply CSS filter for preview
     if (currentFilter === 'glow') video.style.filter = 'brightness(1.15) contrast(1.08) saturate(1.25)';
     else if (currentFilter === 'vintage') video.style.filter = 'sepia(0.45) contrast(1.15) brightness(0.95)';
     else if (currentFilter === 'soft') video.style.filter = 'brightness(1.18) contrast(0.95) saturate(1.15)';
