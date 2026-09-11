@@ -213,18 +213,18 @@
   .sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 2px 18px 8px; position: relative; }
   /* washi tape scotch-style di pojok sheet */
   .sheet-head::before, .sheet-head::after {
-    content: ''; position: absolute; top: -14px; width: 96px; height: 26px;
-    background: repeating-linear-gradient(45deg, rgba(201,162,39,0.88) 0 9px, rgba(237,211,133,0.88) 9px 18px);
-    border-radius: 3px; box-shadow: 0 2px 3px rgba(52,34,30,0.25);
-    opacity: .92;
+    content: ''; position: absolute; top: -18px; width: 84px; height: 24px;
+    background: repeating-linear-gradient(45deg, rgba(201,162,39,0.9) 0 8px, rgba(237,211,133,0.9) 8px 16px);
+    border-radius: 3px; box-shadow: 0 2px 3px rgba(52,34,30,0.22);
+    opacity: .92; z-index: 5;
   }
-  .sheet-head::before { left: 6px; transform: rotate(-4deg); }
-  .sheet-head::after { right: 6px; transform: rotate(4deg); }
+  .sheet-head::before { left: 8px; transform: rotate(-5deg); }
+  .sheet-head::after { right: 8px; transform: rotate(5deg); }
   .sheet-head h2 {
     font-family: 'Luckiest Guy', cursive; color: var(--maroon); font-size: clamp(24px, 6.5vw, 34px);
-    letter-spacing: 2px; text-shadow: 2px 2px 0 rgba(201,162,39,0.4); transform: rotate(-2deg);
+    letter-spacing: 2px; text-shadow: 2px 2px 0 rgba(201,162,39,0.35); transform: rotate(-1.5deg);
   }
-  .sheet-head .play { color: var(--maroon); font-size: 22px; transform: rotate(-8deg); text-shadow: 1px 1px 0 rgba(201,162,39,0.4); }
+  .sheet-head .play { color: var(--maroon); font-size: 20px; transform: rotate(-8deg); text-shadow: 1px 1px 0 rgba(201,162,39,0.35); }
 
   .sheet-body { display: flex; gap: 10px; padding: 6px 14px; }
   .sheet-col { flex: 1; display: flex; flex-direction: column; gap: 10px; }
@@ -894,35 +894,37 @@ async function renderSheet(asDataUrl) {
 
   // 2. Washi Tape di pojok kiri atas & kanan atas (.sheet-head::before & ::after)
   function washiTape(x, y, rot) {
-    const tw = Math.round(96 * SCALE), th = Math.round(26 * SCALE);
+    const tw = Math.round(84 * SCALE), th = Math.round(24 * SCALE);
     ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+    ctx.shadowColor = 'rgba(52,34,30,0.22)'; ctx.shadowOffsetY = 2 * SCALE; ctx.shadowBlur = 1 * SCALE;
     ctx.beginPath(); ctx.rect(-tw / 2, -th / 2, tw, th); ctx.clip();
     ctx.fillStyle = 'rgba(237,211,133,0.92)'; ctx.fillRect(-tw / 2, -th / 2, tw, th);
     // diagonal stripes 45deg
     ctx.save(); ctx.rotate(Math.PI / 4);
-    const PER = Math.round(18 * SCALE), SW = Math.round(9 * SCALE), EXT = Math.round(100 * SCALE);
-    ctx.fillStyle = 'rgba(201,162,39,0.88)';
+    const PER = Math.round(16 * SCALE), SW = Math.round(8 * SCALE), EXT = Math.round(100 * SCALE);
+    ctx.fillStyle = 'rgba(201,162,39,0.9)';
     for (let sx = -EXT; sx < tw + EXT; sx += PER) ctx.fillRect(sx - SW, -EXT, SW, 2 * EXT);
     ctx.restore();
     ctx.restore();
   }
-  washiTape(PAD_X + Math.round(30 * SCALE), PAD_TOP - Math.round(4 * SCALE), -0.07);
-  washiTape(W - PAD_X - Math.round(30 * SCALE), PAD_TOP - Math.round(4 * SCALE), 0.07);
+  // Letak persis di atas border atas (straddling top edge)
+  washiTape(PAD_X + Math.round(24 * SCALE), PAD_TOP - Math.round(10 * SCALE), -0.09);
+  washiTape(W - PAD_X - Math.round(24 * SCALE), PAD_TOP - Math.round(10 * SCALE), 0.09);
 
   // 3. Header Text: UKM EXPO UHN & Simbol
   const headCenterY = PAD_TOP + HEAD_H / 2;
   ctx.save();
-  ctx.translate(W / 2, headCenterY); ctx.rotate(-0.035);
+  ctx.translate(W / 2, headCenterY); ctx.rotate(-0.026);
   ctx.fillStyle = '#6b1f3a'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.font = '700 ' + Math.round(27 * SCALE) + 'px "Luckiest Guy", "Comic Sans MS", cursive';
-  ctx.shadowColor = 'rgba(201,162,39,0.4)'; ctx.shadowOffsetX = 2 * SCALE; ctx.shadowOffsetY = 2 * SCALE;
+  ctx.shadowColor = 'rgba(201,162,39,0.35)'; ctx.shadowOffsetX = 2 * SCALE; ctx.shadowOffsetY = 2 * SCALE;
   ctx.fillText('UKM EXPO UHN', 0, 0);
   ctx.restore();
   ctx.shadowColor = 'transparent'; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
 
-  ctx.fillStyle = '#6b1f3a'; ctx.font = Math.round(20 * SCALE) + 'px system-ui';
-  ctx.save(); ctx.translate(PAD_X + Math.round(12 * SCALE), headCenterY); ctx.rotate(-0.14); ctx.fillText('▶', 0, 0); ctx.restore();
-  ctx.save(); ctx.translate(W - PAD_X - Math.round(12 * SCALE), headCenterY); ctx.fillText('✳', 0, 0); ctx.restore();
+  ctx.fillStyle = '#6b1f3a'; ctx.font = Math.round(18 * SCALE) + 'px system-ui';
+  ctx.save(); ctx.translate(PAD_X + Math.round(14 * SCALE), headCenterY); ctx.rotate(-0.14); ctx.fillText('▶', 0, 0); ctx.restore();
+  ctx.save(); ctx.translate(W - PAD_X - Math.round(14 * SCALE), headCenterY); ctx.fillText('✳', 0, 0); ctx.restore();
 
   // 4. 8 Boxes Foto (persis .box di DOM: background putih, border 2px, padding 4px)
   const imgs = await Promise.all(photos.map(p => b64ToImg(p.url)));
