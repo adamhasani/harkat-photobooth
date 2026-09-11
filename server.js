@@ -93,6 +93,96 @@ function publicBase(req) {
   return (PUBLIC || `http://${req.headers.host}`).replace(/\/$/, '');
 }
 
+function analyzeFaceWithAi(req, res) {
+  let raw = '';
+  req.on('data', (c) => raw += c);
+  req.on('end', () => {
+    let body;
+    try { body = JSON.parse(raw); } catch (e) { return json(res, 400, { error: 'bad json' }); }
+    const photo = String(body.photo || '');
+    if (!photo.startsWith('data:image/')) {
+      return json(res, 400, { error: 'photo dataURL required' });
+    }
+
+    const key = process.env.HERMES_CUSTOM_LOCALHOST_20128_API_KEY || '';
+    if (!key) {
+      return json(res, 200, { fallback: true, error: 'no omniroute key' });
+    }
+
+    const systemPrompt = `Kamu adalah sistem AI Facial Biometric Analyzer untuk booth Sains Data & AI UKM EXPO UHN.
+Analisis foto wajah ini secara akurat, cerdas, ramah, dan seru untuk mahasiswa baru/pengunjung expo.
+Kembalikan HANYA JSON valid (tanpa markdown codeblock, langsung { ... }):
+{
+  "age": 19,
+  "generation": "Gen-Z Fresh 🎓",
+  "beautyScore": 96,
+  "symmetryScore": 95,
+  "lookalike": "Maudy Ayunda",
+  "lookalikeMatch": 93,
+  "majorVibe": "Sains Data & AI",
+  "comment": "Punya tatapan cerdas berwibawa, garis senyum ramah, dan aura calon mahasiswa berprestasi!",
+  "vibeTag": "Calon Bintang Kampus ✨"
+}`;
+
+    const payload = JSON.stringify({
+      model: 'agy/gemini-3.5-flash-lite',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: 'Analisis wajah ini untuk booth Sains Data AI:' },
+            { type: 'image_url', image_url: { url: photo } }
+          ]
+        }
+      ],
+      max_tokens: 300,
+      temperature: 0.6
+    });
+
+    try {
+      const apiReq = http.request({
+        hostname: '127.0.0.1',
+        port: 20128,
+        path: '/v1/chat/completions',
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + key,
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(payload)
+        },
+        timeout: 7000
+      }, (apiRes) => {
+        let respData = '';
+        apiRes.on('data', d => respData += d);
+        apiRes.on('end', () => {
+          try {
+            const parsed = JSON.parse(respData);
+            const content = parsed.choices && parsed.choices[0] && parsed.choices[0].message && parsed.choices[0].message.content;
+            if (!content) return json(res, 200, { fallback: true });
+            
+            const m = /\{[\s\S]*\}/.exec(content);
+            if (m) {
+              const aiData = JSON.parse(m[0]);
+              return json(res, 200, { ok: true, ai: aiData });
+            }
+            return json(res, 200, { fallback: true });
+          } catch (e) {
+            return json(res, 200, { fallback: true });
+          }
+        });
+      });
+
+      apiReq.on('error', () => json(res, 200, { fallback: true }));
+      apiReq.on('timeout', () => { apiReq.destroy(); json(res, 200, { fallback: true }); });
+      apiReq.write(payload);
+      apiReq.end();
+    } catch (e) {
+      json(res, 200, { fallback: true });
+    }
+  });
+}
+
 function createSession(req, res) {
   let raw = '';
   req.on('data', (c) => raw += c);
@@ -196,6 +286,7 @@ const server = http.createServer((req, res) => {
   if (req.method === 'OPTIONS') return json(res, 204, {});
   if (req.method === 'POST' && p === '/api/session') return createSession(req, res);
   if (req.method === 'POST' && p === '/api/sheet') return saveSheet(req, res);
+  if (req.method === 'POST' && p === '/api/ai-analyze') return analyzeFaceWithAi(req, res);
   const dl = /^\/download\/([0-9a-f-]+)$/.exec(p);
   if (dl) return downloadSheet(req, res, dl[1]);
   const gal = /^\/gallery\/([0-9a-f-]+)$/.exec(p);
