@@ -563,13 +563,18 @@ async function startCamera() {
     }
     video.srcObject = stream;
     video.classList.toggle('mirror', facing === 'user');
-    await video.play().catch(() => {});
+    video.setAttribute('playsinline', '');
+    video.setAttribute('autoplay', '');
+    video.muted = true;
+    try { await video.play(); } catch (e) {}
     adaptSize();
     loop();
-    $('scanStatusText').textContent = 'AI Scanning Active ✓';
+    $('scanStatusText').textContent = '🔍 Mencari Wajah...';
   } catch (err) {
     console.error('Camera access failed:', err);
-    $('scanStatusText').innerHTML = '⚠️ <a href="javascript:startCamera()" style="color:#ffd86b;text-decoration:underline;">Tap untuk Izinkan Kamera 📷</a>';
+    if (!video.srcObject) {
+      $('scanStatusText').innerHTML = '⚠️ <a href="javascript:startCamera()" style="color:#ffd86b;text-decoration:underline;">Tap untuk Izinkan Kamera 📷</a>';
+    }
   }
 }
 
@@ -747,7 +752,7 @@ function renderOverlay() {
   const isMirror = facing === 'user';
 
   if (!lastFaces.length) {
-    $('scanStatusText').textContent = 'Mencari Wajah...';
+    $('scanStatusText').textContent = !landmarker ? 'Memuat Model AI Biometrik...' : '🔍 Mencari Wajah...';
     return;
   }
 
