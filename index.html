@@ -988,6 +988,10 @@ async function generateQrNow() {
   btnPrint.disabled = true;
 
   try {
+    // 1. Render sheet PNG HD TERLEBIH DAHULU (sebelum kotak QR ditampilkan di DOM)
+    // Supaya hasil download PNG bersih dan pas di bawah tanpa ada ruang tinggi QR
+    const pngData = await renderSheet(true);
+
     const res = await fetch(API_BASE + '/api/session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -998,9 +1002,7 @@ async function generateQrNow() {
     galleryUrl = data.url;
     let qrTarget = galleryUrl;
 
-    // Render sheet PNG HD dengan stiker & posisi foto terkini
     try {
-      const pngData = await renderSheet(true);
       const sres = await fetch(API_BASE + '/api/sheet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1066,9 +1068,22 @@ async function renderSheet(asDataUrl) {
   await document.fonts.ready;
   const sheetEl = document.querySelector('.sheet');
   const sRect = sheetEl.getBoundingClientRect();
+  // Hitung batas bawah elemen konten terakhir di dalam sheet (caption strip atau footer)
+  let contentBottomRel = sRect.height;
+  const capsEl = document.querySelector('.caps');
+  const footEl = document.querySelector('.sheet-foot');
+  if (capsEl && !capsEl.hidden && capsEl.innerHTML.trim() !== '') {
+    contentBottomRel = (capsEl.getBoundingClientRect().bottom - sRect.top) + 8;
+  } else if (footEl) {
+    contentBottomRel = (footEl.getBoundingClientRect().bottom - sRect.top) + 8;
+  }
+
+  const cvW = sRect.width;
+  const cvH = Math.min(sRect.height, contentBottomRel);
+
   const SCALE = 2.5; // Resolusi HD
-  const W = Math.round(sRect.width * SCALE);
-  const H = Math.round(sRect.height * SCALE);
+  const W = Math.round(cvW * SCALE);
+  const H = Math.round(cvH * SCALE);
 
   const cv = document.createElement('canvas');
   cv.width = W; cv.height = H;
@@ -1076,38 +1091,38 @@ async function renderSheet(asDataUrl) {
   ctx.scale(SCALE, SCALE); // Semua gambar di canvas menggunakan skala 1:1 DOM coordinate space
 
   // 1. Background Dasar & Multi-layer Dots (Persis CSS .sheet)
-  const g = ctx.createLinearGradient(0, 0, 0, sRect.height);
+  const g = ctx.createLinearGradient(0, 0, 0, cvH);
   g.addColorStop(0, '#f5eccf'); g.addColorStop(1, '#f2e7c8');
-  ctx.fillStyle = g; ctx.fillRect(0, 0, sRect.width, sRect.height);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, cvW, cvH);
 
   // Confetti dots
   ctx.fillStyle = 'rgba(52,34,30,0.08)';
-  for (let dy = 0; dy < sRect.height; dy += 16)
-    for (let dx = 0; dx < sRect.width; dx += 16) ctx.fillRect(dx, dy, 1, 1);
+  for (let dy = 0; dy < cvH; dy += 16)
+    for (let dx = 0; dx < cvW; dx += 16) ctx.fillRect(dx, dy, 1, 1);
 
   ctx.fillStyle = 'rgba(201,162,39,0.22)';
-  for (let dy = 4; dy < sRect.height; dy += 34)
-    for (let dx = 6; dx < sRect.width; dx += 34) {
+  for (let dy = 4; dy < cvH; dy += 34)
+    for (let dx = 6; dx < cvW; dx += 34) {
       ctx.beginPath(); ctx.arc(dx, dy, 1.2, 0, Math.PI * 2); ctx.fill();
     }
 
   ctx.fillStyle = 'rgba(63,90,122,0.18)';
-  for (let dy = 8; dy < sRect.height; dy += 28)
-    for (let dx = 12; dx < sRect.width; dx += 28) {
+  for (let dy = 8; dy < cvH; dy += 28)
+    for (let dx = 12; dx < cvW; dx += 28) {
       ctx.beginPath(); ctx.arc(dx, dy, 1, 0, Math.PI * 2); ctx.fill();
     }
 
   // Film-strip di tepi kiri (left: 8px) & kanan (right: 8px)
   ctx.fillStyle = 'rgba(63,90,122,0.35)';
-  for (let sx of [8, sRect.width - 16]) {
-    for (let sy = 14; sy < sRect.height - 14; sy += 20) {
+  for (let sx of [8, cvW - 16]) {
+    for (let sy = 14; sy < cvH - 14; sy += 20) {
       ctx.fillRect(sx, sy, 8, 6);
     }
   }
 
   // Border luar sheet
   ctx.strokeStyle = '#4a1024'; ctx.lineWidth = 4;
-  roundRect(ctx, 2, 2, sRect.width - 4, sRect.height - 4, 20); ctx.stroke();
+  roundRect(ctx, 2, 2, cvW - 4, cvH - 4, 20); ctx.stroke();
 
   // 2. Washi Tape di pojok kiri atas & kanan atas (.sheet-head::before & ::after)
   function washiTape(x, y, rot) {
@@ -1231,7 +1246,6 @@ async function renderSheet(asDataUrl) {
   }
 
   // 5. Footer: SAINS DATA · ⭯ ⭮ · Dovey (.sheet-foot)
-  const footEl = document.querySelector('.sheet-foot');
   if (footEl) {
     const fRect = footEl.getBoundingClientRect();
     const footCenterY = (fRect.top - sRect.top) + fRect.height / 2;
@@ -1256,7 +1270,6 @@ async function renderSheet(asDataUrl) {
   }
 
   // 6. Caption Strip (.caps di DOM)
-  const capsEl = document.querySelector('.caps');
   if (capsEl && !capsEl.hidden) {
     const cpRect = capsEl.getBoundingClientRect();
     const capX = cpRect.left - sRect.left;
@@ -1391,6 +1404,7 @@ $('btnClearStickers').addEventListener('click', () => {
 });
 
 // ============ INIT ============
+window.__h = { renderHud, emotion, capture, renderSheet, landmarker: () => landmarker, downloadSheet };
 renderLayout();
 setupEmojiPicker();
 setupDragDrop();
