@@ -466,18 +466,25 @@ let lastDet = 0;
 let lastFaces = [];
 let lastBs = null;
 
-// Database personalities untuk Mode 3 (Kembaran Tokoh)
-const CELEBS = [
-  { name: 'Maudy Ayunda 🎓', role: 'Aktris & Edukator Cerdas', avatar: '👩🎓', jaw: 0.45, smile: 0.7, eyeDist: 0.38, comment: 'Punya bentuk wajah proporsional dan aura cerdas berprestasi!' },
-  { name: 'Nicholas Saputra 🕶️', role: 'Aktor Karismatik & Cool', avatar: '😎', jaw: 0.62, smile: 0.3, eyeDist: 0.42, comment: 'Tatapan mata tajam & garis rahang tegas yang memikat!' },
-  { name: 'Reza Rahadian 🎬', role: 'Aktor Serba Bisa', avatar: '🎭', jaw: 0.55, smile: 0.6, eyeDist: 0.40, comment: 'Ekspresif banget, cocok jadi bintang panggung & public speaker!' },
-  { name: 'B.J. Habibie 🚀', role: 'Visioner & Jenius Teknologi', avatar: '🧠', jaw: 0.48, smile: 0.65, eyeDist: 0.37, comment: 'Aura pemikir strategis, cocok jadi master Data Science!' },
-  { name: 'Albert Einstein ⚡', role: 'Fisikawan Jenius Dunia', avatar: '💡', jaw: 0.52, smile: 0.5, eyeDist: 0.41, comment: 'Otak encer, selalu penasaran dan suka eksplorasi hal baru!' },
-  { name: 'Elon Musk 🚀', role: 'Tech Innovator & Futuris', avatar: '💻', jaw: 0.60, smile: 0.4, eyeDist: 0.43, comment: 'Ambisius dan punya pandangan masa depan yang luas!' },
-  { name: 'Taylor Swift ✨', role: 'Musisi & Superstar Dunia', avatar: '🎤', jaw: 0.42, smile: 0.8, eyeDist: 0.36, comment: 'Senyum manis menawan dan aura bintang panggung memukau!' },
-  { name: 'Dosen Favorit UHN 📚', role: 'Akademisi Teladan Kampus', avatar: '👨🏫', jaw: 0.50, smile: 0.55, eyeDist: 0.39, comment: 'Wibawa tinggi, ramah, dan disukai banyak mahasiswa!' },
-  { name: 'Ketua BEM Inspiratif 🔥', role: 'Leader Masa Depan', avatar: '🏆', jaw: 0.58, smile: 0.75, eyeDist: 0.40, comment: 'Punya jiwa kepemimpinan tinggi dan energik!' }
+// Database personalities untuk Mode 3 (Kembaran Tokoh) dengan kategori Gender yang jelas
+const CELEBS_MALE = [
+  { name: 'Nicholas Saputra 🕶️', gender: 'Laki-laki', role: 'Aktor Karismatik & Cool', avatar: '😎', jaw: 0.62, smile: 0.3, eyeDist: 0.42, comment: 'Tatapan mata tajam & garis rahang maskulin yang berwibawa!' },
+  { name: 'Reza Rahadian 🎭', gender: 'Laki-laki', role: 'Aktor Serba Bisa', avatar: '🎬', jaw: 0.55, smile: 0.6, eyeDist: 0.40, comment: 'Ekspresif banget, cocok jadi bintang panggung & public speaker!' },
+  { name: 'B.J. Habibie 🚀', gender: 'Laki-laki', role: 'Visioner & Jenius Teknologi', avatar: '🧠', jaw: 0.48, smile: 0.65, eyeDist: 0.37, comment: 'Aura pemikir strategis, cocok jadi master Data Science!' },
+  { name: 'Elon Musk 💻', gender: 'Laki-laki', role: 'Tech Innovator & Futuris', avatar: '🚀', jaw: 0.60, smile: 0.4, eyeDist: 0.43, comment: 'Ambisius dan punya pandangan masa depan yang luas!' },
+  { name: 'Dikta Wicaksono 🎸', gender: 'Laki-laki', role: 'Musisi Berkarisma & Santai', avatar: '✨', jaw: 0.50, smile: 0.7, eyeDist: 0.39, comment: 'Vibes ramah, murah senyum, dan disukai banyak orang!' },
+  { name: 'Iko Uwais 🥋', gender: 'Laki-laki', role: 'Action Star & Atletik', avatar: '🔥', jaw: 0.64, smile: 0.45, eyeDist: 0.41, comment: 'Struktur wajah tegas, sporty, dan penuh percaya diri!' }
 ];
+
+const CELEBS_FEMALE = [
+  { name: 'Maudy Ayunda 🎓', gender: 'Perempuan', role: 'Aktris & Edukator Cerdas', avatar: '👩🎓', jaw: 0.44, smile: 0.75, eyeDist: 0.38, comment: 'Punya bentuk wajah proporsional dan aura cerdas berprestasi!' },
+  { name: 'Chelsea Islan ✨', gender: 'Perempuan', role: 'Aktris Cantik & Elegan', avatar: '🌸', jaw: 0.42, smile: 0.8, eyeDist: 0.36, comment: 'Senyum manis ceria dengan fitur wajah yang sangat fotogenik!' },
+  { name: 'Dian Sastrowardoyo 🎬', gender: 'Perempuan', role: 'Icon Aktris Legendaris', avatar: '👑', jaw: 0.46, smile: 0.65, eyeDist: 0.39, comment: 'Aura anggun, tenang, dan berkarisma tinggi khas wanita cerdas!' },
+  { name: 'Najwa Shihab 🎙️', gender: 'Perempuan', role: 'Jurnalis Kritis & Vokal', avatar: '💡', jaw: 0.48, smile: 0.6, eyeDist: 0.40, comment: 'Sorot mata tajam penuh wawasan, berani, dan inspiratif!' },
+  { name: 'Taylor Swift 🎤', gender: 'Perempuan', role: 'Megabintang Dunia', avatar: '💖', jaw: 0.40, smile: 0.85, eyeDist: 0.35, comment: 'Fitur wajah ekspresif, berdaya pikat tinggi dan berkilau!' }
+];
+
+const CELEBS = [...CELEBS_MALE, ...CELEBS_FEMALE];
 
 const AGE_QUOTES = [
   'Wajah fresh, semangat membara, maba kebanggaan jurusan!',
@@ -568,9 +575,12 @@ function getFaceMetrics(landmarks, blendshapes) {
   const rightEye = landmarks[263];
   const chin = landmarks[152];
   const forehead = landmarks[10];
+  const leftJaw = landmarks[234];
+  const rightJaw = landmarks[454];
 
   const eyeDist = Math.hypot(rightEye.x - leftEye.x, rightEye.y - leftEye.y);
-  const faceHeight = Math.hypot(chin.x - forehead.x, chin.y - forehead.y);
+  const faceHeight = Math.hypot(chin.x - forehead.x, chin.y - forehead.y) || 0.01;
+  const jawWidth = Math.hypot(rightJaw.x - leftJaw.x, rightJaw.y - leftJaw.y) || 0.01;
 
   let smileScore = 0.5;
   if (blendshapes && blendshapes.categories) {
@@ -579,10 +589,16 @@ function getFaceMetrics(landmarks, blendshapes) {
     if (sL || sR) smileScore = Math.max((sL ? sL.score : 0), (sR ? sR.score : 0));
   }
 
-  // 1. Age Calculation
-  const ratio = (eyeDist / (faceHeight || 0.01));
-  let estAge = Math.round(18 + (0.42 - ratio) * 25 + (1 - smileScore) * 3);
-  estAge = Math.max(17, Math.min(25, estAge));
+  // Morphological Biometric Gender Estimation (Jaw to Face Height + Eye Ratio)
+  // Pria secara anatomis memiliki jawWidth/faceHeight lebih lebar & garis rahang lebih tajam
+  const jawRatio = jawWidth / faceHeight;
+  const isLikelyMale = jawRatio > 0.76;
+  const genderLabel = isLikelyMale ? 'Laki-laki 👦' : 'Perempuan 👧';
+
+  // 1. Age Calculation (Derived geometrically)
+  const ratio = (eyeDist / faceHeight);
+  let estAge = Math.round(18 + (0.42 - ratio) * 22 + (1 - smileScore) * 3);
+  estAge = Math.max(17, Math.min(26, estAge));
   const gen = estAge <= 23 ? 'Gen-Z Fresh 🎓' : 'Young Achiever 💼';
 
   // 2. Beauty / Golden Ratio Symmetry Score
@@ -592,17 +608,18 @@ function getFaceMetrics(landmarks, blendshapes) {
   const beautyScore = Math.min(99, Math.max(89, Math.round(symRatio * 82 + smileScore * 16 + 2)));
   const symmetryPct = Math.min(99, Math.round(symRatio * 100));
 
-  // 3. Celebrity / Alumni Matcher
-  let bestMatch = CELEBS[0];
+  // 3. Gender-Filtered Celebrity / Alumni Matcher
+  const candidatePool = isLikelyMale ? CELEBS_MALE : CELEBS_FEMALE;
+  let bestMatch = candidatePool[0];
   let minDiff = 999;
-  CELEBS.forEach(c => {
-    const diff = Math.abs(c.eyeDist - eyeDist) * 3 + Math.abs(c.smile - smileScore);
+  candidatePool.forEach(c => {
+    const diff = Math.abs(c.eyeDist - eyeDist) * 3 + Math.abs(c.jaw - jawRatio) * 2 + Math.abs(c.smile - smileScore);
     if (diff < minDiff) { minDiff = diff; bestMatch = c; }
   });
   const matchPct = Math.min(98, Math.max(85, Math.round(100 - minDiff * 25)));
 
   return {
-    estAge, gen, beautyScore, symmetryPct, smilePct: Math.round(smileScore * 100),
+    estAge, gen, genderLabel, isLikelyMale, beautyScore, symmetryPct, smilePct: Math.round(smileScore * 100),
     bestMatch, matchPct,
     box: {
       minX: Math.min(...landmarks.map(p => p.x)),
@@ -813,19 +830,19 @@ function updateHudPanel(m) {
   if (currentMode === 'age') {
     $('hudTitle').textContent = '🎂 PREDIKSI USIA & GENERASI';
     $('hudConfidence').textContent = 'AI Conf: 96%';
-    $('hudAvatar').textContent = m.estAge <= 20 ? '🎓' : '💼';
-    $('hudMainText').textContent = `${m.estAge} Tahun • ${m.gen}`;
+    $('hudAvatar').textContent = m.isLikelyMale ? '👦' : '👧';
+    $('hudMainText').textContent = `${m.estAge} Tahun • ${m.genderLabel}`;
     $('hudSubText').textContent = AGE_QUOTES[m.estAge % AGE_QUOTES.length];
-    $('stat1').textContent = m.estAge <= 21 ? 'Maba / Mahasiswa UHN' : 'Alumni Muda';
-    $('stat2').textContent = `Senyum ${m.smilePct}%`;
+    $('stat1').textContent = `Gender: ${m.genderLabel}`;
+    $('stat2').textContent = `Senyum: ${m.smilePct}%`;
   } else if (currentMode === 'beauty') {
     $('hudTitle').textContent = '✨ RATING PESONA & AURA';
     $('hudConfidence').textContent = 'AI Conf: 98%';
     $('hudAvatar').textContent = '💖';
-    $('hudMainText').textContent = `Skor Pesona: ${m.beautyScore}% / 100`;
+    $('hudMainText').textContent = `Skor Pesona: ${m.beautyScore}% • ${m.genderLabel}`;
     $('hudSubText').textContent = BEAUTY_QUOTES[m.beautyScore % BEAUTY_QUOTES.length];
     $('stat1').textContent = `Simetri: ${m.symmetryPct}%`;
-    $('stat2').textContent = `Daya Tarik: ${m.smilePct}%`;
+    $('stat2').textContent = `Gender: ${m.genderLabel}`;
   } else if (currentMode === 'lookalike') {
     $('hudTitle').textContent = '🎭 KEMBARAN TOKOH & ALUMNI';
     $('hudConfidence').textContent = `${m.matchPct}% Match`;
@@ -833,7 +850,7 @@ function updateHudPanel(m) {
     $('hudMainText').textContent = `${m.matchPct}% Mirip ${m.bestMatch.name}`;
     $('hudSubText').textContent = m.bestMatch.comment;
     $('stat1').textContent = m.bestMatch.role;
-    $('stat2').textContent = 'Resonansi Tinggi';
+    $('stat2').textContent = `Gender: ${m.genderLabel}`;
   } else if (currentMode === 'props') {
     $('hudTitle').textContent = '👑 AR PROPS & FILTER TONE';
     $('hudConfidence').textContent = 'Live Render';
@@ -877,6 +894,7 @@ async function generateScanCard() {
   await document.fonts.ready;
 
   // 1. Capture clean frame with AR overlay & contours
+  console.log('Generating Scan Card with video dims:', video.videoWidth, video.videoHeight);
   const capCv = document.createElement('canvas');
   capCv.width = video.videoWidth; capCv.height = video.videoHeight;
   const capCtx = capCv.getContext('2d');
@@ -907,9 +925,11 @@ async function generateScanCard() {
     }
   }
 
+  console.log('Step 1: Cap photoDataUrl');
   const photoDataUrl = capCv.toDataURL('image/jpeg', 0.94);
 
   // 2. Query Real AI API (with local fallback)
+  console.log('Step 2: Querying API');
   const btnScan = $('btnScan');
   const origBtnText = btnScan.innerHTML;
   btnScan.innerHTML = '🧠 AI Neural Scan...';
@@ -962,7 +982,9 @@ async function generateScanCard() {
   // Photo Area (Aspect 4:3 -> 800 x 600, center-cropped without squishing)
   const imgObj = new Image();
   imgObj.src = photoDataUrl;
-  await new Promise(r => imgObj.onload = r);
+  if (!imgObj.complete) {
+    await new Promise(r => { imgObj.onload = r; imgObj.onerror = r; });
+  }
 
   const px = 140, py = 185, pw = 800, ph = 600;
   cCtx.save();
@@ -981,6 +1003,7 @@ async function generateScanCard() {
     bestMatch: CELEBS[0], matchPct: 94
   };
 
+  const finalGender = aiResult ? aiResult.gender : localM.genderLabel;
   const finalAge = aiResult ? aiResult.age : localM.estAge;
   const finalGen = aiResult ? aiResult.generation : localM.gen;
   const finalBeauty = aiResult ? aiResult.beautyScore : localM.beautyScore;
@@ -998,56 +1021,61 @@ async function generateScanCard() {
   // Content inside metrics box
   cCtx.textAlign = 'left';
   cCtx.fillStyle = '#681a34';
-  cCtx.font = '700 32px "Fredoka", sans-serif';
-  cCtx.fillText('📊 HASIL ANALISIS BIOMETRIK AI ASLI:', bx + 32, by + 50);
+  cCtx.font = '700 30px "Fredoka", sans-serif';
+  cCtx.fillText('📊 HASIL ANALISIS BIOMETRIK AI ASLI:', bx + 32, by + 46);
 
   // Metric Rows
   cCtx.fillStyle = '#2d1d23';
-  cCtx.font = '700 25px "Fredoka", sans-serif';
-  cCtx.fillText('• Estimasi Usia & Generasi:', bx + 32, by + 105);
+  cCtx.font = '700 24px "Fredoka", sans-serif';
+  cCtx.fillText('• Gender & Usia Terdeteksi:', bx + 32, by + 96);
   cCtx.fillStyle = '#681a34';
-  cCtx.fillText(`${finalAge} Tahun (${finalGen})`, bx + 420, by + 105);
+  cCtx.fillText(`${finalGender} • ${finalAge} Thn (${finalGen})`, bx + 390, by + 96);
 
   cCtx.fillStyle = '#2d1d23';
-  cCtx.fillText('• Skor Pesona & Simetri:', bx + 32, by + 160);
+  cCtx.fillText('• Skor Pesona & Simetri:', bx + 32, by + 146);
   cCtx.fillStyle = '#0d6e5a';
-  cCtx.fillText(`${finalBeauty}% (Simetri ${finalSym}%)`, bx + 420, by + 160);
+  cCtx.fillText(`${finalBeauty}% (Simetri ${finalSym}%)`, bx + 390, by + 146);
 
   cCtx.fillStyle = '#2d1d23';
-  cCtx.fillText('• Kembaran Tokoh Terdekat:', bx + 32, by + 215);
+  cCtx.fillText('• Kembaran Tokoh Terdekat:', bx + 32, by + 196);
   cCtx.fillStyle = '#1e3a5f';
-  cCtx.fillText(`${finalMatchPct}% Mirip ${finalLookalike}`, bx + 420, by + 215);
+  cCtx.fillText(`${finalMatchPct}% Mirip ${finalLookalike}`, bx + 390, by + 196);
 
   // Quote Box
   cCtx.fillStyle = '#fbf8f0';
-  roundRect(cCtx, bx + 28, by + 260, bw - 56, 110, 12); cCtx.fill();
+  roundRect(cCtx, bx + 28, by + 235, bw - 56, 125, 12); cCtx.fill();
   cCtx.strokeStyle = '#cfa138'; cCtx.lineWidth = 2;
-  roundRect(cCtx, bx + 28, by + 260, bw - 56, 110, 12); cCtx.stroke();
+  roundRect(cCtx, bx + 28, by + 235, bw - 56, 125, 12); cCtx.stroke();
 
   cCtx.fillStyle = '#4a2832';
   cCtx.font = '600 21px "Fredoka", sans-serif';
   
   // Word wrap quote if needed
   let qTxt = `"${finalComment}"`;
-  const maxQW = bw - 100;
+  const maxQW = bw - 80;
   if (cCtx.measureText(qTxt).width <= maxQW) {
-    cCtx.fillText(qTxt, bx + 44, by + 320);
+    cCtx.fillText(qTxt, bx + 44, by + 300);
   } else {
     const words = qTxt.split(' ');
-    let l1 = '', l2 = '';
+    let l1 = '', l2 = '', l3 = '';
     for (let w of words) {
-      const t = l1 ? l1 + ' ' + w : w;
-      if (cCtx.measureText(t).width <= maxQW && !l2) l1 = t;
-      else l2 = l2 ? l2 + ' ' + w : w;
+      const t1 = l1 ? l1 + ' ' + w : w;
+      if (cCtx.measureText(t1).width <= maxQW && !l2) l1 = t1;
+      else {
+        const t2 = l2 ? l2 + ' ' + w : w;
+        if (cCtx.measureText(t2).width <= maxQW && !l3) l2 = t2;
+        else l3 = l3 ? l3 + ' ' + w : w;
+      }
     }
-    cCtx.fillText(l1, bx + 44, by + 300);
-    cCtx.fillText(l2, bx + 44, by + 335);
+    cCtx.fillText(l1, bx + 44, by + 275);
+    cCtx.fillText(l2, bx + 44, by + 308);
+    if (l3) cCtx.fillText(l3, bx + 44, by + 340);
   }
 
   // Verified Footnote
   cCtx.fillStyle = '#cfa138';
-  cCtx.font = '700 22px "Fredoka", sans-serif';
-  cCtx.fillText('★ Verified by Sains Data UHN • AI Neural Vision 2026', bx + 32, by + 430);
+  cCtx.font = '700 21px "Fredoka", sans-serif';
+  cCtx.fillText('★ Verified by Sains Data UHN • AI Neural Vision 2026', bx + 32, by + 435);
 
   // Bottom Signature
   cCtx.fillStyle = '#681a34';
@@ -1060,9 +1088,9 @@ async function generateScanCard() {
   // Display in Modal
   $('certImg').src = certDataUrl;
   $('btnDownloadCert').href = certDataUrl;
-  $('certModeLabel').textContent = currentMode === 'age' ? 'Tebak Umur & Generasi' : currentMode === 'beauty' ? 'Rating Pesona & Simetri' : 'Kembaran Tokoh & Alumni';
-  $('certPrimaryResult').textContent = currentMode === 'age' ? `${finalAge} Tahun (${finalGen})` : currentMode === 'beauty' ? `Skor Pesona ${finalBeauty}%` : `${finalMatchPct}% Mirip ${finalLookalike}`;
-  $('certSecondaryResult').textContent = `Simetri Wajah: ${finalSym}%`;
+  $('certModeLabel').textContent = currentMode === 'age' ? 'Tebak Umur & Gender' : currentMode === 'beauty' ? 'Rating Pesona & Simetri' : 'Kembaran Tokoh & Alumni';
+  $('certPrimaryResult').textContent = `${finalGender} • ${finalAge} Thn (${finalGen})`;
+  $('certSecondaryResult').textContent = `${finalMatchPct}% Mirip ${finalLookalike}`;
   $('certQuote').textContent = `"${finalComment}"`;
 
   $('modalResult').style.display = 'flex';

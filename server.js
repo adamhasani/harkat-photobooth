@@ -109,19 +109,30 @@ function analyzeFaceWithAi(req, res) {
       return json(res, 200, { fallback: true, error: 'no omniroute key' });
     }
 
-    const systemPrompt = `Kamu adalah sistem AI Facial Biometric Analyzer untuk booth Sains Data & AI UKM EXPO UHN.
-Analisis foto wajah ini secara akurat, cerdas, ramah, dan seru untuk mahasiswa baru/pengunjung expo.
-Kembalikan HANYA JSON valid (tanpa markdown codeblock, langsung { ... }):
+    const systemPrompt = `Kamu adalah sistem AI Computer Vision & Biometric Analyzer cerdas untuk booth Sains Data & AI UKM EXPO UHN.
+Tugasmu: Analisis foto wajah pengunjung dengan SANGAT SPESIFIK, AKURAT, dan REALISTIS berdasarkan ciri fisik aslinya (rambut, mata, kacamata, bentuk wajah, gender, jenggot/kumis, senyuman, dll).
+
+PENTING:
+- Gender wajib dideteksi dengan benar ("Laki-laki (Pria)" atau "Perempuan (Wanita)").
+- Tokoh mirip (lookalike) HARUS SESUAI GENDER:
+  * Jika Laki-laki: pilih figur pria yang benar-benar mirip (misal: Nicholas Saputra, Reza Rahadian, Iko Uwais, B.J. Habibie, Elon Musk, Keanu Reeves, Raditya Dika, Tulus, Dikta, Gibran, dll).
+  * Jika Perempuan: pilih figur wanita yang benar-benar mirip (misal: Maudy Ayunda, Chelsea Islan, Dian Sastro, Isyana Sarasvati, Taylor Swift, Najwa Shihab, Sri Mulyani, Lisa Blackpink, Jennie, dll).
+- Estimasi umur harus realistis sesuai tampang di foto (rentang 17-30 tahun).
+- Komentar harus menyebut ciri fisik nyata yang terlihat di foto (misal: "Kacamatanya bikin aura intelektual makin kuat", "Senyum manis dengan lesung pipi", "Garis rahang tegas dan tatapan fokus", dll).
+
+Kembalikan HANYA format JSON murni:
 {
-  "age": 19,
-  "generation": "Gen-Z Fresh 🎓",
-  "beautyScore": 96,
-  "symmetryScore": 95,
-  "lookalike": "Maudy Ayunda",
-  "lookalikeMatch": 93,
-  "majorVibe": "Sains Data & AI",
-  "comment": "Punya tatapan cerdas berwibawa, garis senyum ramah, dan aura calon mahasiswa berprestasi!",
-  "vibeTag": "Calon Bintang Kampus ✨"
+  "gender": "<Laki-laki 👦 / Perempuan 👧>",
+  "age": <integer umur realistis 17-30>,
+  "generation": "<Gen-Z Fresh 🎓 / Gen-Z Tech Wizard 💻 / Creative Soul 🎨 / Young Achiever 🌟>",
+  "beautyScore": <skor pesona 88-99 integer>,
+  "symmetryScore": <skor simetri 88-99 integer>,
+  "lookalike": "<Nama Tokoh sesuai gender>",
+  "lookalikeRole": "<Profesi/julukan tokoh>",
+  "lookalikeMatch": <persen 86-98 integer>,
+  "majorVibe": "<misal: Sains Data & AI / Sistem Informasi / Teknik Informatika / Bisnis Digital>",
+  "comment": "<1-2 kalimat analisis unik menyebut ciri fisik nyata di foto>",
+  "facialTraits": "<3 ciri fisik terdeteksi, pisahkan koma, misal: Kacamata Retro, Senyum Ramah, Alis Tebal>"
 }`;
 
     const payload = JSON.stringify({
@@ -131,13 +142,13 @@ Kembalikan HANYA JSON valid (tanpa markdown codeblock, langsung { ... }):
         {
           role: 'user',
           content: [
-            { type: 'text', text: 'Analisis wajah ini untuk booth Sains Data AI:' },
+            { type: 'text', text: 'Analisis biometrik wajah ini secara spesifik & akurat:' },
             { type: 'image_url', image_url: { url: photo } }
           ]
         }
       ],
-      max_tokens: 300,
-      temperature: 0.6
+      max_tokens: 350,
+      temperature: 0.4
     });
 
     try {
