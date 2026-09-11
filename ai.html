@@ -186,24 +186,29 @@
 
   /* AI & Filter Controls */
   .ai-controls {
-    display: flex; gap: 6px; justify-content: center; padding: 4px 10px;
-    align-items: center; flex-wrap: wrap; max-width: 520px; margin: 0 auto;
+    display: flex; flex-direction: column; gap: 6px; padding: 4px 10px;
+    max-width: 520px; margin: 0 auto 4px; width: 100%;
   }
-  .ai-btn {
-    font-family: 'Fredoka', sans-serif; font-size: 13px; font-weight: 700;
-    padding: 6px 12px; border-radius: 999px; border: 2px solid var(--maroon-deep);
+  .ai-row {
+    display: flex; gap: 4px; align-items: center; justify-content: center;
+    overflow-x: auto; padding: 2px 0; -webkit-overflow-scrolling: touch;
+  }
+  .ai-label {
+    font-size: 11px; font-weight: 700; color: var(--maroon-deep);
+    white-space: nowrap; flex-shrink: 0; margin-right: 2px;
+  }
+  .ai-btn, .filter-btn {
+    font-family: 'Fredoka', sans-serif; font-size: 14px; font-weight: 700;
+    padding: 4px 8px; border-radius: 999px; border: 1.5px solid var(--maroon-deep);
     background: var(--cream-dark); color: var(--maroon-deep); cursor: pointer;
-    box-shadow: 0 2px 0 rgba(74,0,0,0.2); transition: all 0.15s;
+    box-shadow: 0 1.5px 0 rgba(74,0,0,0.2); transition: all 0.1s;
+    white-space: nowrap; flex-shrink: 0; min-width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
   }
-  .ai-btn.active {
-    background: var(--maroon); color: #fff6e2;
-    box-shadow: 0 2px 0 var(--maroon-deep);
-  }
-  .ai-btn.glow-btn {
-    background: #cfa138; color: #3f1020; border-color: #3f1020;
-  }
-  .ai-btn.glow-btn.off {
-    background: #e0d5be; color: #7a6e58; border-color: #a89d87;
+  .filter-btn { font-size: 12px; padding: 4px 10px; }
+  .ai-btn.active, .filter-btn.active {
+    background: var(--maroon); color: #fff6e2; border-color: var(--maroon-deep);
+    box-shadow: 0 1.5px 0 var(--maroon-deep);
   }
 
   .cam-controls { display: flex; gap: 8px; justify-content: center; padding: 4px 10px 4px; align-items: center; flex-wrap: wrap; }
@@ -481,13 +486,31 @@
         <div class="toast" id="toast"></div>
       </div>
       <!-- AI & Filter Control Bar -->
-      <div class="ai-controls">
-        <button class="ai-btn active" id="btnPropNone" data-prop="none">🚫 No Prop</button>
-        <button class="ai-btn" id="btnPropCrown" data-prop="crown">👑 Mahkota</button>
-        <button class="ai-btn" id="btnPropGlasses" data-prop="glasses">🕶️ Kacamata</button>
-        <button class="ai-btn" id="btnPropCat" data-prop="cat">🐱 Kucing</button>
-        <button class="ai-btn" id="btnPropBlush" data-prop="blush">💖 Blush</button>
-        <button class="ai-btn glow-btn" id="btnBeauty">✨ Beauty Glow: ON</button>
+      <div class="ai-controls" id="aiControls">
+        <div class="ai-row">
+          <span class="ai-label">👑 AR Props:</span>
+          <button class="ai-btn active" data-prop="none">🚫</button>
+          <button class="ai-btn" data-prop="👑">👑</button>
+          <button class="ai-btn" data-prop="🕶️">🕶️</button>
+          <button class="ai-btn" data-prop="🎀">🎀</button>
+          <button class="ai-btn" data-prop="🌸">🌸</button>
+          <button class="ai-btn" data-prop="🐱">🐱</button>
+          <button class="ai-btn" data-prop="🐰">🐰</button>
+          <button class="ai-btn" data-prop="✨">✨</button>
+          <button class="ai-btn" data-prop="💖">💖</button>
+          <button class="ai-btn" data-prop="🧸">🧸</button>
+          <button class="ai-btn" data-prop="🍓">🍓</button>
+          <button class="ai-btn" data-prop="⭐">⭐</button>
+          <button class="ai-btn" data-prop="🥳">🥳</button>
+        </div>
+        <div class="ai-row">
+          <span class="ai-label">🎨 Filter:</span>
+          <button class="filter-btn active" data-filter="none">Normal</button>
+          <button class="filter-btn" data-filter="glow">✨ Glow</button>
+          <button class="filter-btn" data-filter="vintage">📷 Vintage</button>
+          <button class="filter-btn" data-filter="soft">🌸 Soft Pastel</button>
+          <button class="filter-btn" data-filter="bw">🖤 B&W</button>
+        </div>
       </div>
       <div class="cam-controls">
         <button class="btn ghost" id="btnFlip">🔄 Kamera</button>
@@ -586,8 +609,8 @@ let landmarker = null;
 let frameT = null;
 
 // AR & Beauty State
-let currentProp = 'none'; // 'none' | 'crown' | 'glasses' | 'cat' | 'blush'
-let beautyGlow = true;    // true | false
+let currentProp = 'none'; // 'none' | emoji char ('👑','🕶️','🎀','🌸','🐱','✨','💖','🧸','🍓','⭐','🐰','🥳')
+let currentFilter = 'none'; // 'none' | 'glow' | 'vintage' | 'bw' | 'soft'
 
 // ============ DOM ============
 const $ = (id) => document.getElementById(id);
@@ -642,7 +665,20 @@ async function startCamera() {
   loop();
 }
 
-// keep the cam box in sync with the real stream aspect (contain => never crop)
+// Apply filter styling on video live preview & capture canvas
+function applyFilterStyle(el) {
+  if (currentFilter === 'glow') {
+    el.style.filter = 'brightness(1.15) contrast(1.08) saturate(1.25)';
+  } else if (currentFilter === 'vintage') {
+    el.style.filter = 'sepia(0.45) contrast(1.15) brightness(0.95) saturate(1.2)';
+  } else if (currentFilter === 'soft') {
+    el.style.filter = 'brightness(1.18) contrast(0.95) saturate(1.15) hue-rotate(-5deg)';
+  } else if (currentFilter === 'bw') {
+    el.style.filter = 'grayscale(1) contrast(1.25) brightness(1.05)';
+  } else {
+    el.style.filter = 'none';
+  }
+}
 function adaptFrame() {
   if (video.videoWidth && video.videoHeight) {
     const a = video.videoWidth + ' / ' + video.videoHeight;
@@ -660,12 +696,12 @@ function stopCamera() {
 
 // ============ AR PROPS DRAWING ============
 function drawArProps(ctx, landmarks, w, h, isMirror, smileWinnerIdx, faceIdx) {
-  // landmarks is array of 478 points {x, y, z}
   if (!landmarks || !landmarks.length) return;
 
   const getPt = (idx) => {
     const pt = landmarks[idx];
     if (!pt) return { x: 0, y: 0 };
+    // Koordinat yang dihitung di sini adalah posisi piksel pada kanvas
     const px = isMirror ? (1 - pt.x) * w : pt.x * w;
     const py = pt.y * h;
     return { x: px, y: py };
@@ -674,30 +710,33 @@ function drawArProps(ctx, landmarks, w, h, isMirror, smileWinnerIdx, faceIdx) {
   const leftEye = getPt(33);
   const rightEye = getPt(263);
   const forehead = getPt(10);
-  const chin = getPt(152);
   const leftCheek = getPt(234);
   const rightCheek = getPt(454);
 
-  // Eye distance & angle
+  // Sudut rotasi mata (Head Tilt Angle)
   const edx = rightEye.x - leftEye.x;
   const edy = rightEye.y - leftEye.y;
   const eyeDist = Math.hypot(edx, edy);
-  const angle = Math.atan2(edy, edx);
+  let angle = Math.atan2(edy, edx);
 
-  // Jika faceIdx adalah pemenang Smile King/Queen, dapat mahkota otomatis!
+  // Jika isMirror, mata kiri dan kanan tertukar arah x-nya, jadi koreksi sudut
+  if (isMirror) {
+    angle = -angle;
+  }
+
   const isSmileKing = (smileWinnerIdx === faceIdx);
-  const activeProp = isSmileKing ? 'crown' : currentProp;
+  const activeProp = isSmileKing ? '👑' : currentProp;
+  if (activeProp === 'none') return;
 
-  if (activeProp === 'crown') {
-    // Mahkota di atas dahi
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  if (activeProp === '👑') {
     const cw = eyeDist * 1.5;
-    const cx = forehead.x;
-    const cy = forehead.y - cw * 0.45;
-    ctx.save();
-    ctx.translate(cx, cy);
+    ctx.translate(forehead.x, forehead.y - cw * 0.45);
     ctx.rotate(angle);
     ctx.font = `${Math.round(cw * 0.8)}px system-ui`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText('👑', 0, 0);
     if (isSmileKing) {
       ctx.font = `700 ${Math.round(cw * 0.22)}px "Fredoka", sans-serif`;
@@ -707,43 +746,40 @@ function drawArProps(ctx, landmarks, w, h, isMirror, smileWinnerIdx, faceIdx) {
       ctx.strokeText('SMILE KING 👑', 0, -cw * 0.4);
       ctx.fillText('SMILE KING 👑', 0, -cw * 0.4);
     }
-    ctx.restore();
-  } else if (activeProp === 'glasses') {
-    // Kacamata di atas mata
+  } else if (activeProp === '🕶️') {
     const gw = eyeDist * 2.2;
     const mx = (leftEye.x + rightEye.x) / 2;
     const my = (leftEye.y + rightEye.y) / 2;
-    ctx.save();
     ctx.translate(mx, my);
     ctx.rotate(angle);
     ctx.font = `${Math.round(gw * 0.7)}px system-ui`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText('🕶️', 0, 0);
-    ctx.restore();
-  } else if (activeProp === 'cat') {
-    // Telinga kucing di atas kepala
+  } else if (activeProp === '🎀' || activeProp === '🌸' || activeProp === '⭐') {
+    // Aksesoris di pojok dahi / telinga
+    const propSize = eyeDist * 0.8;
+    ctx.translate(forehead.x + eyeDist * 0.6, forehead.y - propSize * 0.3);
+    ctx.rotate(angle);
+    ctx.font = `${Math.round(propSize)}px system-ui`;
+    ctx.fillText(activeProp, 0, 0);
+  } else if (activeProp === '🐱' || activeProp === '🐰' || activeProp === '🥳' || activeProp === '🧸') {
+    // Bando di atas kepala
     const cw = eyeDist * 1.6;
-    const cx = forehead.x;
-    const cy = forehead.y - cw * 0.35;
-    ctx.save();
-    ctx.translate(cx, cy);
+    ctx.translate(forehead.x, forehead.y - cw * 0.4);
     ctx.rotate(angle);
     ctx.font = `${Math.round(cw * 0.75)}px system-ui`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('🐱', 0, 0);
-    ctx.restore();
-  } else if (activeProp === 'blush') {
-    // Blush / hati di kedua pipi
-    const bw = eyeDist * 0.4;
+    ctx.fillText(activeProp, 0, 0);
+  } else if (activeProp === '💖' || activeProp === '✨' || activeProp === '🍓') {
+    // Ornamen di kedua pipi
+    const bw = eyeDist * 0.45;
     for (let cp of [leftCheek, rightCheek]) {
       ctx.save();
       ctx.translate(cp.x, cp.y);
       ctx.font = `${Math.round(bw)}px system-ui`;
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText('💖', 0, 0);
+      ctx.fillText(activeProp, 0, 0);
       ctx.restore();
     }
   }
+  ctx.restore();
 }
 
 // ============ OVERLAY LOOP ============
@@ -913,21 +949,21 @@ function capture() {
   c.width = w; c.height = h;
   const cx = c.getContext('2d');
 
-  // Beauty Glow Filter jika ON
-  if (beautyGlow) {
-    cx.filter = 'brightness(1.06) contrast(1.03) saturate(1.12)';
+  // Filter effect pada saat capture
+  if (currentFilter === 'glow') {
+    cx.filter = 'brightness(1.15) contrast(1.08) saturate(1.25)';
+  } else if (currentFilter === 'vintage') {
+    cx.filter = 'sepia(0.45) contrast(1.15) brightness(0.95) saturate(1.2)';
+  } else if (currentFilter === 'soft') {
+    cx.filter = 'brightness(1.18) contrast(0.95) saturate(1.15) hue-rotate(-5deg)';
+  } else if (currentFilter === 'bw') {
+    cx.filter = 'grayscale(1) contrast(1.25) brightness(1.05)';
   }
 
   // mirror to match preview — hanya kamera depan
   if (facing === 'user') { cx.translate(w, 0); cx.scale(-1, 1); }
   cx.drawImage(video, 0, 0, w, h);
   cx.filter = 'none';
-
-  // Soft peach/pink light layer untuk Korean Glow
-  if (beautyGlow) {
-    cx.fillStyle = 'rgba(255, 235, 225, 0.08)';
-    cx.fillRect(0, 0, w, h);
-  }
 
   // Render AR Props ke dalam foto yang ditangkap
   if (lastFaces && lastFaces.length) {
@@ -1635,15 +1671,18 @@ document.querySelectorAll('.ai-btn[data-prop]').forEach(btn => {
   });
 });
 
-// Beauty Glow Toggle
-$('btnBeauty').addEventListener('click', () => {
-  beautyGlow = !beautyGlow;
-  $('btnBeauty').classList.toggle('off', !beautyGlow);
-  $('btnBeauty').textContent = beautyGlow ? '✨ Beauty Glow: ON' : '✨ Beauty Glow: OFF';
+// Filter Selection Buttons
+document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    applyFilterStyle(video);
+  });
 });
 
 // ============ INIT ============
-window.__h = { renderHud, emotion, capture, renderSheet, landmarker: () => landmarker, downloadSheet, getProp: () => currentProp, getBeauty: () => beautyGlow };
+window.__h = { renderHud, emotion, capture, renderSheet, landmarker: () => landmarker, downloadSheet, getProp: () => currentProp, getFilter: () => currentFilter };
 renderLayout();
 setupEmojiPicker();
 setupDragDrop();
