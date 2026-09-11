@@ -93,34 +93,25 @@ function publicBase(req) {
   return (PUBLIC || `http://${req.headers.host}`).replace(/\/$/, '');
 }
 
-function analyzeFaceWithAi(req, res) {
-  let raw = '';
-  req.on('data', (c) => raw += c);
-  req.on('end', () => {
-    let body;
-    try { body = JSON.parse(raw); } catch (e) { return json(res, 400, { error: 'bad json' }); }
-    const photo = String(body.photo || '');
-    if (!photo.startsWith('data:image/')) {
-      return json(res, 400, { error: 'photo dataURL required' });
-    }
+const GROQ_KEYS = [
+  'REDACTED_GROQ_KEY',
+  'REDACTED_GROQ_KEY',
+  'REDACTED_GROQ_KEY'
+];
+let groqKeyIdx = 0;
 
-    const key = process.env.HERMES_CUSTOM_LOCALHOST_20128_API_KEY || '';
-    if (!key) {
-      return json(res, 200, { fallback: true, error: 'no omniroute key' });
-    }
-
-    const systemPrompt = `Kamu adalah sistem AI Computer Vision & Biometric Analyzer cerdas untuk booth Sains Data & AI UKM EXPO UHN.
+const SYSTEM_PROMPT = `Kamu adalah sistem AI Computer Vision & Biometric Analyzer cerdas untuk booth Sains Data & AI UKM EXPO UHN.
 Tugasmu: Analisis foto wajah pengunjung dengan SANGAT SPESIFIK, AKURAT, dan REALISTIS berdasarkan ciri fisik aslinya (rambut, mata, kacamata, bentuk wajah, gender, jenggot/kumis, senyuman, dll).
 
 PENTING:
-- Gender wajib dideteksi dengan benar ("Laki-laki (Pria)" atau "Perempuan (Wanita)").
+- Gender wajib dideteksi dengan benar ("Laki-laki 👦" atau "Perempuan 👧").
 - Tokoh mirip (lookalike) HARUS SESUAI GENDER:
   * Jika Laki-laki: pilih figur pria yang benar-benar mirip (misal: Nicholas Saputra, Reza Rahadian, Iko Uwais, B.J. Habibie, Elon Musk, Keanu Reeves, Raditya Dika, Tulus, Dikta, Gibran, dll).
   * Jika Perempuan: pilih figur wanita yang benar-benar mirip (misal: Maudy Ayunda, Chelsea Islan, Dian Sastro, Isyana Sarasvati, Taylor Swift, Najwa Shihab, Sri Mulyani, Lisa Blackpink, Jennie, dll).
 - Estimasi umur harus realistis sesuai tampang di foto (rentang 17-30 tahun).
 - Komentar harus menyebut ciri fisik nyata yang terlihat di foto (misal: "Kacamatanya bikin aura intelektual makin kuat", "Senyum manis dengan lesung pipi", "Garis rahang tegas dan tatapan fokus", dll).
 
-Kembalikan HANYA format JSON murni:
+Kembalikan HANYA format JSON murni tanpa markdown:
 {
   "gender": "<Laki-laki 👦 / Perempuan 👧>",
   "age": <integer umur realistis 17-30>,
@@ -135,10 +126,72 @@ Kembalikan HANYA format JSON murni:
   "facialTraits": "<3 ciri fisik terdeteksi, pisahkan koma, misal: Kacamata Retro, Senyum Ramah, Alis Tebal>"
 }`;
 
+function callGroqVision(photo) {
+  return new Promise((resolve) => {
+    const key = GROQ_KEYS[groqKeyIdx % GROQ_KEYS.length];
+    groqKeyIdx++;
+
+    const payload = JSON.stringify({
+      model: 'qwen/qwen3.8-27b',
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: 'Analisis biometrik wajah ini secara spesifik & akurat untuk booth Sains Data AI:' },
+            { type: 'image_url', image_url: { url: photo } }
+          ]
+        }
+      ],
+      max_completion_tokens: 350,
+      temperature: 0.3
+    });
+
+    const https = require('https');
+    const req = https.request({
+      hostname: 'api.groq.com',
+      path: '/openai/v1/chat/completions',
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + key,
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0',
+        'Content-Length': Buffer.byteLength(payload)
+      },
+      timeout: 5000
+    }, (res) => {
+      let raw = '';
+      res.on('data', d => raw += d);
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(raw);
+          const content = parsed.choices && parsed.choices[0] && parsed.choices[0].message && parsed.choices[0].message.content;
+          if (!content) return resolve(null);
+          const m = /\{[\s\S]*\}/.exec(content);
+          if (m) return resolve(JSON.parse(m[0]));
+          resolve(null);
+        } catch (e) {
+          resolve(null);
+        }
+      });
+    });
+
+    req.on('error', () => resolve(null));
+    req.on('timeout', () => { req.destroy(); resolve(null); });
+    req.write(payload);
+    req.end();
+  });
+}
+
+function callOmniRouteVision(photo) {
+  return new Promise((resolve) => {
+    const key = process.env.HERMES_CUSTOM_LOCALHOST_20128_API_KEY || '';
+    if (!key) return resolve(null);
+
     const payload = JSON.stringify({
       model: 'agy/gemini-3.5-flash-lite',
       messages: [
-        { role: 'system', content: systemPrompt },
+        { role: 'system', content: SYSTEM_PROMPT },
         {
           role: 'user',
           content: [
@@ -151,46 +204,66 @@ Kembalikan HANYA format JSON murni:
       temperature: 0.4
     });
 
-    try {
-      const apiReq = http.request({
-        hostname: '127.0.0.1',
-        port: 20128,
-        path: '/v1/chat/completions',
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + key,
-          'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(payload)
-        },
-        timeout: 7000
-      }, (apiRes) => {
-        let respData = '';
-        apiRes.on('data', d => respData += d);
-        apiRes.on('end', () => {
-          try {
-            const parsed = JSON.parse(respData);
-            const content = parsed.choices && parsed.choices[0] && parsed.choices[0].message && parsed.choices[0].message.content;
-            if (!content) return json(res, 200, { fallback: true });
-            
-            const m = /\{[\s\S]*\}/.exec(content);
-            if (m) {
-              const aiData = JSON.parse(m[0]);
-              return json(res, 200, { ok: true, ai: aiData });
-            }
-            return json(res, 200, { fallback: true });
-          } catch (e) {
-            return json(res, 200, { fallback: true });
-          }
-        });
+    const req = http.request({
+      hostname: '127.0.0.1',
+      port: 20128,
+      path: '/v1/chat/completions',
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + key,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(payload)
+      },
+      timeout: 7000
+    }, (res) => {
+      let raw = '';
+      res.on('data', d => raw += d);
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(raw);
+          const content = parsed.choices && parsed.choices[0] && parsed.choices[0].message && parsed.choices[0].message.content;
+          if (!content) return resolve(null);
+          const m = /\{[\s\S]*\}/.exec(content);
+          if (m) return resolve(JSON.parse(m[0]));
+          resolve(null);
+        } catch (e) {
+          resolve(null);
+        }
       });
+    });
 
-      apiReq.on('error', () => json(res, 200, { fallback: true }));
-      apiReq.on('timeout', () => { apiReq.destroy(); json(res, 200, { fallback: true }); });
-      apiReq.write(payload);
-      apiReq.end();
-    } catch (e) {
-      json(res, 200, { fallback: true });
+    req.on('error', () => resolve(null));
+    req.on('timeout', () => { req.destroy(); resolve(null); });
+    req.write(payload);
+    req.end();
+  });
+}
+
+async function analyzeFaceWithAi(req, res) {
+  let raw = '';
+  req.on('data', (c) => raw += c);
+  req.on('end', async () => {
+    let body;
+    try { body = JSON.parse(raw); } catch (e) { return json(res, 400, { error: 'bad json' }); }
+    const photo = String(body.photo || '');
+    if (!photo.startsWith('data:image/')) {
+      return json(res, 400, { error: 'photo dataURL required' });
     }
+
+    // 1. Try Groq Vision first (Ultra Fast ~0.8s)
+    let aiData = await callGroqVision(photo);
+    let provider = 'groq';
+
+    // 2. Fallback to Gemini / OmniRoute if Groq is unavailable
+    if (!aiData) {
+      aiData = await callOmniRouteVision(photo);
+      provider = 'omniroute';
+    }
+
+    if (aiData) {
+      return json(res, 200, { ok: true, provider, ai: aiData });
+    }
+    return json(res, 200, { fallback: true });
   });
 }
 
