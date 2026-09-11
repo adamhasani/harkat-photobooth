@@ -743,7 +743,7 @@ function emotion(bs) {
   if ((eyeBlinkR > 0.7) !== (eyeBlinkL > 0.7)) return { emoji: '😉', label: 'KEDIP', pct: 92 };
   if (mouthFrown > 0.25) return { emoji: '😒', label: 'CEMBERUT', pct: Math.round(mouthFrown * 100) };
   if (smile > 0.15) return { emoji: '🙂', label: 'TENANG', pct: Math.round(smile * 90) };
-  return { emoji: '😶', label: 'POLOS', pct: Math.max(25, Math.round((1 - jaw) * 40)) };
+  return { emoji: '🗿', label: 'POLOS', pct: Math.max(25, Math.round((1 - jaw) * 40)) };
 }
 
 // one chip per face (up to 5 wajah) — each with its own emoji + persen
@@ -772,38 +772,54 @@ function renderHud(faces, blendshapes) {
 
 // ============ CAPTURE ============
 // test hook (harmless)
-window.__h = { renderHud, emotion, capture, renderSheet, landmarker: () => landmarker, downloadSheet };
+window.__h = { renderHud, emotion, capture, renderSheet, landmarker: () => landmarker, downloadSheet, setTestFace: (f, b) => { lastFaces = f; lastBs = b; } };
 
 // funny caption + emoji per photo (dari % emoji hasil deteksi wajah)
 const FUN_EMOJI = ['🥳','😜','🤪','😍','🤩','😎','🥸','🤡','👻','🥴','😺','🤣','🦄','🍭','🎈','💃'];
 const CAPS_HIGH = [
-  '{p}% Calon Penghuni Surga 😇',
-  '{p}% Senyum Semanis Gula 🍬',
-  '{p}% Bintang Iklan Siap Debut ⭐',
-  '{p}% Kece Wajib Dibingkai 🖼️',
-  '{p}% Cantik/Ganteng Maksimal ✨',
-  '{p}% Senyum Bikin Meleleh 💖'
+  '{e} {p}% Calon Penghuni Surga',
+  '{e} {p}% Senyum Semanis Gula',
+  '{e} {p}% Bintang Iklan Siap Debut',
+  '{e} {p}% Kece Wajib Dibingkai',
+  '{e} {p}% Cantik/Ganteng Maksimal',
+  '{e} {p}% Senyum Bikin Meleleh'
 ];
 const CAPS_MID = [
-  '{p}% Pabrik Senyum Beroperasi 😄',
-  '{p}% Dikit Lagi Masuk TV 🎬',
-  '{p}% Senyum Pembawa Rezeki 💸',
-  '{p}% Manisnya Bikin Meleleh 🫠',
-  '{p}% Vibes Positif Banget ✌️',
-  '{p}% Hepi Seharian Penuh 🥳'
+  '{e} {p}% Pabrik Senyum Aktif',
+  '{e} {p}% Dikit Lagi Masuk TV',
+  '{e} {p}% Senyum Pembawa Rezeki',
+  '{e} {p}% Manisnya Bikin Meleleh',
+  '{e} {p}% Vibes Positif Banget',
+  '{e} {p}% Hepi Seharian Penuh'
 ];
 const CAPS_LOW = [
-  '{p}% Stone Face tapi Tetap Kece 🗿',
-  '{p}% Masih Malu-Malu Gemoy 🥹',
-  '{p}% Senyum Masih Loading 🔄',
-  '{p}% Kurang Senyum Dikit Lagi 😅',
-  '{p}% Mode Cool & Misterius 😎',
-  '{p}% Senyum Hemat Energi 🤫'
+  '{e} {p}% Stone Face tapi Kece',
+  '{e} {p}% Masih Malu Gemoy',
+  '{e} {p}% Senyum Masih Loading',
+  '{e} {p}% Kurang Senyum Dikit',
+  '{e} {p}% Mode Cool & Misterius',
+  '{e} {p}% Senyum Hemat Energi'
 ];
-function randCap(pct, label) {
-  const pool = pct >= 90 ? CAPS_HIGH : pct >= 70 ? CAPS_MID : CAPS_LOW;
+function randCap(pct, label, faceEmoji) {
+  const fe = faceEmoji || '😄';
+  let pool;
+  if (label === 'CILUK BA') {
+    pool = ['{e} {p}% Ciluk Ba Gemoy', '{e} {p}% Pose Lucu Banget', '{e} {p}% Ekspresi Jahil'];
+  } else if (label === 'TERKEJUT' || label === 'KAGET') {
+    pool = ['{e} {p}% Kaget tapi Kece', '{e} {p}% Syok Menggemaskan', '{e} {p}% Spontan Kaget'];
+  } else if (label === 'KEDIP') {
+    pool = ['{e} {p}% Kedipan Manja', '{e} {p}% Wink Menawan', '{e} {p}% Kedip Bikin Meleleh'];
+  } else if (label === 'HERAN') {
+    pool = ['{e} {p}% Heran tapi Manis', '{e} {p}% Mikir Keras Gemoy', '{e} {p}% Mode Penasaran'];
+  } else if (label === 'CEMBERUT') {
+    pool = ['{e} {p}% Cemberut Gemas', '{e} {p}% Jutek tapi Kangen', '{e} {p}% Ngambek Imut'];
+  } else if (label === 'TENANG') {
+    pool = ['{e} {p}% Senyum Tipis Kalem', '{e} {p}% Vibes Adem & Positif', '{e} {p}% Manis Natural'];
+  } else {
+    pool = pct >= 90 ? CAPS_HIGH : pct >= 70 ? CAPS_MID : CAPS_LOW;
+  }
   const t = pool[Math.floor(Math.random() * pool.length)];
-  return t.replace('{p}', pct).replace('{l}', label || '');
+  return t.replace('{e}', fe).replace('{p}', pct).replace('{l}', label || '');
 }
 
 function randEmoji(exclude) {
@@ -828,12 +844,13 @@ function capture() {
   cx.drawImage(video, 0, 0, w, h);
   const dataURL = c.toDataURL('image/jpeg', 0.92);
 
-  // emoji random lucu per foto + persen dari deteksi wajah (fallback acak biar tiap foto beda)
+  // emoji & persen dari deteksi wajah di kamera (fallback acak jika wajah tidak terdeteksi)
   let e = null;
   if (lastFaces.length && lastBs && lastBs[0]) e = emotion(lastBs[0]);
   const pct = e ? e.pct : 50 + Math.floor(Math.random() * 50);
-  const emoji = randEmoji(photos.length ? photos[photos.length - 1].emoji : null);
-  const cap = randCap(pct, e ? e.label : null);
+  const faceEmoji = (e && e.emoji) ? e.emoji : randEmoji(photos.length ? photos[photos.length - 1].emoji : null);
+  const emoji = faceEmoji;
+  const cap = randCap(pct, e ? e.label : null, faceEmoji);
 
   photos.push({ url: dataURL, pct, emoji, cap });
   renderLayout();
@@ -917,6 +934,9 @@ function setupEmojiPicker() {
       const cur = photos[pIdx].emoji;
       const next = EMOJI_LIST[(EMOJI_LIST.indexOf(cur) + 1) % EMOJI_LIST.length];
       photos[pIdx].emoji = next;
+      if (photos[pIdx].cap && cur && photos[pIdx].cap.startsWith(cur)) {
+        photos[pIdx].cap = next + photos[pIdx].cap.slice(cur.length);
+      }
       renderLayout();
       invalidateGallery();
     };
@@ -1553,7 +1573,7 @@ $('btnClearStickers').addEventListener('click', () => {
 });
 
 // ============ INIT ============
-window.__h = { renderHud, emotion, capture, renderSheet, landmarker: () => landmarker, downloadSheet };
+window.__h = { renderHud, emotion, capture, renderSheet, landmarker: () => landmarker, downloadSheet, setTestFace: (f, b) => { lastFaces = f; lastBs = b; } };
 renderLayout();
 setupEmojiPicker();
 setupDragDrop();
