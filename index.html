@@ -1057,262 +1057,264 @@ function b64ToImg(src) {
 }
 // renderSheet(true) -> dataURL PNG (upload); renderSheet() -> Blob (download)
 async function renderSheet(asDataUrl) {
-  // === EXACT CLONE DOM .sheet ===
-  // Ukuran DOM asli diskalakan 2.5x untuk resolusi cetak HD (crisp & clean)
-  const SCALE = 2.5;
+  // === 100% PRECISE DOM CLONE ===
+  // Membaca posisi dan ukuran setiap elemen langsung dari getBoundingClientRect() DOM
+  await document.fonts.ready;
   const sheetEl = document.querySelector('.sheet');
-  const sW = sheetEl.offsetWidth || 400;
-  const W = Math.round(sW * SCALE);   // misal 400 * 2.5 = 1000px
-
-  const PAD_X = Math.round(14 * SCALE);
-  const PAD_TOP = Math.round(18 * SCALE);
-  const PAD_BOT = Math.round(16 * SCALE);
-  const GAP = Math.round(10 * SCALE);
-  const ROWS = 4, COLS = 2;
-  const card = Math.floor((W - PAD_X * 2 - GAP) / COLS);
-
-  // Bagian Header
-  const HEAD_H = Math.round(38 * SCALE);
-  const yBody = PAD_TOP + HEAD_H + Math.round(8 * SCALE);
-
-  // Bagian Footer
-  const FOOT_H = Math.round(36 * SCALE);
-  const footY = yBody + ROWS * card + (ROWS - 1) * GAP + Math.round(10 * SCALE);
-
-  // Caption strip unik
-  const seenC = new Set();
-  const uniq = photos.filter(p => { if (seenC.has(p.url)) return false; seenC.add(p.url); return true; });
-  const nCap = Math.min(uniq.length, 8);
-  const lineH = Math.round(26 * SCALE);
-  const capPadY = Math.round(8 * SCALE);
-  const capH = nCap ? nCap * lineH + capPadY * 2 : 0;
-  const capY0 = footY + FOOT_H + Math.round(6 * SCALE);
-
-  const H = (nCap ? capY0 + capH : footY + FOOT_H) + PAD_BOT;
+  const sRect = sheetEl.getBoundingClientRect();
+  const SCALE = 2.5; // Resolusi HD
+  const W = Math.round(sRect.width * SCALE);
+  const H = Math.round(sRect.height * SCALE);
 
   const cv = document.createElement('canvas');
   cv.width = W; cv.height = H;
   const ctx = cv.getContext('2d');
+  ctx.scale(SCALE, SCALE); // Semua gambar di canvas menggunakan skala 1:1 DOM coordinate space
 
-  // 1. Background Dasar & Dots persis CSS sheet
-  const g = ctx.createLinearGradient(0, 0, 0, H);
+  // 1. Background Dasar & Multi-layer Dots (Persis CSS .sheet)
+  const g = ctx.createLinearGradient(0, 0, 0, sRect.height);
   g.addColorStop(0, '#f5eccf'); g.addColorStop(1, '#f2e7c8');
-  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, sRect.width, sRect.height);
 
-  // Confetti dots persis formula CSS
+  // Confetti dots
   ctx.fillStyle = 'rgba(52,34,30,0.08)';
-  for (let dy = 0; dy < H; dy += Math.round(16 * SCALE))
-    for (let dx = 0; dx < W; dx += Math.round(16 * SCALE)) ctx.fillRect(dx, dy, 2, 2);
+  for (let dy = 0; dy < sRect.height; dy += 16)
+    for (let dx = 0; dx < sRect.width; dx += 16) ctx.fillRect(dx, dy, 1, 1);
 
   ctx.fillStyle = 'rgba(201,162,39,0.22)';
-  for (let dy = 4; dy < H; dy += Math.round(34 * SCALE))
-    for (let dx = 6; dx < W; dx += Math.round(34 * SCALE)) {
-      ctx.beginPath(); ctx.arc(dx, dy, 1.8 * SCALE, 0, Math.PI * 2); ctx.fill();
+  for (let dy = 4; dy < sRect.height; dy += 34)
+    for (let dx = 6; dx < sRect.width; dx += 34) {
+      ctx.beginPath(); ctx.arc(dx, dy, 1.2, 0, Math.PI * 2); ctx.fill();
     }
 
   ctx.fillStyle = 'rgba(63,90,122,0.18)';
-  for (let dy = 8; dy < H; dy += Math.round(28 * SCALE))
-    for (let dx = 12; dx < W; dx += Math.round(28 * SCALE)) {
-      ctx.beginPath(); ctx.arc(dx, dy, 1.5 * SCALE, 0, Math.PI * 2); ctx.fill();
+  for (let dy = 8; dy < sRect.height; dy += 28)
+    for (let dx = 12; dx < sRect.width; dx += 28) {
+      ctx.beginPath(); ctx.arc(dx, dy, 1, 0, Math.PI * 2); ctx.fill();
     }
 
-  // Film-strip putus-putus di tepi kiri & kanan (.sheet::before / ::after)
-  const stripW = Math.round(8 * SCALE);
-  const stripL = Math.round(8 * SCALE);
-  const stripR = W - stripL - stripW;
+  // Film-strip di tepi kiri (left: 8px) & kanan (right: 8px)
   ctx.fillStyle = 'rgba(63,90,122,0.35)';
-  for (let sx of [stripL, stripR]) {
-    for (let sy = Math.round(14 * SCALE); sy < H - Math.round(14 * SCALE); sy += Math.round(20 * SCALE)) {
-      ctx.fillRect(sx, sy, stripW, Math.round(6 * SCALE));
+  for (let sx of [8, sRect.width - 16]) {
+    for (let sy = 14; sy < sRect.height - 14; sy += 20) {
+      ctx.fillRect(sx, sy, 8, 6);
     }
   }
 
-  // Border luar sheet (4px * SCALE, border-radius 20px * SCALE, maroon-deep)
-  const bThick = Math.round(4 * SCALE);
-  const bRad = Math.round(20 * SCALE);
-  ctx.strokeStyle = '#4a1024'; ctx.lineWidth = bThick;
-  roundRect(ctx, bThick / 2, bThick / 2, W - bThick, H - bThick, bRad); ctx.stroke();
+  // Border luar sheet
+  ctx.strokeStyle = '#4a1024'; ctx.lineWidth = 4;
+  roundRect(ctx, 2, 2, sRect.width - 4, sRect.height - 4, 20); ctx.stroke();
 
   // 2. Washi Tape di pojok kiri atas & kanan atas (.sheet-head::before & ::after)
   function washiTape(x, y, rot) {
-    const tw = Math.round(84 * SCALE), th = Math.round(24 * SCALE);
+    const tw = 84, th = 24;
     ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
-    ctx.shadowColor = 'rgba(52,34,30,0.22)'; ctx.shadowOffsetY = 2 * SCALE; ctx.shadowBlur = 1 * SCALE;
+    ctx.shadowColor = 'rgba(52,34,30,0.22)'; ctx.shadowOffsetY = 2; ctx.shadowBlur = 1;
     ctx.beginPath(); ctx.rect(-tw / 2, -th / 2, tw, th); ctx.clip();
     ctx.fillStyle = 'rgba(237,211,133,0.92)'; ctx.fillRect(-tw / 2, -th / 2, tw, th);
-    // diagonal stripes 45deg
     ctx.save(); ctx.rotate(Math.PI / 4);
-    const PER = Math.round(16 * SCALE), SW = Math.round(8 * SCALE), EXT = Math.round(100 * SCALE);
-    ctx.fillStyle = 'rgba(201,162,39,0.9)';
-    for (let sx = -EXT; sx < tw + EXT; sx += PER) ctx.fillRect(sx - SW, -EXT, SW, 2 * EXT);
+    for (let sx = -60; sx < tw + 60; sx += 16) {
+      ctx.fillStyle = 'rgba(201,162,39,0.9)';
+      ctx.fillRect(sx - 8, -60, 8, 120);
+    }
     ctx.restore();
     ctx.restore();
   }
-  // Letak persis di atas border atas (straddling top edge)
-  washiTape(PAD_X + Math.round(24 * SCALE), PAD_TOP - Math.round(10 * SCALE), -0.09);
-  washiTape(W - PAD_X - Math.round(24 * SCALE), PAD_TOP - Math.round(10 * SCALE), 0.09);
+  const headEl = document.querySelector('.sheet-head');
+  const hRect = headEl.getBoundingClientRect();
+  const headRelY = hRect.top - sRect.top;
+  washiTape(14 + 42, headRelY + 2, -0.09);
+  washiTape(sRect.width - 14 - 42, headRelY + 2, 0.09);
 
-  // 3. Header Text: UKM EXPO UHN & Simbol
-  const headCenterY = PAD_TOP + HEAD_H / 2;
+  // 3. Header Text & Simbol (Persis posisi DOM)
+  const titleEl = headEl.querySelector('h2');
+  const tRect = titleEl.getBoundingClientRect();
+  const titleCenterX = (tRect.left - sRect.left) + tRect.width / 2;
+  const titleCenterY = (tRect.top - sRect.top) + tRect.height / 2;
+
   ctx.save();
-  ctx.translate(W / 2, headCenterY); ctx.rotate(-0.026);
+  ctx.translate(titleCenterX, titleCenterY); ctx.rotate(-0.026);
   ctx.fillStyle = '#6b1f3a'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.font = '700 ' + Math.round(27 * SCALE) + 'px "Luckiest Guy", "Comic Sans MS", cursive';
-  ctx.shadowColor = 'rgba(201,162,39,0.35)'; ctx.shadowOffsetX = 2 * SCALE; ctx.shadowOffsetY = 2 * SCALE;
+  ctx.font = '700 27px "Luckiest Guy", "Comic Sans MS", cursive';
+  ctx.shadowColor = 'rgba(201,162,39,0.35)'; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2;
   ctx.fillText('UKM EXPO UHN', 0, 0);
   ctx.restore();
-  ctx.shadowColor = 'transparent'; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+  ctx.shadowColor = 'transparent';
 
-  ctx.fillStyle = '#6b1f3a'; ctx.font = Math.round(18 * SCALE) + 'px system-ui';
-  ctx.save(); ctx.translate(PAD_X + Math.round(14 * SCALE), headCenterY); ctx.rotate(-0.14); ctx.fillText('▶', 0, 0); ctx.restore();
-  ctx.save(); ctx.translate(W - PAD_X - Math.round(14 * SCALE), headCenterY); ctx.fillText('✳', 0, 0); ctx.restore();
+  const playEl = headEl.querySelector('.play');
+  if (playEl) {
+    const pRect = playEl.getBoundingClientRect();
+    ctx.save();
+    ctx.translate((pRect.left - sRect.left) + pRect.width / 2, (pRect.top - sRect.top) + pRect.height / 2);
+    ctx.rotate(-0.14);
+    ctx.fillStyle = '#6b1f3a'; ctx.font = '18px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('▶', 0, 0);
+    ctx.restore();
+  }
+  ctx.save();
+  ctx.fillStyle = '#6b1f3a'; ctx.font = '18px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('✳', sRect.width - 24, titleCenterY);
+  ctx.restore();
 
-  // 4. 8 Boxes Foto (persis .box di DOM: background putih, border 2px, padding 4px)
+  // 4. Boxes Foto (Membaca posisi exact dari tiap .box di DOM)
   const imgs = await Promise.all(photos.map(p => b64ToImg(p.url)));
   let fill = [];
   if (photos.length === 1) fill = Array(8).fill(0);
   else for (let i = 0; i < 8; i++) fill.push(i % photos.length);
 
-  const boxBorder = Math.round(2 * SCALE);
-  const boxRadius = Math.round(12 * SCALE);
-  const boxPad = Math.round(4 * SCALE);
-  const numSize = Math.round(22 * SCALE);
-  const numRadius = Math.round(6 * SCALE);
-  const emojiSize = Math.round(30 * SCALE);
+  const boxEls = document.querySelectorAll('.box');
+  for (let i = 0; i < boxEls.length; i++) {
+    const bEl = boxEls[i];
+    const bRect = bEl.getBoundingClientRect();
+    const bx = bRect.left - sRect.left;
+    const by = bRect.top - sRect.top;
+    const bw = bRect.width;
+    const bh = bRect.height;
 
-  for (let i = 0; i < ROWS * COLS; i++) {
-    const src = fill[i]; if (src === undefined) break;
-    const r = Math.floor(i / COLS), c = i % COLS;
-    const x = PAD_X + c * (card + GAP), y = yBody + r * (card + GAP);
-
-    // Box Frame Putih (DOM .box)
+    // Frame Putih (.box)
     ctx.save();
-    ctx.shadowColor = 'rgba(74,16,36,0.18)'; ctx.shadowOffsetY = Math.round(3 * SCALE); ctx.shadowBlur = 0;
-    roundRect(ctx, x, y, card, card, boxRadius);
+    ctx.shadowColor = 'rgba(74,16,36,0.18)'; ctx.shadowOffsetY = 3; ctx.shadowBlur = 0;
+    roundRect(ctx, bx, by, bw, bh, 14);
     ctx.fillStyle = '#ffffff'; ctx.fill();
     ctx.restore();
-    ctx.strokeStyle = '#4a1024'; ctx.lineWidth = boxBorder;
-    roundRect(ctx, x, y, card, card, boxRadius); ctx.stroke();
+    ctx.strokeStyle = '#4a1024'; ctx.lineWidth = 2;
+    roundRect(ctx, bx, by, bw, bh, 14); ctx.stroke();
 
-    // Foto di dalam Box (DOM .box img)
-    const px = x + boxPad, py = y + boxPad, pw = card - boxPad * 2, ph = card - boxPad * 2;
-    const imgRadius = Math.round(8 * SCALE);
-    ctx.save();
-    roundRect(ctx, px, py, pw, ph, imgRadius); ctx.clip();
-    drawCover(ctx, imgs[src], px, py, pw, ph);
-    ctx.restore();
-    ctx.strokeStyle = 'rgba(74,16,36,0.15)'; ctx.lineWidth = 1 * SCALE;
-    roundRect(ctx, px, py, pw, ph, imgRadius); ctx.stroke();
+    const src = fill[i];
+    if (src !== undefined && imgs[src]) {
+      // Foto di dalam Box (inset 6px, radius 9px)
+      const px = bx + 6, py = by + 6, pw = bw - 12, ph = bh - 12;
+      ctx.save();
+      roundRect(ctx, px, py, pw, ph, 9); ctx.clip();
+      drawCover(ctx, imgs[src], px, py, pw, ph);
+      ctx.restore();
+      ctx.strokeStyle = 'rgba(74,16,36,0.15)'; ctx.lineWidth = 1;
+      roundRect(ctx, px, py, pw, ph, 9); ctx.stroke();
+    }
 
     // Washi Tape mini aksen di foto 1 & 8
     if (i === 0) {
-      ctx.save(); ctx.translate(x + Math.round(24 * SCALE), y + Math.round(2 * SCALE)); ctx.rotate(-0.2);
-      ctx.fillStyle = 'rgba(201,162,39,0.75)'; roundRect(ctx, -14 * SCALE, -4 * SCALE, 28 * SCALE, 9 * SCALE, 2 * SCALE); ctx.fill();
+      ctx.save(); ctx.translate(bx + 24, by + 2); ctx.rotate(-0.2);
+      ctx.fillStyle = 'rgba(201,162,39,0.75)'; roundRect(ctx, -14, -4, 28, 9, 2); ctx.fill();
       ctx.restore();
     } else if (i === 7) {
-      ctx.save(); ctx.translate(x + card - Math.round(24 * SCALE), y + card - Math.round(2 * SCALE)); ctx.rotate(-0.14);
-      ctx.fillStyle = 'rgba(201,162,39,0.75)'; roundRect(ctx, -14 * SCALE, -4 * SCALE, 28 * SCALE, 9 * SCALE, 2 * SCALE); ctx.fill();
+      ctx.save(); ctx.translate(bx + bw - 24, by + bh - 2); ctx.rotate(-0.14);
+      ctx.fillStyle = 'rgba(201,162,39,0.75)'; roundRect(ctx, -14, -4, 28, 9, 2); ctx.fill();
       ctx.restore();
     }
 
     // Nomor Gold kiri atas (.box .n)
-    const numX = x - Math.round(6 * SCALE), numY = y - Math.round(6 * SCALE);
+    const numX = bx - 6, numY = by - 6, numSize = 22;
     ctx.fillStyle = '#c9a227';
-    roundRect(ctx, numX, numY, numSize, numSize, numRadius); ctx.fill();
-    ctx.strokeStyle = '#4a1024'; ctx.lineWidth = 1.5 * SCALE; ctx.stroke();
-    ctx.fillStyle = '#4a1024'; ctx.font = '700 ' + Math.round(11 * SCALE) + 'px "Luckiest Guy", cursive';
+    roundRect(ctx, numX, numY, numSize, numSize, 6); ctx.fill();
+    ctx.strokeStyle = '#4a1024'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.fillStyle = '#4a1024'; ctx.font = '700 11px "Luckiest Guy", cursive';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(i + 1, numX + numSize / 2, numY + numSize / 2 + 0.5 * SCALE);
+    ctx.fillText(i + 1, numX + numSize / 2, numY + numSize / 2 + 0.5);
 
     // Emoji Gelembung Putih kanan atas (.box .e)
-    const emX = x + card - emojiSize / 2 - Math.round(2 * SCALE);
-    const emY = y + emojiSize / 2 + Math.round(2 * SCALE);
+    const emojiSize = 30;
+    const emX = bx + bw - emojiSize / 2 - 2;
+    const emY = by + emojiSize / 2 + 2;
     ctx.save();
     ctx.translate(emX, emY); ctx.rotate(0.1);
     ctx.beginPath(); ctx.arc(0, 0, emojiSize / 2, 0, Math.PI * 2);
     ctx.fillStyle = '#ffffff'; ctx.fill();
-    ctx.strokeStyle = '#c9a227'; ctx.lineWidth = 2 * SCALE; ctx.stroke();
-    ctx.font = Math.round(14 * SCALE) + 'px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(photos[src].emoji || '😄', 0, 0.5 * SCALE);
+    ctx.strokeStyle = '#c9a227'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.font = '14px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText((photos[src] && photos[src].emoji) || '😄', 0, 0.5);
     ctx.restore();
   }
 
   // 5. Footer: SAINS DATA · ⭯ ⭮ · Dovey (.sheet-foot)
-  const footCenterY = footY + FOOT_H / 2;
-  ctx.save();
-  ctx.translate(PAD_X + Math.round(4 * SCALE), footCenterY); ctx.rotate(0.026);
-  ctx.fillStyle = '#6b1f3a'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-  ctx.font = '700 ' + Math.round(15 * SCALE) + 'px "Luckiest Guy", cursive';
-  ctx.fillText('SAINS DATA', 0, 0);
-  ctx.restore();
+  const footEl = document.querySelector('.sheet-foot');
+  if (footEl) {
+    const fRect = footEl.getBoundingClientRect();
+    const footCenterY = (fRect.top - sRect.top) + fRect.height / 2;
 
-  ctx.font = '700 ' + Math.round(13 * SCALE) + 'px system-ui'; ctx.fillStyle = '#6b1f3a';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('⭯ ⭮', W / 2, footCenterY);
+    ctx.save();
+    ctx.translate(18, footCenterY); ctx.rotate(0.026);
+    ctx.fillStyle = '#6b1f3a'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.font = '700 15px "Luckiest Guy", cursive';
+    ctx.fillText('SAINS DATA', 0, 0);
+    ctx.restore();
 
-  ctx.save();
-  ctx.translate(W - PAD_X - Math.round(4 * SCALE), footCenterY); ctx.rotate(-0.052);
-  ctx.fillStyle = '#34221e'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-  ctx.font = '700 ' + Math.round(17 * SCALE) + 'px Pacifico, "Brush Script MT", cursive';
-  ctx.fillText('Dovey', 0, 0);
-  ctx.restore();
+    ctx.font = '700 13px system-ui'; ctx.fillStyle = '#6b1f3a';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('⭯ ⭮', sRect.width / 2, footCenterY);
+
+    ctx.save();
+    ctx.translate(sRect.width - 18, footCenterY); ctx.rotate(-0.052);
+    ctx.fillStyle = '#34221e'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.font = '700 17px Pacifico, "Brush Script MT", cursive';
+    ctx.fillText('Dovey', 0, 0);
+    ctx.restore();
+  }
 
   // 6. Caption Strip (.caps di DOM)
-  if (nCap) {
-    const stripPadX = PAD_X + Math.round(4 * SCALE);
-    const stripW_ = W - stripPadX * 2;
+  const capsEl = document.querySelector('.caps');
+  if (capsEl && !capsEl.hidden) {
+    const cpRect = capsEl.getBoundingClientRect();
+    const capX = cpRect.left - sRect.left;
+    const capY = cpRect.top - sRect.top;
+    const capW = cpRect.width;
+    const capH = cpRect.height;
+
     ctx.fillStyle = 'rgba(255,255,255,0.45)';
-    roundRect(ctx, stripPadX, capY0, stripW_, capH, Math.round(10 * SCALE)); ctx.fill();
-    ctx.fillStyle = '#c9a227'; ctx.fillRect(stripPadX, capY0, Math.round(4 * SCALE), capH); // border-left 4px
+    roundRect(ctx, capX, capY, capW, capH, 10); ctx.fill();
+    ctx.fillStyle = '#c9a227'; ctx.fillRect(capX, capY, 4, capH); // border-left 4px
 
-    let ty = capY0 + capPadY;
-    for (const p of uniq) {
+    const capLines = capsEl.querySelectorAll('.cap-line');
+    capLines.forEach((cl) => {
+      const clRect = cl.getBoundingClientRect();
+      const ly = (clRect.top - sRect.top) + clRect.height / 2;
+      const faceEl = cl.querySelector('.cap-face');
+      const faceTxt = faceEl ? faceEl.textContent : '😄';
+      const fullTxt = cl.textContent.replace(faceTxt, '').trim();
+
       ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-      ctx.font = Math.round(16 * SCALE) + 'px system-ui';
-      ctx.fillText(p.emoji || '😄', stripPadX + Math.round(12 * SCALE), ty + lineH / 2);
+      ctx.font = '16px system-ui';
+      ctx.fillText(faceTxt, capX + 12, ly);
       ctx.fillStyle = '#34221e';
-      ctx.font = '600 ' + Math.round(14 * SCALE) + 'px system-ui';
-      let t = p.cap;
-      const maxW = stripW_ - Math.round(44 * SCALE);
-      if (ctx.measureText(t).width > maxW) {
-        while (t.length > 4 && ctx.measureText(t + '…').width > maxW) t = t.slice(0, -1);
-        t += '…';
-      }
-      ctx.fillText(t, stripPadX + Math.round(36 * SCALE), ty + lineH / 2);
-      ty += lineH;
-    }
+      ctx.font = '600 14px system-ui';
+      ctx.fillText(fullTxt, capX + 36, ly);
+    });
   }
 
-  // 7. Custom Drag Stickers di atas Canvas (Presisi Skala Langsung dari DOM)
-  if (customStickers && customStickers.length) {
-    const sRect = sheetEl.getBoundingClientRect();
-    for (const st of customStickers) {
-      // Koordinat st.x dan st.y adalah pixel offset di dalam sheet DOM
-      // Konversi langsung dengan mengalikan SCALE (bukan membagi H canvas yang berbeda karena QR/padding)
-      const canvasStX = st.x * SCALE;
-      const canvasStY = st.y * SCALE;
-      ctx.save();
-      ctx.translate(canvasStX, canvasStY);
-      ctx.rotate(st.rot || 0);
-      ctx.shadowColor = 'rgba(74,16,36,0.25)'; ctx.shadowOffsetY = 2 * SCALE; ctx.shadowBlur = 1 * SCALE;
-      ctx.font = Math.round(24 * SCALE) + 'px system-ui';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(st.emoji, 0, 0);
-      ctx.restore();
-    }
-  }
+  // 7. Custom Drag Stickers di atas Canvas (Posisi 100% Exact dari DOM)
+  const stickerEls = document.querySelectorAll('.sheet-sticker');
+  stickerEls.forEach(stEl => {
+    const stRect = stEl.getBoundingClientRect();
+    const stX = (stRect.left - sRect.left) + stRect.width / 2;
+    const stY = (stRect.top - sRect.top) + stRect.height / 2;
+    const emoji = stEl.childNodes[0].nodeValue || stEl.textContent.replace('✕', '').trim();
+
+    ctx.save();
+    ctx.translate(stX, stY);
+    ctx.shadowColor = 'rgba(74,16,36,0.25)'; ctx.shadowOffsetY = 2; ctx.shadowBlur = 1;
+    ctx.font = '24px system-ui';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(emoji, 0, 0);
+    ctx.restore();
+  });
 
   if (asDataUrl) return cv.toDataURL('image/png');
-  return await new Promise(r => cv.toBlob(r, 'image/png'));
+  return new Promise((resolve, reject) => {
+    cv.toBlob(blob => {
+      if (blob) resolve(blob);
+      else reject(new Error('Canvas toBlob failed'));
+    }, 'image/png');
+  });
 }
 async function downloadSheet() {
   if (!photos.length) return;
-  const blob = await renderSheet();
-  const url = URL.createObjectURL(blob);
+  const dataUrl = await renderSheet(true);
   const a = document.createElement('a');
-  a.href = url; a.download = 'ukmexpo-foto-' + Date.now() + '.png';
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 3000);
+  a.href = dataUrl;
+  a.download = 'ukmexpo-foto-' + Date.now() + '.png';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
 }
 function drawCover(ctx, img, x, y, w, h) {
   const s = Math.max(w / img.width, h / img.height);
@@ -1349,17 +1351,15 @@ $('btnReset').addEventListener('click', () => {
   invalidateGallery();
   renderLayout();
 });
-// CETAK: Generate QR Code dengan posisi foto & stiker final + buka dialog cetak
+// CETAK: Generate QR Code dengan posisi foto & stiker final + langsung download PNG tanpa buka dialog PDF
 $('btnPrint').addEventListener('click', async () => {
   if (!photos.length) {
     toast('⚠️ Belum ada foto untuk dicetak!');
     return;
   }
   await generateQrNow();
-  await new Promise(r => setTimeout(r, 200));
-  const imgs = document.querySelectorAll('.sheet img, .qr-box svg');
-  await Promise.all([...imgs].map(el => el.decode ? el.decode().catch(() => {}) : Promise.resolve()));
-  window.print();
+  // Langsung unduh file PNG secara otomatis
+  await downloadSheet();
 });
 // hapus foto (✕ di kotak) -> QR jadi stale, buat ulang saat Done/print berikutnya
 document.querySelectorAll('.box .x').forEach(x => {
