@@ -36,6 +36,8 @@
     font-family: 'Luckiest Guy', 'Sniglet', 'Comic Sans MS', system-ui, sans-serif;
     color: var(--ink);
     -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+    width: 100%;
   }
 
   body {
@@ -320,14 +322,17 @@
 
   /* Floating drag sticker on sheet */
   .sheet-sticker {
-    position: absolute; font-size: 24px; cursor: move; user-select: none; z-index: 10;
+    position: absolute; font-size: 26px; cursor: grab; user-select: none; z-index: 10;
     filter: drop-shadow(1px 2px 0 rgba(74,16,36,0.25));
+    touch-action: none;
+    will-change: transform, left, top;
   }
+  .sheet-sticker:active { cursor: grabbing; }
   .sheet-sticker .del {
-    position: absolute; top: -6px; right: -6px; width: 14px; height: 14px; border-radius: 50%;
-    background: var(--maroon); color: #fff; font-size: 9px; display: none; align-items: center; justify-content: center;
+    position: absolute; top: -8px; right: -8px; width: 18px; height: 18px; border-radius: 50%;
+    background: var(--maroon); color: #fff; font-size: 11px; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3); border: 1.5px solid #fff;
   }
-  .sheet-sticker:hover .del { display: flex; }
 
   .sheet-foot { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px 2px; }
   .sheet-foot .sains { font-family: 'Luckiest Guy', cursive; color: var(--maroon); font-size: clamp(14px, 3.4vw, 18px); letter-spacing: 2px; transform: rotate(1.5deg); }
@@ -884,58 +889,38 @@ function renderDomStickers() {
     };
     el.appendChild(del);
 
-    // Touch & Mouse Dragging for sticker
+    // Smooth pointer drag for mobile touch & desktop mouse
     let isDragging = false, startX, startY, origX, origY;
-    const onStart = (cx, cy) => {
+    
+    el.addEventListener('pointerdown', (e) => {
+      if (e.target.classList.contains('del')) return;
       isDragging = true;
-      startX = cx; startY = cy;
+      startX = e.clientX; startY = e.clientY;
       origX = st.x; origY = st.y;
-    };
-    const onMove = (cx, cy) => {
+      el.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+
+    el.addEventListener('pointermove', (e) => {
       if (!isDragging) return;
-      const dx = cx - startX;
-      const dy = cy - startY;
-      st.x = Math.max(10, Math.min(sheet.offsetWidth - 10, origX + dx));
-      st.y = Math.max(10, Math.min(sheet.offsetHeight - 10, origY + dy));
-      el.style.left = (st.x - 12) + 'px';
-      el.style.top = (st.y - 12) + 'px';
-    };
-    const onEnd = () => {
+      e.preventDefault();
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      st.x = Math.max(12, Math.min(sheet.offsetWidth - 12, origX + dx));
+      st.y = Math.max(12, Math.min(sheet.offsetHeight - 12, origY + dy));
+      el.style.left = (st.x - 13) + 'px';
+      el.style.top = (st.y - 13) + 'px';
+    });
+
+    const onPointerUp = (e) => {
       if (isDragging) {
         isDragging = false;
+        try { el.releasePointerCapture(e.pointerId); } catch (_) {}
         invalidateGallery();
       }
     };
-
-    el.addEventListener('mousedown', (e) => {
-      if (e.target.classList.contains('del')) return;
-      onStart(e.clientX, e.clientY);
-      const mouseMove = (ev) => onMove(ev.clientX, ev.clientY);
-      const mouseUp = () => {
-        onEnd();
-        window.removeEventListener('mousemove', mouseMove);
-        window.removeEventListener('mouseup', mouseUp);
-      };
-      window.addEventListener('mousemove', mouseMove);
-      window.addEventListener('mouseup', mouseUp);
-    });
-
-    el.addEventListener('touchstart', (e) => {
-      if (e.target.classList.contains('del')) return;
-      const touch = e.touches[0];
-      onStart(touch.clientX, touch.clientY);
-      const touchMove = (ev) => {
-        const t = ev.touches[0];
-        onMove(t.clientX, t.clientY);
-      };
-      const touchEnd = () => {
-        onEnd();
-        window.removeEventListener('touchmove', touchMove);
-        window.removeEventListener('touchend', touchEnd);
-      };
-      window.addEventListener('touchmove', touchMove);
-      window.addEventListener('touchend', touchEnd);
-    });
+    el.addEventListener('pointerup', onPointerUp);
+    el.addEventListener('pointercancel', onPointerUp);
 
     sheet.appendChild(el);
   });
