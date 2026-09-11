@@ -297,38 +297,47 @@
   .sheet-body { display: flex; gap: 12px; padding: 10px 16px; position: relative; }
   .sheet-col { flex: 1; display: flex; flex-direction: column; gap: 12px; }
   
-  /* Polaroid-style mini card: foto agak dikecilkan, ada ruang scrapbook ornamen */
+  /* Polaroid-style mini card: foto kotak atas + tag teks ekspresi di bawahnya */
   .box {
-    aspect-ratio: 1; border-radius: 14px; position: relative;
+    border-radius: 14px; position: relative;
     background: #ffffff;
     border: 2px solid var(--maroon-deep);
     box-shadow: 0 3px 0 rgba(74,16,36,0.18);
-    padding: 6px;
+    padding: 5px 5px 4px;
     cursor: grab;
     user-select: none;
     transition: transform 0.15s, box-shadow 0.15s;
+    display: flex;
+    flex-direction: column;
   }
-  .box.drag-over {
-    transform: scale(1.04);
-    box-shadow: 0 0 10px var(--gold);
-    border-color: var(--gold);
-  }
-  .box.dragging {
-    opacity: 0.4;
+  .box-img-wrap {
+    position: relative; width: 100%; aspect-ratio: 1; border-radius: 9px; overflow: hidden;
+    background: repeating-linear-gradient(45deg, #dcd3ba 0 10px, #efe6cc 10px 20px);
+    border: 1px solid rgba(74,0,0,0.15);
   }
   .box .ph {
-    position: absolute; inset: 6px; border-radius: 9px;
+    position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: center;
     color: rgba(107,31,58,0.35); font-size: 34px;
-    background: repeating-linear-gradient(45deg, #dcd3ba 0 10px, #efe6cc 10px 20px);
   }
   .box .ph svg { width: 100%; height: 100%; opacity: .5; }
   .box img {
-    width: calc(100% - 12px); height: calc(100% - 12px);
-    object-fit: cover; position: absolute; top: 6px; left: 6px;
-    border-radius: 9px; border: 1px solid rgba(74,16,36,0.15);
+    width: 100%; height: 100%;
+    object-fit: cover; position: absolute; inset: 0;
     pointer-events: none;
   }
+  /* Tag kata-kata unik & persen di bawah foto */
+  .box-tag {
+    margin-top: 3px; padding: 2px 3px 0;
+    font-family: 'Fredoka', system-ui, sans-serif;
+    font-size: clamp(9px, 2.2vw, 11px); font-weight: 600;
+    color: var(--ink); line-height: 1.15;
+    text-align: center;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    min-height: 14px;
+  }
+  .box.empty .box-tag { visibility: hidden; }
+
   .box .n {
     position: absolute; top: -6px; left: -6px; background: var(--gold); color: var(--maroon-deep);
     min-width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
@@ -341,13 +350,13 @@
     display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 4;
   }
   .box.empty .x { display: none; }
-  /* emoji lucu pojok kanan atas tiap foto — gelembung putih border emas (sync DOM ↔ canvas) */
+  /* emoji lucu pojok kanan atas tiap foto — gelembung putih border emas */
   .box .e {
-    position: absolute; top: -4px; right: -4px; width: 30px; height: 30px; z-index: 4;
+    position: absolute; top: -4px; right: -4px; width: 28px; height: 28px; z-index: 4;
     display: inline-flex; align-items: center; justify-content: center; text-align: center;
     background: #fff; border: 2px solid var(--gold); border-radius: 50%;
     box-shadow: 1px 1.5px 0 rgba(74,0,0,0.25);
-    font-size: 16px; line-height: 1;
+    font-size: 15px; line-height: 1;
     cursor: pointer;
   }
   .box.empty .e { display: none; }
@@ -559,16 +568,48 @@
           </div>
           <div class="sheet-body">
             <div class="sheet-col" id="colA">
-              <div class="box empty" data-i="0"><div class="n">1</div><div class="x">✕</div><div class="e" style="display:none"></div><div class="ph">✦</div></div>
-              <div class="box empty" data-i="2"><div class="n">3</div><div class="x">✕</div><div class="e" style="display:none"></div><div class="ph">✦</div></div>
-              <div class="box empty" data-i="4"><div class="n">5</div><div class="x">✕</div><div class="e" style="display:none"></div><div class="ph">✦</div></div>
-              <div class="box empty" data-i="6"><div class="n">7</div><div class="x">✕</div><div class="e" style="display:none"></div><div class="ph">✦</div></div>
+              <div class="box empty" data-i="0">
+                <div class="n">1</div><div class="x">✕</div><div class="e" style="display:none"></div>
+                <div class="box-img-wrap"><div class="ph">✦</div></div>
+                <div class="box-tag"></div>
+              </div>
+              <div class="box empty" data-i="2">
+                <div class="n">3</div><div class="x">✕</div><div class="e" style="display:none"></div>
+                <div class="box-img-wrap"><div class="ph">✦</div></div>
+                <div class="box-tag"></div>
+              </div>
+              <div class="box empty" data-i="4">
+                <div class="n">5</div><div class="x">✕</div><div class="e" style="display:none"></div>
+                <div class="box-img-wrap"><div class="ph">✦</div></div>
+                <div class="box-tag"></div>
+              </div>
+              <div class="box empty" data-i="6">
+                <div class="n">7</div><div class="x">✕</div><div class="e" style="display:none"></div>
+                <div class="box-img-wrap"><div class="ph">✦</div></div>
+                <div class="box-tag"></div>
+              </div>
             </div>
             <div class="sheet-col" id="colB">
-              <div class="box empty" data-i="1"><div class="n">2</div><div class="x">✕</div><div class="e" style="display:none"></div><div class="ph">✦</div></div>
-              <div class="box empty" data-i="3"><div class="n">4</div><div class="x">✕</div><div class="e" style="display:none"></div><div class="ph">✦</div></div>
-              <div class="box empty" data-i="5"><div class="n">6</div><div class="x">✕</div><div class="e" style="display:none"></div><div class="ph">✦</div></div>
-              <div class="box empty" data-i="7"><div class="n">8</div><div class="x">✕</div><div class="e" style="display:none"></div><div class="ph">✦</div></div>
+              <div class="box empty" data-i="1">
+                <div class="n">2</div><div class="x">✕</div><div class="e" style="display:none"></div>
+                <div class="box-img-wrap"><div class="ph">✦</div></div>
+                <div class="box-tag"></div>
+              </div>
+              <div class="box empty" data-i="3">
+                <div class="n">4</div><div class="x">✕</div><div class="e" style="display:none"></div>
+                <div class="box-img-wrap"><div class="ph">✦</div></div>
+                <div class="box-tag"></div>
+              </div>
+              <div class="box empty" data-i="5">
+                <div class="n">6</div><div class="x">✕</div><div class="e" style="display:none"></div>
+                <div class="box-img-wrap"><div class="ph">✦</div></div>
+                <div class="box-tag"></div>
+              </div>
+              <div class="box empty" data-i="7">
+                <div class="n">8</div><div class="x">✕</div><div class="e" style="display:none"></div>
+                <div class="box-img-wrap"><div class="ph">✦</div></div>
+                <div class="box-tag"></div>
+              </div>
             </div>
           </div>
           <div class="sheet-foot">
@@ -1014,17 +1055,23 @@ function renderLayout() {
     const ph = box.querySelector('.ph');
     const xBtn = box.querySelector('.x');
     const eBadge = box.querySelector('.e');
+    const tagEl = box.querySelector('.box-tag');
+    const wrap = box.querySelector('.box-img-wrap');
     if (fill[i]) {
-      if (!img) {
+      if (!img && wrap) {
         const im = document.createElement('img');
         im.alt = 'foto';
-        box.appendChild(im);
+        wrap.appendChild(im);
       }
-      box.querySelector('img').src = fill[i].url;
+      const actualImg = box.querySelector('img');
+      if (actualImg) actualImg.src = fill[i].url;
       if (ph) ph.style.display = 'none';
       box.classList.remove('empty');
       xBtn.style.display = 'flex';
-      if (eBadge) { eBadge.textContent = fill[i].emoji || '😄'; eBadge.style.display = 'flex'; }
+      if (eBadge) { eBadge.textContent = fill[i].emoji || '😄'; eBadge.style.display = 'inline-flex'; }
+      if (tagEl) {
+        tagEl.textContent = fill[i].cap || `${fill[i].pct || 80}% Senyum`;
+      }
       box.draggable = true;
     } else {
       if (img) img.remove();
@@ -1032,6 +1079,7 @@ function renderLayout() {
       box.classList.add('empty');
       xBtn.style.display = 'none';
       if (eBadge) eBadge.style.display = 'none';
+      if (tagEl) tagEl.textContent = '';
       box.draggable = false;
     }
   });
@@ -1177,19 +1225,12 @@ function renderDomStickers() {
   });
 }
 
-// caption lucu per foto — strip di ATAS barcode (QR)
+// caption lucu per foto — tidak perlu strip bawah lagi karena sudah ada di bawah tiap kotak foto
 function renderCaptions() {
   const strip = $('capStrip');
   if (!strip) return;
-  const seen = new Set();
-  const lines = [];
-  photos.forEach(p => {
-    if (seen.has(p.url)) return;
-    seen.add(p.url);
-    lines.push('<div class="cap-line"><span class="cap-face">' + (p.emoji || '😄') + '</span> <span class="cap-text">' + p.cap + '</span></div>');
-  });
-  strip.innerHTML = lines.join('');
-  strip.hidden = !lines.length;
+  strip.innerHTML = '';
+  strip.hidden = true;
 }
 
 // remove one photo (index in original list by deleting last slot of that photo is tricky;
@@ -1437,14 +1478,38 @@ async function renderSheet(asDataUrl) {
 
     const src = fill[i];
     if (src !== undefined && imgs[src]) {
-      // Foto di dalam Box (inset 6px, radius 9px)
-      const px = bx + 6, py = by + 6, pw = bw - 12, ph = bh - 12;
+      // Foto di dalam Box (inset 5px, aspect square)
+      const pw = bw - 10;
+      const ph = pw; // square image
+      const px = bx + 5, py = by + 5;
       ctx.save();
       roundRect(ctx, px, py, pw, ph, 9); ctx.clip();
       drawCover(ctx, imgs[src], px, py, pw, ph);
       ctx.restore();
       ctx.strokeStyle = 'rgba(74,0,0,0.15)'; ctx.lineWidth = 1;
       roundRect(ctx, px, py, pw, ph, 9); ctx.stroke();
+
+      // Tag Caption & Persen di bawah foto (di dalam kartu polaroid)
+      const tagTxt = (photos[src] && (photos[src].cap || `${photos[src].pct || 80}% Senyum`)) || '';
+      if (tagTxt) {
+        const tagY = by + 5 + ph + (bh - 5 - ph) / 2;
+        ctx.save();
+        ctx.fillStyle = '#2d1d23';
+        ctx.font = '600 10.5px "Fredoka", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        let displayTxt = tagTxt;
+        const maxTW = bw - 10;
+        if (ctx.measureText(displayTxt).width > maxTW) {
+          while (displayTxt.length > 4 && ctx.measureText(displayTxt + '…').width > maxTW) {
+            displayTxt = displayTxt.slice(0, -1);
+          }
+          displayTxt += '…';
+        }
+        ctx.fillText(displayTxt, bx + bw / 2, tagY);
+        ctx.restore();
+      }
     }
 
     // Washi Tape mini aksen di foto 1 & 8
