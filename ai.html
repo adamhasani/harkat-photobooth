@@ -936,11 +936,24 @@ async function generateScanCard() {
   btnScan.disabled = true;
 
   let aiResult = null;
+  const currentLm = lastFaces.length ? lastFaces[0] : null;
+  const currentBs = lastBs.length ? lastBs[0] : null;
+  const localTelemetry = getFaceMetrics(currentLm, currentBs);
+
   try {
     const apiRes = await fetch('/api/ai-analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ photo: photoDataUrl })
+      body: JSON.stringify({
+        photo: photoDataUrl,
+        telemetry: localTelemetry ? {
+          symmetryPct: localTelemetry.symmetryPct,
+          smilePct: localTelemetry.smilePct,
+          jawRatio: localTelemetry.jawRatio,
+          genderHint: localTelemetry.genderLabel,
+          estAge: localTelemetry.estAge
+        } : null
+      })
     });
     const resJson = await apiRes.json();
     if (resJson && resJson.ok && resJson.ai) {

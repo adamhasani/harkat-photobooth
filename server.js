@@ -126,10 +126,21 @@ Kembalikan HANYA format JSON murni tanpa markdown:
   "facialTraits": "<3 ciri fisik terdeteksi, pisahkan koma, misal: Kacamata Retro, Senyum Ramah, Alis Tebal>"
 }`;
 
-function callGroqVision(photo) {
+function callGroqVision(photo, telemetry) {
   return new Promise((resolve) => {
     const key = GROQ_KEYS[groqKeyIdx % GROQ_KEYS.length];
     groqKeyIdx++;
+
+    let telemetryText = 'Analisis biometrik wajah ini secara spesifik & akurat untuk booth Sains Data AI:';
+    if (telemetry) {
+      telemetryText = `Data Pengukuran Sensor Biometrik MediaPipe 3D:
+- Simetri Wajah Terukur: ${telemetry.symmetryPct || 95}%
+- Intensitas Senyuman: ${telemetry.smilePct || 80}%
+- Rasio Rahang Terukur: ${telemetry.jawRatio ? Number(telemetry.jawRatio).toFixed(2) : '0.78'}
+- Deteksi Awal Morfologi: ${telemetry.genderHint || 'Laki-laki/Perempuan'}
+
+Tugasmu: Gabungkan data telemetri sensor 3D ini dengan pengamatan visualmu dari foto:`;
+    }
 
     const payload = JSON.stringify({
       model: 'qwen/qwen3.8-27b',
@@ -138,7 +149,7 @@ function callGroqVision(photo) {
         {
           role: 'user',
           content: [
-            { type: 'text', text: 'Analisis biometrik wajah ini secara spesifik & akurat untuk booth Sains Data AI:' },
+            { type: 'text', text: telemetryText },
             { type: 'image_url', image_url: { url: photo } }
           ]
         }
@@ -183,10 +194,15 @@ function callGroqVision(photo) {
   });
 }
 
-function callOmniRouteVision(photo) {
+function callOmniRouteVision(photo, telemetry) {
   return new Promise((resolve) => {
     const key = process.env.HERMES_CUSTOM_LOCALHOST_20128_API_KEY || '';
     if (!key) return resolve(null);
+
+    let telemetryText = 'Analisis biometrik wajah ini secara spesifik & akurat:';
+    if (telemetry) {
+      telemetryText = `Data Sensor MediaPipe: Simetri ${telemetry.symmetryPct}%, Senyum ${telemetry.smilePct}%, Gender ${telemetry.genderHint}. Gabungkan dengan foto:`;
+    }
 
     const payload = JSON.stringify({
       model: 'agy/gemini-3.5-flash-lite',
@@ -195,7 +211,7 @@ function callOmniRouteVision(photo) {
         {
           role: 'user',
           content: [
-            { type: 'text', text: 'Analisis biometrik wajah ini secara spesifik & akurat:' },
+            { type: 'text', text: telemetryText },
             { type: 'image_url', image_url: { url: photo } }
           ]
         }
@@ -246,17 +262,18 @@ async function analyzeFaceWithAi(req, res) {
     let body;
     try { body = JSON.parse(raw); } catch (e) { return json(res, 400, { error: 'bad json' }); }
     const photo = String(body.photo || '');
+    const telemetry = body.telemetry || null;
     if (!photo.startsWith('data:image/')) {
       return json(res, 400, { error: 'photo dataURL required' });
     }
 
-    // 1. Try Groq Vision first (Ultra Fast ~0.8s)
-    let aiData = await callGroqVision(photo);
+    // 1. Try Groq Vision first with Hybrid Telemetry (Ultra Fast ~0.8s)
+    let aiData = await callGroqVision(photo, telemetry);
     let provider = 'groq';
 
     // 2. Fallback to Gemini / OmniRoute if Groq is unavailable
     if (!aiData) {
-      aiData = await callOmniRouteVision(photo);
+      aiData = await callOmniRouteVision(photo, telemetry);
       provider = 'omniroute';
     }
 
