@@ -532,6 +532,7 @@ async function initVision() {
       numFaces: 4,
       outputFaceBlendshapes: true
     });
+    window.__landmarker = landmarker;
     console.log('AI FaceLandmarker Ready ✓');
     if ($('scanStatusText')) $('scanStatusText').textContent = '🔍 Mencari Wajah...';
   } catch (err) {
@@ -561,13 +562,14 @@ async function startCamera() {
     }
     video.srcObject = stream;
     video.classList.toggle('mirror', facing === 'user');
-    video.setAttribute('playsinline', '');
-    video.setAttribute('autoplay', '');
+    video.setAttribute('playsinline', 'true');
+    video.setAttribute('webkit-playsinline', 'true');
+    video.setAttribute('autoplay', 'true');
     video.muted = true;
-    try { await video.play(); } catch (e) {}
+    await video.play().catch(() => {});
+    video.addEventListener('loadedmetadata', adaptSize, { once: true });
     adaptSize();
     loop();
-    $('scanStatusText').textContent = '🔍 Mencari Wajah...';
   } catch (err) {
     console.error('Camera access failed:', err);
     if (!video.srcObject) {
@@ -586,8 +588,10 @@ function stopCamera() {
 
 function adaptSize() {
   if (video.videoWidth && video.videoHeight) {
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+    }
     const a = `${video.videoWidth} / ${video.videoHeight}`;
     if (camWrap.style.aspectRatio !== a) camWrap.style.aspectRatio = a;
   }
@@ -707,12 +711,18 @@ function loop() {
   if (video.readyState >= 2 && video.videoWidth) {
     adaptSize();
     const now = performance.now();
-    if (landmarker && (now - lastDet >= 70)) {
+    if (landmarker && (now - lastDet >= 60)) {
       lastDet = now;
       let res = null;
-      try { res = landmarker.detectForVideo(video, now); } catch (_) {}
-      lastFaces = (res && res.faceLandmarks) || [];
-      lastBs = (res && res.faceBlendshapes) || [];
+      try {
+        res = landmarker.detectForVideo(video, now);
+      } catch (err) {
+        console.warn('detectForVideo warning:', err);
+      }
+      if (res && res.faceLandmarks) {
+        lastFaces = res.faceLandmarks;
+        lastBs = res.faceBlendshapes || [];
+      }
     }
 
     renderOverlay();
