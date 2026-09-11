@@ -300,11 +300,11 @@
   .box.empty .x { display: none; }
   /* emoji lucu pojok kanan atas tiap foto — gelembung putih border emas (sync DOM ↔ canvas) */
   .box .e {
-    position: absolute; top: 2px; right: 2px; width: clamp(28px, 6.5vw, 36px); height: clamp(28px, 6.5vw, 36px); z-index: 4;
-    display: flex; align-items: center; justify-content: center;
-    background: #fff; border: 2px solid var(--gold); border-radius: 50%; transform: rotate(6deg);
-    box-shadow: 1.5px 1.5px 0 rgba(74,16,36,0.22);
-    font-size: clamp(14px, 3.2vw, 18px); line-height: 1;
+    position: absolute; top: -4px; right: -4px; width: 30px; height: 30px; z-index: 4;
+    display: inline-flex; align-items: center; justify-content: center; text-align: center;
+    background: #fff; border: 2px solid var(--gold); border-radius: 50%;
+    box-shadow: 1px 1.5px 0 rgba(74,0,0,0.25);
+    font-size: 16px; line-height: 1;
     cursor: pointer;
   }
   .box.empty .e { display: none; }
@@ -1224,11 +1224,11 @@ async function renderSheet(asDataUrl) {
 
     // Frame Putih (.box)
     ctx.save();
-    ctx.shadowColor = 'rgba(74,16,36,0.18)'; ctx.shadowOffsetY = 3; ctx.shadowBlur = 0;
+    ctx.shadowColor = 'rgba(74,0,0,0.18)'; ctx.shadowOffsetY = 3; ctx.shadowBlur = 0;
     roundRect(ctx, bx, by, bw, bh, 14);
     ctx.fillStyle = '#ffffff'; ctx.fill();
     ctx.restore();
-    ctx.strokeStyle = '#4a1024'; ctx.lineWidth = 2;
+    ctx.strokeStyle = '#4a0000'; ctx.lineWidth = 2;
     roundRect(ctx, bx, by, bw, bh, 14); ctx.stroke();
 
     const src = fill[i];
@@ -1239,40 +1239,40 @@ async function renderSheet(asDataUrl) {
       roundRect(ctx, px, py, pw, ph, 9); ctx.clip();
       drawCover(ctx, imgs[src], px, py, pw, ph);
       ctx.restore();
-      ctx.strokeStyle = 'rgba(74,16,36,0.15)'; ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(74,0,0,0.15)'; ctx.lineWidth = 1;
       roundRect(ctx, px, py, pw, ph, 9); ctx.stroke();
     }
 
     // Washi Tape mini aksen di foto 1 & 8
     if (i === 0) {
       ctx.save(); ctx.translate(bx + 24, by + 2); ctx.rotate(-0.2);
-      ctx.fillStyle = 'rgba(201,162,39,0.75)'; roundRect(ctx, -14, -4, 28, 9, 2); ctx.fill();
+      ctx.fillStyle = 'rgba(207,161,56,0.75)'; roundRect(ctx, -14, -4, 28, 9, 2); ctx.fill();
       ctx.restore();
     } else if (i === 7) {
       ctx.save(); ctx.translate(bx + bw - 24, by + bh - 2); ctx.rotate(-0.14);
-      ctx.fillStyle = 'rgba(201,162,39,0.75)'; roundRect(ctx, -14, -4, 28, 9, 2); ctx.fill();
+      ctx.fillStyle = 'rgba(207,161,56,0.75)'; roundRect(ctx, -14, -4, 28, 9, 2); ctx.fill();
       ctx.restore();
     }
 
     // Nomor Gold kiri atas (.box .n)
     const numX = bx - 6, numY = by - 6, numSize = 22;
-    ctx.fillStyle = '#c9a227';
+    ctx.fillStyle = '#cfa138';
     roundRect(ctx, numX, numY, numSize, numSize, 6); ctx.fill();
-    ctx.strokeStyle = '#4a1024'; ctx.lineWidth = 1.5; ctx.stroke();
-    ctx.fillStyle = '#4a1024'; ctx.font = '700 11px "Luckiest Guy", cursive';
+    ctx.strokeStyle = '#4a0000'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.fillStyle = '#3f1020'; ctx.font = '700 11px "Fredoka", sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(i + 1, numX + numSize / 2, numY + numSize / 2 + 0.5);
 
     // Emoji Gelembung Putih kanan atas (.box .e)
     const emojiSize = 30;
-    const emX = bx + bw - emojiSize / 2 - 2;
-    const emY = by + emojiSize / 2 + 2;
+    const emX = bx + bw + 4 - emojiSize / 2;
+    const emY = by - 4 + emojiSize / 2;
     ctx.save();
-    ctx.translate(emX, emY); ctx.rotate(0.1);
+    ctx.translate(emX, emY);
     ctx.beginPath(); ctx.arc(0, 0, emojiSize / 2, 0, Math.PI * 2);
     ctx.fillStyle = '#ffffff'; ctx.fill();
-    ctx.strokeStyle = '#c9a227'; ctx.lineWidth = 2; ctx.stroke();
-    ctx.font = '14px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.strokeStyle = '#cfa138'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.font = '16px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText((photos[src] && photos[src].emoji) || '😄', 0, 0.5);
     ctx.restore();
   }
