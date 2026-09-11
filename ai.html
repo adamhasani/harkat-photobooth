@@ -522,14 +522,6 @@ const LEFT_EYE_INDICES = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 15
 const RIGHT_EYE_INDICES = [263, 249, 390, 373, 374, 380, 381, 382, 362, 398, 384, 385, 386, 387, 388, 466];
 const LIPS_INDICES = [61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95];
 
-let faceapiLoaded = false;
-let faceapi = null;
-let lastNnGender = null;
-let lastNnRun = 0;
-const nnCanvas = document.createElement('canvas');
-nnCanvas.width = 160; nnCanvas.height = 160;
-const nnCtx = nnCanvas.getContext('2d');
-
 // ============ VISION INIT ============
 async function initVision() {
   try {
@@ -546,15 +538,6 @@ async function initVision() {
     console.log('AI FaceLandmarker Ready ✓');
   } catch (err) {
     console.warn('Fallback vision init error:', err);
-  }
-
-  try {
-    faceapi = await import('/assets/faceapi/face-api.esm.js');
-    await faceapi.nets.ageGenderNet.loadFromUri('/assets/faceapi/model');
-    faceapiLoaded = true;
-    console.log('AgeGenderNet Neural Network Loaded ✓');
-  } catch (e) {
-    console.warn('AgeGenderNet load error:', e);
   }
 }
 
@@ -729,24 +712,6 @@ function getFaceMetrics(landmarks, blendshapes) {
   };
 }
 
-function getBoundingBox(landmarks, w, h) {
-  if (!landmarks || !landmarks.length) return null;
-  const xs = landmarks.map(p => p.x * w);
-  const ys = landmarks.map(p => p.y * h);
-  const minX = Math.max(0, Math.min(...xs));
-  const maxX = Math.min(w, Math.max(...xs));
-  const minY = Math.max(0, Math.min(...ys));
-  const maxY = Math.min(h, Math.max(...ys));
-  const padW = (maxX - minX) * 0.15;
-  const padH = (maxY - minY) * 0.15;
-  return {
-    x: Math.max(0, minX - padW),
-    y: Math.max(0, minY - padH),
-    w: Math.min(w, (maxX - minX) + padW * 2),
-    h: Math.min(h, (maxY - minY) + padH * 2)
-  };
-}
-
 // ============ REALTIME DETECTION LOOP ============
 function loop() {
   if (video.readyState >= 2 && video.videoWidth) {
@@ -758,25 +723,6 @@ function loop() {
       try { res = landmarker.detectForVideo(video, now); } catch (_) {}
       lastFaces = (res && res.faceLandmarks) || [];
       lastBs = (res && res.faceBlendshapes) || [];
-
-      // Asynchronous CNN AgeGenderNet run on primary face every ~250ms
-      if (faceapiLoaded && lastFaces.length && (now - lastNnRun >= 250)) {
-        lastNnRun = now;
-        const b = getBoundingBox(lastFaces[0], video.videoWidth, video.videoHeight);
-        if (b && b.w > 30 && b.h > 30) {
-          nnCtx.drawImage(video, b.x, b.y, b.w, b.h, 0, 0, 160, 160);
-          faceapi.nets.ageGenderNet.predictAgeAndGender(nnCanvas).then(pred => {
-            if (pred) {
-              lastNnGender = {
-                gender: pred.gender === 'female' ? 'Perempuan 👧' : 'Laki-laki 👦',
-                isMale: pred.gender === 'male',
-                prob: Math.round(pred.genderProbability * 100),
-                age: Math.max(17, Math.min(29, Math.round(pred.age)))
-              };
-            }
-          }).catch(() => {});
-        }
-      }
     }
 
     renderOverlay();
@@ -1100,6 +1046,9 @@ async function generateScanCard() {
   const currentBs = lastBs.length ? lastBs[0] : null;
   const localTelemetry = getFaceMetrics(currentLm, currentBs);
 
+  const controller = new AbortController();
+  const timeoutTimer = setTimeout(() => controller.abort(), 3600);
+
   try {
     const apiRes = await fetch('/api/ai-analyze', {
       method: 'POST',
@@ -1111,17 +1060,22 @@ async function generateScanCard() {
           smilePct: localTelemetry.smilePct,
           jawRatio: localTelemetry.jawRatio,
           genderHint: localTelemetry.genderLabel,
-          estAge: localTelemetry.estAge
+          estAge: localTelemetry.estAge,
+          wrinkleLabel: localTelemetry.wrinkleLabel
         } : null
-      })
+      }),
+      signal: controller.signal
     });
+    clearTimeout(timeoutTimer);
     const resJson = await apiRes.json();
     if (resJson && resJson.ok && resJson.ai) {
       aiResult = resJson.ai;
     }
   } catch (e) {
-    console.warn('AI API fallback to local:', e);
+    clearTimeout(timeoutTimer);
+    console.warn('AI API timeout / fallback to local:', e);
   } finally {
+    clearTimeout(timeoutTimer);
     btnScan.innerHTML = origBtnText;
     btnScan.disabled = false;
   }
