@@ -127,10 +127,10 @@
 
   /* ============ CAMERA PANEL ============ */
   .cam-wrap {
-    position: relative; margin: 12px auto; border-radius: 20px; overflow: hidden;
-    border: 4px solid var(--maroon-deep);
-    box-shadow: 0 6px 0 rgba(74,16,36,0.35);
-    background: #1a1420; aspect-ratio: 3/4; max-height: 62vh;
+    position: relative; margin: 8px auto 6px; border-radius: 18px; overflow: hidden;
+    border: 3.5px solid var(--maroon-deep);
+    box-shadow: 0 4px 0 rgba(74,16,36,0.35);
+    background: #1a1420; aspect-ratio: 3/4; max-height: 52vh;
     width: calc(100% - 24px);
   }
   #video { width: 100%; height: 100%; object-fit: contain; display: block; }
@@ -138,49 +138,49 @@
 
   /* HUD: satu bur per wajah, vertical di sebelah (emoji + label + bar + %) */
   .hud {
-    position: absolute; top: 10px; left: 10px; z-index: 5;
-    background: rgba(255,250,236,0.92); border: 3px solid var(--maroon-deep);
-    border-radius: 14px; padding: 8px 12px; display: flex;
-    flex-direction: column; gap: 6px; max-height: 78%;
-    box-shadow: 3px 3px 0 rgba(74,16,36,0.35); font-family: 'Luckiest Guy', cursive;
+    position: absolute; top: 8px; left: 8px; z-index: 5;
+    background: rgba(255,250,236,0.92); border: 2.5px solid var(--maroon-deep);
+    border-radius: 12px; padding: 6px 10px; display: flex;
+    flex-direction: column; gap: 4px; max-height: 78%;
+    box-shadow: 2px 2px 0 rgba(74,16,36,0.35); font-family: 'Luckiest Guy', cursive;
   }
-  .chip { display: flex; align-items: center; gap: 8px; }
-  .chip .n { width: 20px; height: 20px; border-radius: 50%; background: var(--gold); color: var(--maroon-deep);
-    font-size: 12px; display: flex; align-items: center; justify-content: center; flex: none; }
-  .chip .emoji { width: 42px; height: 42px; line-height: 1; display: flex; align-items: center; justify-content: center; font-size: 30px;
-    background: #fff; border: 2px solid var(--gold); border-radius: 50%; transform: rotate(-4deg);
-    box-shadow: 2px 2px 0 rgba(74,16,36,0.3); }
-  .chip .label { font-size: 12px; color: var(--maroon-deep); letter-spacing: 1px; min-width: 74px; text-align: center; }
-  .chip .pct { font-size: 17px; color: var(--maroon); min-width: 44px; text-align: right; }
-  .chip .bar-outer { width: 60px; height: 12px; background: #e3d5ae; border-radius: 7px; border: 2px solid var(--maroon-deep); overflow: hidden; }
-  .chip .bar-inner { height: 100%; width: 0%; background: linear-gradient(90deg, #7a1f3f, #e0a63f); border-radius: 5px; }
+  .chip { display: flex; align-items: center; gap: 6px; }
+  .chip .n { width: 18px; height: 18px; border-radius: 50%; background: var(--gold); color: var(--maroon-deep);
+    font-size: 11px; display: flex; align-items: center; justify-content: center; flex: none; }
+  .chip .emoji { width: 34px; height: 34px; line-height: 1; display: flex; align-items: center; justify-content: center; font-size: 24px;
+    background: #fff; border: 1.5px solid var(--gold); border-radius: 50%; transform: rotate(-4deg);
+    box-shadow: 1.5px 1.5px 0 rgba(74,16,36,0.3); }
+  .chip .label { font-size: 11px; color: var(--maroon-deep); letter-spacing: 0.5px; min-width: 60px; text-align: center; }
+  .chip .pct { font-size: 15px; color: var(--maroon); min-width: 36px; text-align: right; }
+  .chip .bar-outer { width: 50px; height: 10px; background: #e3d5ae; border-radius: 6px; border: 1.5px solid var(--maroon-deep); overflow: hidden; }
+  .chip .bar-inner { height: 100%; width: 0%; background: linear-gradient(90deg, #7a1f3f, #e0a63f); border-radius: 4px; }
 
   /* scanning guide frame — sticker lucu "SMILE!" */
-  .scan-hint { position: absolute; top: 14px; right: 12px; z-index: 4; pointer-events: none;
-    background: var(--cream); color: var(--maroon); border: 3px solid var(--maroon-deep);
-    border-radius: 14px; padding: 8px 14px; font-size: 18px; letter-spacing: 1.5px; text-align: center;
-    box-shadow: 3px 3px 0 rgba(74,16,36,0.35); transform: rotate(3deg); max-width: 46%; line-height: 1.2; }
+  .scan-hint { position: absolute; top: 10px; right: 10px; z-index: 4; pointer-events: none;
+    background: var(--cream); color: var(--maroon); border: 2.5px solid var(--maroon-deep);
+    border-radius: 12px; padding: 6px 10px; font-size: 15px; letter-spacing: 1px; text-align: center;
+    box-shadow: 2px 2px 0 rgba(74,16,36,0.35); transform: rotate(3deg); max-width: 48%; line-height: 1.15; }
   .scan-hint:empty { display: none; }
 
-  .toast { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 6;
+  .toast { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); z-index: 6;
     background: rgba(107,31,58,0.94); color: #fff6e2; font-family: 'Luckiest Guy', cursive;
-    padding: 8px 18px; border-radius: 14px; border: 2px solid var(--gold);
-    font-size: 15px; letter-spacing: 1px; opacity: 0; transition: opacity .3s; pointer-events: none; }
+    padding: 6px 14px; border-radius: 12px; border: 1.5px solid var(--gold);
+    font-size: 14px; letter-spacing: 0.5px; opacity: 0; transition: opacity .3s; pointer-events: none; }
 
-  .cam-controls { display: flex; gap: 12px; justify-content: center; padding: 6px 12px 6px; align-items: center; flex-wrap: wrap; }
-  .cam-shoot-row { display: flex; justify-content: center; padding: 4px 12px 14px; }
+  .cam-controls { display: flex; gap: 8px; justify-content: center; padding: 4px 10px 4px; align-items: center; flex-wrap: wrap; }
+  .cam-shoot-row { display: flex; justify-content: center; padding: 2px 10px 10px; }
   .btn {
-    font-family: 'Luckiest Guy', cursive; font-size: 18px; letter-spacing: 1px;
-    border: none; border-radius: 999px; padding: 13px 26px; cursor: pointer;
+    font-family: 'Luckiest Guy', cursive; font-size: 16px; letter-spacing: 0.5px;
+    border: none; border-radius: 999px; padding: 10px 20px; cursor: pointer;
     color: #fff6e2; background: var(--maroon);
-    box-shadow: 0 4px 0 var(--maroon-deep), 0 6px 10px rgba(0,0,0,0.2);
+    box-shadow: 0 3px 0 var(--maroon-deep), 0 4px 8px rgba(0,0,0,0.2);
     transition: transform .1s, box-shadow .1s; touch-action: manipulation;
   }
-  .btn:active { transform: translateY(4px); box-shadow: 0 0 0 var(--maroon-deep); }
-  .btn.gold { background: #c98a20; box-shadow: 0 4px 0 #7c5310; }
-  .btn.ghost { background: var(--cream-dark); color: var(--maroon-deep); box-shadow: 0 4px 0 rgba(74,16,36,0.4); }
-  .btn.blue { background: var(--blue); box-shadow: 0 4px 0 #26384d; }
-  .btn.big { font-size: 22px; padding: 16px 36px; }
+  .btn:active { transform: translateY(3px); box-shadow: 0 0 0 var(--maroon-deep); }
+  .btn.gold { background: #c98a20; box-shadow: 0 3px 0 #7c5310; }
+  .btn.ghost { background: var(--cream-dark); color: var(--maroon-deep); box-shadow: 0 3px 0 rgba(74,16,36,0.4); }
+  .btn.blue { background: var(--blue); box-shadow: 0 3px 0 #26384d; }
+  .btn.big { font-size: 19px; padding: 12px 30px; }
   .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 
   /* JEPRET pulse halus biar menggoda */
@@ -366,13 +366,13 @@
   .qr-box .dl-link { display: none; font-size: 12px; word-break: break-all; color: var(--blue); margin-top: 3px; }
 
   /* caption lucu — strip di atas barcode */
-  .caps { margin: 4px 20px 6px; display: flex; flex-direction: column; gap: 4px;
+  .caps { margin: 4px 14px 6px; display: flex; flex-direction: column; gap: 4px;
     background: rgba(255,255,255,0.45); border-left: 4px solid var(--gold); border-radius: 0 10px 10px 0;
-    padding: 8px 12px; }
+    padding: 6px 10px; max-width: calc(100% - 28px); }
   .caps[hidden] { display: none !important; }
-  .cap-line { font-family: system-ui, sans-serif; font-weight: 600; color: #34221e; font-size: clamp(13px, 3.4vw, 16px); line-height: 1.45;
-    display: flex; align-items: center; gap: 8px; }
-  .cap-line .cap-face { flex: none; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 16px; line-height: 1; }
+  .cap-line { font-family: system-ui, sans-serif; font-weight: 600; color: #34221e; font-size: clamp(11px, 2.8vw, 14px); line-height: 1.35;
+    display: flex; align-items: center; gap: 6px; word-break: break-word; overflow-wrap: anywhere; }
+  .cap-line .cap-face { flex: none; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 15px; line-height: 1; }
   .caps:empty { display: none; }
 
   .empty-state { text-align: center; margin-top: 10px; color: var(--maroon-deep); opacity: .8; font-size: 15px; letter-spacing: 1px; }
