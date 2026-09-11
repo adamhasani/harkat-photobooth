@@ -187,16 +187,16 @@
   .cam-controls { display: flex; gap: 8px; justify-content: center; padding: 4px 10px 4px; align-items: center; flex-wrap: wrap; }
   .cam-shoot-row { display: flex; justify-content: center; padding: 2px 10px 10px; }
   .btn {
-    font-family: 'Luckiest Guy', cursive; font-size: 16px; letter-spacing: 0.5px;
-    border: none; border-radius: 999px; padding: 10px 20px; cursor: pointer;
-    color: #fff6e2; background: var(--maroon);
+    font-family: 'Fredoka', 'Luckiest Guy', cursive; font-weight: 700; font-size: 16px; letter-spacing: 0.5px;
+    border: 2px solid var(--maroon-deep); border-radius: 999px; padding: 10px 20px; cursor: pointer;
+    color: #fff6e2; background: #8b0000;
     box-shadow: 0 3px 0 var(--maroon-deep), 0 4px 8px rgba(0,0,0,0.2);
     transition: transform .1s, box-shadow .1s; touch-action: manipulation;
   }
   .btn:active { transform: translateY(3px); box-shadow: 0 0 0 var(--maroon-deep); }
-  .btn.gold { background: #c98a20; box-shadow: 0 3px 0 #7c5310; }
-  .btn.ghost { background: var(--cream-dark); color: var(--maroon-deep); box-shadow: 0 3px 0 rgba(74,16,36,0.4); }
-  .btn.blue { background: var(--blue); box-shadow: 0 3px 0 #26384d; }
+  .btn.gold { background: #cfa138; color: #3f1020; border-color: #3f1020; box-shadow: 0 3px 0 #7c5310; }
+  .btn.ghost { background: #f0e6d2; color: #4a0000; border-color: #4a0000; box-shadow: 0 3px 0 rgba(74,0,0,0.4); }
+  .btn.blue { background: #2f567f; color: #ffffff; border-color: #1a334d; box-shadow: 0 3px 0 #1a334d; }
   .btn.big { font-size: 19px; padding: 12px 30px; }
   .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 
