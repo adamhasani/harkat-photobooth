@@ -376,8 +376,8 @@
         </div>
       </div>
       <div class="hud-stats" id="hudStats">
-        <div class="stat-chip"><span>Kategori:</span> <b id="stat1">Maba UHN</b></div>
-        <div class="stat-chip"><span>Ekspresi:</span> <b id="stat2">Senyum 92%</b></div>
+        <div class="stat-chip"><span id="stat1Label">Gender:</span> <b id="stat1">Perempuan 👧</b></div>
+        <div class="stat-chip"><span id="stat2Label">Ekspresi:</span> <b id="stat2">Senyum 92%</b></div>
       </div>
     </div>
 
@@ -833,32 +833,40 @@ function updateHudPanel(m) {
     $('hudAvatar').textContent = m.isLikelyMale ? '👦' : '👧';
     $('hudMainText').textContent = `${m.estAge} Tahun • ${m.genderLabel}`;
     $('hudSubText').textContent = AGE_QUOTES[m.estAge % AGE_QUOTES.length];
-    $('stat1').textContent = `Gender: ${m.genderLabel}`;
-    $('stat2').textContent = `Senyum: ${m.smilePct}%`;
+    $('stat1Label').textContent = 'Gender:';
+    $('stat1').textContent = m.genderLabel;
+    $('stat2Label').textContent = 'Senyum:';
+    $('stat2').textContent = `${m.smilePct}%`;
   } else if (currentMode === 'beauty') {
     $('hudTitle').textContent = '✨ RATING PESONA & AURA';
     $('hudConfidence').textContent = 'AI Conf: 98%';
     $('hudAvatar').textContent = '💖';
     $('hudMainText').textContent = `Skor Pesona: ${m.beautyScore}% • ${m.genderLabel}`;
     $('hudSubText').textContent = BEAUTY_QUOTES[m.beautyScore % BEAUTY_QUOTES.length];
-    $('stat1').textContent = `Simetri: ${m.symmetryPct}%`;
-    $('stat2').textContent = `Gender: ${m.genderLabel}`;
+    $('stat1Label').textContent = 'Simetri:';
+    $('stat1').textContent = `${m.symmetryPct}%`;
+    $('stat2Label').textContent = 'Senyum:';
+    $('stat2').textContent = `${m.smilePct}%`;
   } else if (currentMode === 'lookalike') {
     $('hudTitle').textContent = '🎭 KEMBARAN TOKOH & ALUMNI';
     $('hudConfidence').textContent = `${m.matchPct}% Match`;
     $('hudAvatar').textContent = m.bestMatch.avatar;
     $('hudMainText').textContent = `${m.matchPct}% Mirip ${m.bestMatch.name}`;
     $('hudSubText').textContent = m.bestMatch.comment;
+    $('stat1Label').textContent = 'Profesi:';
     $('stat1').textContent = m.bestMatch.role;
-    $('stat2').textContent = `Gender: ${m.genderLabel}`;
+    $('stat2Label').textContent = 'Gender:';
+    $('stat2').textContent = m.genderLabel;
   } else if (currentMode === 'props') {
     $('hudTitle').textContent = '👑 AR PROPS & FILTER TONE';
     $('hudConfidence').textContent = 'Live Render';
     $('hudAvatar').textContent = '🎨';
     $('hudMainText').textContent = `Filter: ${currentFilter} • Prop: ${currentProp}`;
     $('hudSubText').textContent = 'Pilih filter dan hiasan kepala di tombol bawah!';
-    $('stat1').textContent = 'AR Tracker: Active';
-    $('stat2').textContent = '60 FPS Smooth';
+    $('stat1Label').textContent = 'Status:';
+    $('stat1').textContent = 'Active (60 FPS)';
+    $('stat2Label').textContent = 'Gender:';
+    $('stat2').textContent = m.genderLabel;
   }
 }
 
