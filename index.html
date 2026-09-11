@@ -816,183 +816,230 @@ function b64ToImg(src) {
 }
 // renderSheet(true) -> dataURL PNG (upload); renderSheet() -> Blob (download)
 async function renderSheet(asDataUrl) {
-  // === clone DOM .sheet (preview CETAK) biar hasil download == yang kelihatan di web ===
-  const W = 1080, ROWS = 4, COLS = 2, PAD = 24, GAP = 10;
-  const card = Math.floor((W - PAD * 2 - GAP) / COLS);       // 511
-  const HEAD_H = 88, FOOT_H = 58;
-  // strip caption: 1 baris per foto unik (tanpa QR — user minta download = kata² unik aja)
-  const seenC = new Set(); const uniq = photos.filter(p => { if (seenC.has(p.url)) return false; seenC.add(p.url); return true; });
+  // === EXACT CLONE DOM .sheet ===
+  // Ukuran DOM asli diskalakan 2.5x untuk resolusi cetak HD (crisp & clean)
+  const SCALE = 2.5;
+  const sheetEl = document.querySelector('.sheet');
+  const sW = sheetEl.offsetWidth || 400;
+  const W = Math.round(sW * SCALE);   // misal 400 * 2.5 = 1000px
+
+  const PAD_X = Math.round(14 * SCALE);
+  const PAD_TOP = Math.round(18 * SCALE);
+  const PAD_BOT = Math.round(16 * SCALE);
+  const GAP = Math.round(10 * SCALE);
+  const ROWS = 4, COLS = 2;
+  const card = Math.floor((W - PAD_X * 2 - GAP) / COLS);
+
+  // Bagian Header
+  const HEAD_H = Math.round(38 * SCALE);
+  const yBody = PAD_TOP + HEAD_H + Math.round(8 * SCALE);
+
+  // Bagian Footer
+  const FOOT_H = Math.round(36 * SCALE);
+  const footY = yBody + ROWS * card + (ROWS - 1) * GAP + Math.round(10 * SCALE);
+
+  // Caption strip unik
+  const seenC = new Set();
+  const uniq = photos.filter(p => { if (seenC.has(p.url)) return false; seenC.add(p.url); return true; });
   const nCap = Math.min(uniq.length, 8);
-  const lineH = 44, capPadY = 16;
+  const lineH = Math.round(26 * SCALE);
+  const capPadY = Math.round(8 * SCALE);
   const capH = nCap ? nCap * lineH + capPadY * 2 : 0;
-  const yBody = PAD + HEAD_H + 10;
-  const H = yBody + ROWS * card + (ROWS - 1) * GAP + 14 + FOOT_H + 16 + capH + PAD;
+  const capY0 = footY + FOOT_H + Math.round(6 * SCALE);
+
+  const H = (nCap ? capY0 + capH : footY + FOOT_H) + PAD_BOT;
+
   const cv = document.createElement('canvas');
   cv.width = W; cv.height = H;
   const ctx = cv.getContext('2d');
-  // === bg: gradien cream -> #f2e7c8 + confetti dots multi-warna (kayak body DOM) ===
+
+  // 1. Background Dasar & Dots persis CSS sheet
   const g = ctx.createLinearGradient(0, 0, 0, H);
   g.addColorStop(0, '#f5eccf'); g.addColorStop(1, '#f2e7c8');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  // grain halus cokelat
-  ctx.fillStyle = 'rgba(52,34,30,0.08)';
-  for (let dy = 6; dy < H; dy += 22)
-    for (let dx = 6; dx < W; dx += 22) ctx.fillRect(dx, dy, 2, 2);
-  // confetti dots emas (37px period)
-  ctx.fillStyle = 'rgba(201,162,39,0.28)';
-  for (let dy = 13; dy < H; dy += 37)
-    for (let dx = 21; dx < W; dx += 37) {
-      ctx.beginPath(); ctx.arc(dx, dy, 2.5, 0, Math.PI * 2); ctx.fill();
-    }
-  // confetti dots biru (29px period)
-  ctx.fillStyle = 'rgba(63,90,122,0.22)';
-  for (let dy = 9; dy < H; dy += 29)
-    for (let dx = 7; dx < W; dx += 29) {
-      ctx.beginPath(); ctx.arc(dx, dy, 2.2, 0, Math.PI * 2); ctx.fill();
-    }
-  // === film-strip: strip putus² kiri & kanan (kayak .sheet::before/::after, tepat di tepi) ===
-  ctx.fillStyle = 'rgba(63,90,122,0.35)';
-  for (let stripX of [14, W - 22])
-    for (let sy = 24; sy < H - 24; sy += 26)
-      ctx.fillRect(stripX, sy, 8, 12);
-  // === border maroon-deep + rounded, bayangan bawah (kayak DOM) ===
-  ctx.shadowColor = 'rgba(74,16,36,0.35)'; ctx.shadowOffsetY = 10; ctx.shadowBlur = 0;
-  roundRect(ctx, 10, 10, W - 20, H - 20, 34); ctx.fillStyle = 'rgba(74,16,36,0.25)'; ctx.fill();
-  ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
-  ctx.strokeStyle = '#4a1024'; ctx.lineWidth = 5;
-  roundRect(ctx, 10, 10, W - 20, H - 20, 34); ctx.stroke();
 
-  // === sheet-head: washi tape pojok (sync .sheet-head::before/::after) ===
+  // Confetti dots persis formula CSS
+  ctx.fillStyle = 'rgba(52,34,30,0.08)';
+  for (let dy = 0; dy < H; dy += Math.round(16 * SCALE))
+    for (let dx = 0; dx < W; dx += Math.round(16 * SCALE)) ctx.fillRect(dx, dy, 2, 2);
+
+  ctx.fillStyle = 'rgba(201,162,39,0.22)';
+  for (let dy = 4; dy < H; dy += Math.round(34 * SCALE))
+    for (let dx = 6; dx < W; dx += Math.round(34 * SCALE)) {
+      ctx.beginPath(); ctx.arc(dx, dy, 1.8 * SCALE, 0, Math.PI * 2); ctx.fill();
+    }
+
+  ctx.fillStyle = 'rgba(63,90,122,0.18)';
+  for (let dy = 8; dy < H; dy += Math.round(28 * SCALE))
+    for (let dx = 12; dx < W; dx += Math.round(28 * SCALE)) {
+      ctx.beginPath(); ctx.arc(dx, dy, 1.5 * SCALE, 0, Math.PI * 2); ctx.fill();
+    }
+
+  // Film-strip putus-putus di tepi kiri & kanan (.sheet::before / ::after)
+  const stripW = Math.round(8 * SCALE);
+  const stripL = Math.round(8 * SCALE);
+  const stripR = W - stripL - stripW;
+  ctx.fillStyle = 'rgba(63,90,122,0.35)';
+  for (let sx of [stripL, stripR]) {
+    for (let sy = Math.round(14 * SCALE); sy < H - Math.round(14 * SCALE); sy += Math.round(20 * SCALE)) {
+      ctx.fillRect(sx, sy, stripW, Math.round(6 * SCALE));
+    }
+  }
+
+  // Border luar sheet (4px * SCALE, border-radius 20px * SCALE, maroon-deep)
+  const bThick = Math.round(4 * SCALE);
+  const bRad = Math.round(20 * SCALE);
+  ctx.strokeStyle = '#4a1024'; ctx.lineWidth = bThick;
+  roundRect(ctx, bThick / 2, bThick / 2, W - bThick, H - bThick, bRad); ctx.stroke();
+
+  // 2. Washi Tape di pojok kiri atas & kanan atas (.sheet-head::before & ::after)
   function washiTape(x, y, rot) {
-    const tw = 180, th = 48;
+    const tw = Math.round(96 * SCALE), th = Math.round(26 * SCALE);
     ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
-    // clip ke rect tape
     ctx.beginPath(); ctx.rect(-tw / 2, -th / 2, tw, th); ctx.clip();
-    // base light
-    ctx.fillStyle = 'rgba(237,211,133,0.95)'; ctx.fillRect(-tw / 2, -th / 2, tw, th);
-    // stripe diagonal 45deg
+    ctx.fillStyle = 'rgba(237,211,133,0.92)'; ctx.fillRect(-tw / 2, -th / 2, tw, th);
+    // diagonal stripes 45deg
     ctx.save(); ctx.rotate(Math.PI / 4);
-    const PER = 34, SW = 17, EXT = 200;
-    ctx.fillStyle = 'rgba(201,162,39,0.92)';
+    const PER = Math.round(18 * SCALE), SW = Math.round(9 * SCALE), EXT = Math.round(100 * SCALE);
+    ctx.fillStyle = 'rgba(201,162,39,0.88)';
     for (let sx = -EXT; sx < tw + EXT; sx += PER) ctx.fillRect(sx - SW, -EXT, SW, 2 * EXT);
     ctx.restore();
     ctx.restore();
-    // border tipis
-    ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
-    ctx.strokeStyle = 'rgba(201,162,39,0.7)'; ctx.lineWidth = 3;
-    ctx.strokeRect(-tw / 2, -th / 2, tw, th);
-    ctx.restore();
   }
-  washiTape(96, 28, -0.07); washiTape(W - 96, 28, 0.07);
-  // === sheet-head: ▶ UKM EXPO UHN ✳ ===
-  ctx.save(); ctx.translate(W / 2, 62); ctx.rotate(-0.035);
+  washiTape(PAD_X + Math.round(30 * SCALE), PAD_TOP - Math.round(4 * SCALE), -0.07);
+  washiTape(W - PAD_X - Math.round(30 * SCALE), PAD_TOP - Math.round(4 * SCALE), 0.07);
+
+  // 3. Header Text: UKM EXPO UHN & Simbol
+  const headCenterY = PAD_TOP + HEAD_H / 2;
+  ctx.save();
+  ctx.translate(W / 2, headCenterY); ctx.rotate(-0.035);
   ctx.fillStyle = '#6b1f3a'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.font = '700 66px "Luckiest Guy", "Arial Black", cursive';
-  ctx.shadowColor = 'rgba(201,162,39,0.4)'; ctx.shadowOffsetX = 4; ctx.shadowOffsetY = 4;
+  ctx.font = '700 ' + Math.round(27 * SCALE) + 'px "Luckiest Guy", "Comic Sans MS", cursive';
+  ctx.shadowColor = 'rgba(201,162,39,0.4)'; ctx.shadowOffsetX = 2 * SCALE; ctx.shadowOffsetY = 2 * SCALE;
   ctx.fillText('UKM EXPO UHN', 0, 0);
   ctx.restore();
   ctx.shadowColor = 'transparent'; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
-  ctx.fillStyle = '#6b1f3a'; ctx.font = '48px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.save(); ctx.translate(20, 62); ctx.rotate(-0.14); ctx.fillText('▶', 0, 0); ctx.restore();
-  ctx.save(); ctx.translate(W - 20, 62); ctx.rotate(0); ctx.fillText('✳', 0, 0); ctx.restore();
 
-  // === sheet-body: 8 box (polaroid mini card: foto agak dikecilkan + frame putih manis) ===
+  ctx.fillStyle = '#6b1f3a'; ctx.font = Math.round(20 * SCALE) + 'px system-ui';
+  ctx.save(); ctx.translate(PAD_X + Math.round(12 * SCALE), headCenterY); ctx.rotate(-0.14); ctx.fillText('▶', 0, 0); ctx.restore();
+  ctx.save(); ctx.translate(W - PAD_X - Math.round(12 * SCALE), headCenterY); ctx.fillText('✳', 0, 0); ctx.restore();
+
+  // 4. 8 Boxes Foto (persis .box di DOM: background putih, border 2px, padding 4px)
   const imgs = await Promise.all(photos.map(p => b64ToImg(p.url)));
   let fill = [];
   if (photos.length === 1) fill = Array(8).fill(0);
   else for (let i = 0; i < 8; i++) fill.push(i % photos.length);
+
+  const boxBorder = Math.round(2 * SCALE);
+  const boxRadius = Math.round(12 * SCALE);
+  const boxPad = Math.round(4 * SCALE);
+  const numSize = Math.round(22 * SCALE);
+  const numRadius = Math.round(6 * SCALE);
+  const emojiSize = Math.round(30 * SCALE);
+
   for (let i = 0; i < ROWS * COLS; i++) {
     const src = fill[i]; if (src === undefined) break;
     const r = Math.floor(i / COLS), c = i % COLS;
-    const x = PAD + c * (card + GAP), y = yBody + r * (card + GAP);
-    
-    // 1. Polaroid White Card Frame (radius 18 + border tipis 4 maroon-deep + soft shadow)
+    const x = PAD_X + c * (card + GAP), y = yBody + r * (card + GAP);
+
+    // Box Frame Putih (DOM .box)
     ctx.save();
-    ctx.shadowColor = 'rgba(74,16,36,0.18)'; ctx.shadowOffsetY = 4; ctx.shadowBlur = 0;
-    roundRect(ctx, x, y, card, card, 18);
+    ctx.shadowColor = 'rgba(74,16,36,0.18)'; ctx.shadowOffsetY = Math.round(3 * SCALE); ctx.shadowBlur = 0;
+    roundRect(ctx, x, y, card, card, boxRadius);
     ctx.fillStyle = '#ffffff'; ctx.fill();
     ctx.restore();
-    ctx.strokeStyle = '#4a1024'; ctx.lineWidth = 4;
-    roundRect(ctx, x, y, card, card, 18); ctx.stroke();
+    ctx.strokeStyle = '#4a1024'; ctx.lineWidth = boxBorder;
+    roundRect(ctx, x, y, card, card, boxRadius); ctx.stroke();
 
-    // 2. Foto di dalam frame (margin tipis 7px di sekeliling foto)
-    const inset = 7;
-    const px = x + inset, py = y + inset, pw = card - inset * 2, ph = card - inset * 2;
+    // Foto di dalam Box (DOM .box img)
+    const px = x + boxPad, py = y + boxPad, pw = card - boxPad * 2, ph = card - boxPad * 2;
+    const imgRadius = Math.round(8 * SCALE);
     ctx.save();
-    roundRect(ctx, px, py, pw, ph, 12); ctx.clip();
-    ctx.fillStyle = '#f5eccf'; ctx.fillRect(px, py, pw, ph);
+    roundRect(ctx, px, py, pw, ph, imgRadius); ctx.clip();
     drawCover(ctx, imgs[src], px, py, pw, ph);
     ctx.restore();
-    ctx.strokeStyle = 'rgba(74,16,36,0.18)'; ctx.lineWidth = 2;
-    roundRect(ctx, px, py, pw, ph, 12); ctx.stroke();
+    ctx.strokeStyle = 'rgba(74,16,36,0.15)'; ctx.lineWidth = 1 * SCALE;
+    roundRect(ctx, px, py, pw, ph, imgRadius); ctx.stroke();
 
-    // 3. Mini washi tape aksen di sudut card 0 (top-left) & card 7 (bottom-right)
+    // Washi Tape mini aksen di foto 1 & 8
     if (i === 0) {
-      ctx.save(); ctx.translate(x + 30, y + 6); ctx.rotate(-0.2);
-      ctx.fillStyle = 'rgba(201,162,39,0.85)'; roundRect(ctx, -22, -7, 44, 14, 2); ctx.fill();
+      ctx.save(); ctx.translate(x + Math.round(24 * SCALE), y + Math.round(2 * SCALE)); ctx.rotate(-0.2);
+      ctx.fillStyle = 'rgba(201,162,39,0.75)'; roundRect(ctx, -14 * SCALE, -4 * SCALE, 28 * SCALE, 9 * SCALE, 2 * SCALE); ctx.fill();
       ctx.restore();
     } else if (i === 7) {
-      ctx.save(); ctx.translate(x + card - 30, y + card - 6); ctx.rotate(-0.15);
-      ctx.fillStyle = 'rgba(201,162,39,0.85)'; roundRect(ctx, -22, -7, 44, 14, 2); ctx.fill();
+      ctx.save(); ctx.translate(x + card - Math.round(24 * SCALE), y + card - Math.round(2 * SCALE)); ctx.rotate(-0.14);
+      ctx.fillStyle = 'rgba(201,162,39,0.75)'; roundRect(ctx, -14 * SCALE, -4 * SCALE, 28 * SCALE, 9 * SCALE, 2 * SCALE); ctx.fill();
       ctx.restore();
     }
 
-    // 4. nomor gold (1..8) kiri-atas — kayak .n
-    const nb = 48;
+    // Nomor Gold kiri atas (.box .n)
+    const numX = x - Math.round(6 * SCALE), numY = y - Math.round(6 * SCALE);
     ctx.fillStyle = '#c9a227';
-    roundRect(ctx, x - 12, y - 12, nb, nb, 12); ctx.fill();
-    ctx.strokeStyle = '#4a1024'; ctx.lineWidth = 4; ctx.stroke();
-    ctx.fillStyle = '#4a1024'; ctx.font = '700 24px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(i + 1, x - 12 + nb / 2, y - 12 + nb / 2 + 1);
+    roundRect(ctx, numX, numY, numSize, numSize, numRadius); ctx.fill();
+    ctx.strokeStyle = '#4a1024'; ctx.lineWidth = 1.5 * SCALE; ctx.stroke();
+    ctx.fillStyle = '#4a1024'; ctx.font = '700 ' + Math.round(11 * SCALE) + 'px "Luckiest Guy", cursive';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(i + 1, numX + numSize / 2, numY + numSize / 2 + 0.5 * SCALE);
 
-    // 5. emoji kanan-atas — gelembung putih bulat + border gold (sync DOM .box .e)
-    const eb = 56;
-    const ex = x + card - eb / 2 - 2, ey = y + eb / 2 + 2;
+    // Emoji Gelembung Putih kanan atas (.box .e)
+    const emX = x + card - emojiSize / 2 - Math.round(2 * SCALE);
+    const emY = y + emojiSize / 2 + Math.round(2 * SCALE);
     ctx.save();
-    ctx.translate(ex, ey);
-    ctx.rotate(0.1); // rotate 6deg kayak DOM
-    ctx.beginPath(); ctx.arc(0, 0, eb / 2, 0, Math.PI * 2);
+    ctx.translate(emX, emY); ctx.rotate(0.1);
+    ctx.beginPath(); ctx.arc(0, 0, emojiSize / 2, 0, Math.PI * 2);
     ctx.fillStyle = '#ffffff'; ctx.fill();
-    ctx.strokeStyle = '#c9a227'; ctx.lineWidth = 3.5; ctx.stroke();
-    ctx.font = '30px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(photos[src].emoji || '😄', 0, 1);
+    ctx.strokeStyle = '#c9a227'; ctx.lineWidth = 2 * SCALE; ctx.stroke();
+    ctx.font = Math.round(14 * SCALE) + 'px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(photos[src].emoji || '😄', 0, 0.5 * SCALE);
     ctx.restore();
   }
 
-  // === sheet-foot: SAINS DATA · ⭯ ⭮ · Dovey ===
-  const footY = yBody + ROWS * card + (ROWS - 1) * GAP + 14;
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#6b1f3a'; ctx.textAlign = 'left';
-  ctx.font = '700 40px "Luckiest Guy", "Arial Black", cursive';
-  ctx.save(); ctx.translate(PAD + 2, footY + FOOT_H / 2); ctx.rotate(0.026); ctx.fillText('SAINS DATA', 0, 0); ctx.restore();
-  ctx.font = '34px system-ui'; ctx.textAlign = 'center'; ctx.fillText('⭯ ⭮', W / 2, footY + FOOT_H / 2 + 2);
-  ctx.fillStyle = '#34221e'; ctx.textAlign = 'right';
-  ctx.font = '700 42px Pacifico, "Brush Script MT", cursive';
-  ctx.save(); ctx.translate(W - PAD - 2, footY + FOOT_H / 2); ctx.rotate(-0.052); ctx.fillText('Dovey', 0, 0); ctx.restore();
+  // 5. Footer: SAINS DATA · ⭯ ⭮ · Dovey (.sheet-foot)
+  const footCenterY = footY + FOOT_H / 2;
+  ctx.save();
+  ctx.translate(PAD_X + Math.round(4 * SCALE), footCenterY); ctx.rotate(0.026);
+  ctx.fillStyle = '#6b1f3a'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.font = '700 ' + Math.round(15 * SCALE) + 'px "Luckiest Guy", cursive';
+  ctx.fillText('SAINS DATA', 0, 0);
+  ctx.restore();
 
-  // === caption strip (kayak .caps) — semua foto unik, satu baris utuh ===
+  ctx.font = '700 ' + Math.round(13 * SCALE) + 'px system-ui'; ctx.fillStyle = '#6b1f3a';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('⭯ ⭮', W / 2, footCenterY);
+
+  ctx.save();
+  ctx.translate(W - PAD_X - Math.round(4 * SCALE), footCenterY); ctx.rotate(-0.052);
+  ctx.fillStyle = '#34221e'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  ctx.font = '700 ' + Math.round(17 * SCALE) + 'px Pacifico, "Brush Script MT", cursive';
+  ctx.fillText('Dovey', 0, 0);
+  ctx.restore();
+
+  // 6. Caption Strip (.caps di DOM)
   if (nCap) {
-    const stripX = 20, stripW = W - 40;
-    const capY0 = footY + FOOT_H + 16;
+    const stripPadX = PAD_X + Math.round(4 * SCALE);
+    const stripW_ = W - stripPadX * 2;
     ctx.fillStyle = 'rgba(255,255,255,0.45)';
-    roundRect(ctx, stripX, capY0, stripW, capH, 15); ctx.fill();
-    ctx.fillStyle = '#c9a227'; ctx.fillRect(stripX, capY0, 7, capH);          // border-left gold
-    ctx.font = '600 30px system-ui'; ctx.fillStyle = '#34221e'; ctx.textAlign = 'left';
+    roundRect(ctx, stripPadX, capY0, stripW_, capH, Math.round(10 * SCALE)); ctx.fill();
+    ctx.fillStyle = '#c9a227'; ctx.fillRect(stripPadX, capY0, Math.round(4 * SCALE), capH); // border-left 4px
+
     let ty = capY0 + capPadY;
     for (const p of uniq) {
       ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-      ctx.font = '30px system-ui';
-      ctx.fillText(p.emoji || '😄', stripX + 26, ty + lineH / 2);
-      ctx.font = '600 30px system-ui';
+      ctx.font = Math.round(16 * SCALE) + 'px system-ui';
+      ctx.fillText(p.emoji || '😄', stripPadX + Math.round(12 * SCALE), ty + lineH / 2);
+      ctx.fillStyle = '#34221e';
+      ctx.font = '600 ' + Math.round(14 * SCALE) + 'px system-ui';
       let t = p.cap;
-      const maxW = stripW - 26 - 50;
-      if (ctx.measureText(t).width > maxW) { while (t.length > 4 && ctx.measureText(t + '…').width > maxW) t = t.slice(0, -1); t += '…'; }
-      ctx.fillText(t, stripX + 26 + 50, ty + lineH / 2);
+      const maxW = stripW_ - Math.round(44 * SCALE);
+      if (ctx.measureText(t).width > maxW) {
+        while (t.length > 4 && ctx.measureText(t + '…').width > maxW) t = t.slice(0, -1);
+        t += '…';
+      }
+      ctx.fillText(t, stripPadX + Math.round(36 * SCALE), ty + lineH / 2);
       ty += lineH;
     }
   }
 
-  // === QR box TIDAK ikut print/download — user minta download tanpa QR, caption aja ===
   if (asDataUrl) return cv.toDataURL('image/png');
   return await new Promise(r => cv.toBlob(r, 'image/png'));
 }
