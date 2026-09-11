@@ -114,17 +114,17 @@
 
   /* ============ CAMERA VIEWPORT ============ */
   .cam-container {
-    padding: 10px 12px 10px;
-    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    padding: 6px 12px 10px;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
   }
   .cam-wrap {
-    position: relative; width: 100%; border-radius: 18px; overflow: hidden;
-    background: #000; border: 3px solid var(--maroon-deep);
-    box-shadow: 0 4px 0 var(--maroon-deep), 0 6px 14px rgba(0,0,0,0.25);
-    aspect-ratio: 4 / 3;
+    position: relative; margin: 0 auto; border-radius: 18px; overflow: hidden;
+    background: #1a1420; border: 3.5px solid var(--maroon-deep);
+    box-shadow: 0 4px 0 rgba(74,16,36,0.35);
+    aspect-ratio: 3/4; max-height: 50vh; width: 100%; max-width: 440px;
   }
   #video {
-    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
+    width: 100%; height: 100%; object-fit: contain; display: block;
   }
   #video.mirror { transform: scaleX(-1); }
   #overlayCanvas {
@@ -144,22 +144,12 @@
     100% { top: 92%; }
   }
 
-  /* Live Detection Status */
-  .scan-badge {
-    position: absolute; top: 10px; left: 10px; z-index: 5;
-    background: rgba(74,0,0,0.85); color: #ffd86b;
-    border: 1.5px solid var(--gold); border-radius: 8px;
-    padding: 4px 10px; font-size: 11.5px; font-weight: 700;
-    display: flex; align-items: center; gap: 6px;
-    backdrop-filter: blur(4px); box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  }
-  .dot-live {
-    width: 8px; height: 8px; border-radius: 50%; background: #00ff88;
-    box-shadow: 0 0 8px #00ff88; animation: pulse 1.2s infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.8); }
+  /* Live Detection Status Badge */
+  .scan-hint {
+    position: absolute; top: 10px; right: 10px; z-index: 5;
+    background: var(--cream); color: var(--maroon); border: 2px solid var(--maroon-deep);
+    border-radius: 12px; padding: 5px 10px; font-size: 13px; font-weight: 700;
+    box-shadow: 2px 2px 0 rgba(74,16,36,0.35); transform: rotate(2deg);
   }
 
   /* ============ LIVE AI ANALYSIS HUD ============ */
@@ -369,10 +359,7 @@
       <video id="video" autoplay playsinline muted></video>
       <canvas id="overlayCanvas"></canvas>
       <div class="scan-laser" id="scanLaser"></div>
-      <div class="scan-badge">
-        <span class="dot-live"></span>
-        <span id="scanStatusText">AI Scanning Active</span>
-      </div>
+      <div class="scan-hint" id="scanHint">🔍 Cari Wajah...</div>
     </div>
 
     <!-- LIVE AI ANALYSIS CARD -->
@@ -534,7 +521,7 @@ async function initVision() {
       outputFaceBlendshapes: true
     });
     console.log('AI FaceLandmarker Ready ✓');
-    if ($('scanStatusText')) $('scanStatusText').textContent = '🔍 Mencari Wajah...';
+    if ($('scanHint')) $('scanHint').textContent = '🔍 Cari Wajah...';
   } catch (err) {
     console.warn('Vision init warning:', err);
   }
@@ -567,8 +554,8 @@ async function startCamera() {
     loop();
   } catch (err) {
     console.error('Camera access failed:', err);
-    if (!video.srcObject) {
-      $('scanStatusText').innerHTML = '⚠️ <a href="javascript:startCamera()" style="color:#ffd86b;text-decoration:underline;">Tap untuk Izinkan Kamera 📷</a>';
+    if ($('scanHint')) {
+      $('scanHint').innerHTML = '⚠️ <a href="javascript:startCamera()" style="color:var(--maroon);text-decoration:underline;">Tap Izinkan Kamera</a>';
     }
   }
 }
@@ -734,9 +721,13 @@ function renderOverlay() {
   const isMirror = facing === 'user';
 
   if (!lastFaces.length) {
-    $('scanStatusText').textContent = !landmarker ? 'Memuat Model AI Biometrik...' : '🔍 Mencari Wajah...';
+    if ($('scanHint')) $('scanHint').textContent = !landmarker ? 'Memuat AI Biometrik...' : '🔍 Cari Wajah...';
+    $('hudPanel').style.opacity = '0.75';
     return;
   }
+
+  $('hudPanel').style.opacity = '1';
+  if ($('scanHint')) $('scanHint').textContent = `${lastFaces.length} Wajah Terdeteksi ✓`;
 
   const now = performance.now();
 
@@ -750,11 +741,6 @@ function renderOverlay() {
       if (metrics.faceHash !== activeFaceSig) {
         activeFaceSig = metrics.faceHash;
         activeFaceSwitchTime = now;
-      }
-      if (now - activeFaceSwitchTime < 1200) {
-        $('scanStatusText').textContent = `✨ Wajah Baru: ${metrics.genderLabel} (${metrics.estAge} Thn)`;
-      } else {
-        $('scanStatusText').textContent = `${lastFaces.length} Wajah Terdeteksi ✓`;
       }
     }
 
@@ -1262,7 +1248,7 @@ $('btnLiveReset').onclick = () => {
   lastFaces = [];
   lastBs = [];
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  $('scanStatusText').textContent = '🔍 Memindai Ulang Wajah...';
+  if ($('scanHint')) $('scanHint').textContent = '🔍 Cari Wajah...';
   $('hudMainText').textContent = 'Menganalisis Wajah Baru...';
   $('hudSubText').textContent = 'Posisikan wajah di tengah kamera ✨';
   $('stat1').textContent = 'Memindai...';
@@ -1275,7 +1261,7 @@ $('btnCloseModal').onclick = () => {
 
 $('btnScanAgain').onclick = () => {
   $('modalResult').style.display = 'none';
-  $('scanStatusText').textContent = '🔍 Mencari Wajah Baru...';
+  if ($('scanHint')) $('scanHint').textContent = '🔍 Cari Wajah...';
   lastFaces = [];
   lastBs = [];
 };
