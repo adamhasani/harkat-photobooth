@@ -342,6 +342,7 @@
     background: rgba(255,255,255,0.55); border: 2px dashed var(--maroon-deep);
     border-radius: 14px; padding: 8px 12px;
   }
+  .qr-box[hidden] { display: none !important; }
   .qr-box .qr { flex: none; width: 150px; height: 150px; }
   .qr-box svg { width: 150px; height: 150px; display: block; }
   .qr-box p { font-size: 13px; color: var(--maroon-deep); line-height: 1.35; letter-spacing: .3px; }
@@ -351,6 +352,7 @@
   .caps { margin: 4px 20px 6px; display: flex; flex-direction: column; gap: 4px;
     background: rgba(255,255,255,0.45); border-left: 4px solid var(--gold); border-radius: 0 10px 10px 0;
     padding: 8px 12px; }
+  .caps[hidden] { display: none !important; }
   .cap-line { font-family: system-ui, sans-serif; font-weight: 600; color: #34221e; font-size: clamp(13px, 3.4vw, 16px); line-height: 1.45;
     display: flex; align-items: center; gap: 8px; }
   .cap-line .cap-face { flex: none; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 16px; line-height: 1; }
