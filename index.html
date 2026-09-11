@@ -229,56 +229,56 @@
   .sheet-body { display: flex; gap: 10px; padding: 6px 14px; }
   .sheet-col { flex: 1; display: flex; flex-direction: column; gap: 10px; }
   
-  /* Polaroid-style mini card: foto agak dikecilkan dengan frame putih & bayangan manis */
+  /* Polaroid-style mini card: bingkai lebih ramping & manis */
   .box {
-    aspect-ratio: 1; border-radius: 16px; position: relative;
+    aspect-ratio: 1; border-radius: 12px; position: relative;
     background: #ffffff;
-    border: 3.5px solid var(--maroon-deep);
-    box-shadow: 0 4px 0 rgba(74,16,36,0.22);
-    padding: 7px;
+    border: 2px solid var(--maroon-deep);
+    box-shadow: 0 3px 0 rgba(74,16,36,0.18);
+    padding: 4px;
   }
   .box .ph {
-    position: absolute; inset: 7px; border-radius: 10px;
+    position: absolute; inset: 4px; border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
     color: rgba(107,31,58,0.35); font-size: 34px;
     background: repeating-linear-gradient(45deg, #dcd3ba 0 10px, #efe6cc 10px 20px);
   }
   .box .ph svg { width: 100%; height: 100%; opacity: .5; }
   .box img {
-    width: calc(100% - 14px); height: calc(100% - 14px);
-    object-fit: cover; position: absolute; top: 7px; left: 7px;
-    border-radius: 10px; border: 1.5px solid rgba(74,16,36,0.18);
+    width: calc(100% - 8px); height: calc(100% - 8px);
+    object-fit: cover; position: absolute; top: 4px; left: 4px;
+    border-radius: 8px; border: 1px solid rgba(74,16,36,0.15);
   }
   .box .n {
-    position: absolute; top: -8px; left: -8px; background: var(--gold); color: var(--maroon-deep);
-    min-width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 700; border: 2.5px solid var(--maroon-deep); z-index: 4;
-    box-shadow: 1px 2px 0 rgba(74,16,36,0.25);
+    position: absolute; top: -6px; left: -6px; background: var(--gold); color: var(--maroon-deep);
+    min-width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; border: 1.5px solid var(--maroon-deep); z-index: 4;
+    box-shadow: 1px 1.5px 0 rgba(74,16,36,0.2);
   }
   .box .x {
-    position: absolute; top: -8px; right: -8px; width: 26px; height: 26px; border-radius: 8px;
-    background: var(--cream); color: var(--maroon); border: 2.5px solid var(--maroon-deep); font-size: 15px;
+    position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 6px;
+    background: var(--cream); color: var(--maroon); border: 1.5px solid var(--maroon-deep); font-size: 13px;
     display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 4;
   }
   .box.empty .x { display: none; }
   /* emoji lucu pojok kanan atas tiap foto — gelembung putih border emas (sync DOM ↔ canvas) */
   .box .e {
-    position: absolute; top: 2px; right: 2px; width: clamp(32px, 7.2vw, 42px); height: clamp(32px, 7.2vw, 42px); z-index: 4;
+    position: absolute; top: 2px; right: 2px; width: clamp(28px, 6.5vw, 36px); height: clamp(28px, 6.5vw, 36px); z-index: 4;
     display: flex; align-items: center; justify-content: center;
-    background: #fff; border: 2.5px solid var(--gold); border-radius: 50%; transform: rotate(6deg);
-    box-shadow: 2px 2px 0 rgba(74,16,36,0.28);
-    font-size: clamp(16px, 3.8vw, 22px); line-height: 1;
+    background: #fff; border: 2px solid var(--gold); border-radius: 50%; transform: rotate(6deg);
+    box-shadow: 1.5px 1.5px 0 rgba(74,16,36,0.22);
+    font-size: clamp(14px, 3.2vw, 18px); line-height: 1;
   }
   .box.empty .e { display: none; }
 
   /* mini washi scotch tape di sudut foto 1 & 8 untuk aksen scrapbook */
   .sheet-col:first-child .box:first-child::after {
-    content: ''; position: absolute; top: -4px; left: 16px; width: 34px; height: 12px;
+    content: ''; position: absolute; top: -3px; left: 14px; width: 28px; height: 9px;
     background: rgba(201,162,39,0.75); border-radius: 2px; transform: rotate(-12deg); z-index: 3;
     box-shadow: 0 1px 2px rgba(52,34,30,0.2);
   }
   .sheet-col:last-child .box:last-child::after {
-    content: ''; position: absolute; bottom: -4px; right: 16px; width: 34px; height: 12px;
+    content: ''; position: absolute; bottom: -3px; right: 14px; width: 28px; height: 9px;
     background: rgba(201,162,39,0.75); border-radius: 2px; transform: rotate(-8deg); z-index: 3;
     box-shadow: 0 1px 2px rgba(52,34,30,0.2);
   }
@@ -906,55 +906,55 @@ async function renderSheet(asDataUrl) {
     const r = Math.floor(i / COLS), c = i % COLS;
     const x = PAD + c * (card + GAP), y = yBody + r * (card + GAP);
     
-    // 1. Polaroid White Card Frame (radius 24 + border 6 maroon-deep + soft shadow)
+    // 1. Polaroid White Card Frame (radius 18 + border tipis 4 maroon-deep + soft shadow)
     ctx.save();
-    ctx.shadowColor = 'rgba(74,16,36,0.22)'; ctx.shadowOffsetY = 6; ctx.shadowBlur = 0;
-    roundRect(ctx, x, y, card, card, 24);
+    ctx.shadowColor = 'rgba(74,16,36,0.18)'; ctx.shadowOffsetY = 4; ctx.shadowBlur = 0;
+    roundRect(ctx, x, y, card, card, 18);
     ctx.fillStyle = '#ffffff'; ctx.fill();
     ctx.restore();
-    ctx.strokeStyle = '#4a1024'; ctx.lineWidth = 6;
-    roundRect(ctx, x, y, card, card, 24); ctx.stroke();
+    ctx.strokeStyle = '#4a1024'; ctx.lineWidth = 4;
+    roundRect(ctx, x, y, card, card, 18); ctx.stroke();
 
-    // 2. Foto di dalam frame (dikecilkan dengan margin/inset 14px di sekeliling foto)
-    const inset = 14;
+    // 2. Foto di dalam frame (margin tipis 7px di sekeliling foto)
+    const inset = 7;
     const px = x + inset, py = y + inset, pw = card - inset * 2, ph = card - inset * 2;
     ctx.save();
-    roundRect(ctx, px, py, pw, ph, 16); ctx.clip();
+    roundRect(ctx, px, py, pw, ph, 12); ctx.clip();
     ctx.fillStyle = '#f5eccf'; ctx.fillRect(px, py, pw, ph);
     drawCover(ctx, imgs[src], px, py, pw, ph);
     ctx.restore();
-    ctx.strokeStyle = 'rgba(74,16,36,0.22)'; ctx.lineWidth = 2.5;
-    roundRect(ctx, px, py, pw, ph, 16); ctx.stroke();
+    ctx.strokeStyle = 'rgba(74,16,36,0.18)'; ctx.lineWidth = 2;
+    roundRect(ctx, px, py, pw, ph, 12); ctx.stroke();
 
     // 3. Mini washi tape aksen di sudut card 0 (top-left) & card 7 (bottom-right)
     if (i === 0) {
-      ctx.save(); ctx.translate(x + 36, y + 8); ctx.rotate(-0.2);
-      ctx.fillStyle = 'rgba(201,162,39,0.85)'; roundRect(ctx, -28, -10, 56, 20, 3); ctx.fill();
+      ctx.save(); ctx.translate(x + 30, y + 6); ctx.rotate(-0.2);
+      ctx.fillStyle = 'rgba(201,162,39,0.85)'; roundRect(ctx, -22, -7, 44, 14, 2); ctx.fill();
       ctx.restore();
     } else if (i === 7) {
-      ctx.save(); ctx.translate(x + card - 36, y + card - 8); ctx.rotate(-0.15);
-      ctx.fillStyle = 'rgba(201,162,39,0.85)'; roundRect(ctx, -28, -10, 56, 20, 3); ctx.fill();
+      ctx.save(); ctx.translate(x + card - 30, y + card - 6); ctx.rotate(-0.15);
+      ctx.fillStyle = 'rgba(201,162,39,0.85)'; roundRect(ctx, -22, -7, 44, 14, 2); ctx.fill();
       ctx.restore();
     }
 
     // 4. nomor gold (1..8) kiri-atas — kayak .n
-    const nb = 58;
+    const nb = 48;
     ctx.fillStyle = '#c9a227';
-    roundRect(ctx, x - 16, y - 16, nb, nb, 14); ctx.fill();
-    ctx.strokeStyle = '#4a1024'; ctx.lineWidth = 5; ctx.stroke();
-    ctx.fillStyle = '#4a1024'; ctx.font = '700 30px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(i + 1, x - 16 + nb / 2, y - 16 + nb / 2 + 1);
+    roundRect(ctx, x - 12, y - 12, nb, nb, 12); ctx.fill();
+    ctx.strokeStyle = '#4a1024'; ctx.lineWidth = 4; ctx.stroke();
+    ctx.fillStyle = '#4a1024'; ctx.font = '700 24px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(i + 1, x - 12 + nb / 2, y - 12 + nb / 2 + 1);
 
     // 5. emoji kanan-atas — gelembung putih bulat + border gold (sync DOM .box .e)
-    const eb = 64;
-    const ex = x + card - eb / 2 - 4, ey = y + eb / 2 + 4;
+    const eb = 56;
+    const ex = x + card - eb / 2 - 2, ey = y + eb / 2 + 2;
     ctx.save();
     ctx.translate(ex, ey);
     ctx.rotate(0.1); // rotate 6deg kayak DOM
     ctx.beginPath(); ctx.arc(0, 0, eb / 2, 0, Math.PI * 2);
     ctx.fillStyle = '#ffffff'; ctx.fill();
-    ctx.strokeStyle = '#c9a227'; ctx.lineWidth = 4; ctx.stroke();
-    ctx.font = '36px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.strokeStyle = '#c9a227'; ctx.lineWidth = 3.5; ctx.stroke();
+    ctx.font = '30px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(photos[src].emoji || '😄', 0, 1);
     ctx.restore();
   }
