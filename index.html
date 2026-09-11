@@ -17,23 +17,43 @@
     src: url('assets/fonts/Pacifico.ttf') format('truetype');
     font-display: swap;
   }
+  @font-face {
+    font-family: 'Shrikhand';
+    src: url('assets/fonts/Shrikhand.ttf') format('truetype');
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Fredoka';
+    src: url('assets/fonts/Fredoka-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Caveat';
+    src: url('assets/fonts/Caveat-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-display: swap;
+  }
 
   :root {
-    --cream: #f5eccf;
-    --cream-dark: #eadfc0;
-    --maroon: #6b1f3a;
-    --maroon-deep: #4a1024;
-    --gold: #c9a227;
-    --blue: #3f5a7a;
-    --ink: #34221e;
-    --stroke: rgba(59, 20, 32, 0.55);
+    --cream: #fbf5e6;
+    --cream-dark: #f2e6cb;
+    --maroon: #7c1a3b;
+    --maroon-deep: #420d1e;
+    --gold: #f4b41a;
+    --gold-light: #ffd868;
+    --blue: #2f567f;
+    --coral: #e76f51;
+    --pink: #ff7597;
+    --ink: #2b1e16;
+    --stroke: rgba(66, 13, 30, 0.6);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   html, body {
     background: var(--cream);
-    font-family: 'Luckiest Guy', 'Sniglet', 'Comic Sans MS', system-ui, sans-serif;
+    font-family: 'Fredoka', 'Sniglet', 'Comic Sans MS', system-ui, sans-serif;
     color: var(--ink);
     -webkit-tap-highlight-color: transparent;
     overflow-x: hidden;
@@ -225,10 +245,16 @@
   .sheet-head::before { left: 8px; transform: rotate(-5deg); }
   .sheet-head::after { right: 8px; transform: rotate(5deg); }
   .sheet-head h2 {
-    font-family: 'Luckiest Guy', cursive; color: var(--maroon); font-size: clamp(24px, 6.5vw, 34px);
-    letter-spacing: 2px; text-shadow: 2px 2px 0 rgba(201,162,39,0.35); transform: rotate(-1.5deg);
+    font-family: 'Shrikhand', 'Luckiest Guy', cursive;
+    color: var(--maroon); font-size: clamp(22px, 6.2vw, 32px);
+    letter-spacing: 1.5px;
+    background: linear-gradient(135deg, #7c1a3b 0%, #e76f51 50%, #f4b41a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(2px 2px 0px rgba(66,13,30,0.25));
+    transform: rotate(-1.5deg);
   }
-  .sheet-head .play { color: var(--maroon); font-size: 20px; transform: rotate(-8deg); text-shadow: 1px 1px 0 rgba(201,162,39,0.35); }
+  .sheet-head .play { color: var(--coral); font-size: 20px; transform: rotate(-8deg); text-shadow: 1px 1px 0 rgba(244,180,26,0.5); }
 
   .sheet-body { display: flex; gap: 12px; padding: 10px 16px; position: relative; }
   .sheet-col { flex: 1; display: flex; flex-direction: column; gap: 12px; }
@@ -347,9 +373,17 @@
   }
 
   .sheet-foot { display: flex; align-items: center; justify-content: space-between; padding: 6px 18px 2px; }
-  .sheet-foot .sains { font-family: 'Luckiest Guy', cursive; color: var(--maroon); font-size: clamp(14px, 3.4vw, 18px); letter-spacing: 2px; transform: rotate(1.5deg); }
-  .sheet-foot .dovey { font-family: 'Pacifico', 'Brush Script MT', cursive; font-size: clamp(16px, 4vw, 22px); color: #34221e; transform: rotate(-3deg); }
-  .sheet-foot .rings { display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 700; color: var(--maroon); letter-spacing: 1px; }
+  .sheet-foot .sains {
+    font-family: 'Fredoka', 'Luckiest Guy', sans-serif; font-weight: 700;
+    color: var(--blue); font-size: clamp(14px, 3.4vw, 18px); letter-spacing: 2px;
+    transform: rotate(1.5deg); text-shadow: 1px 1px 0 rgba(244,180,26,0.4);
+  }
+  .sheet-foot .dovey {
+    font-family: 'Caveat', 'Pacifico', cursive; font-size: clamp(20px, 4.8vw, 26px);
+    color: var(--maroon); font-weight: 700; transform: rotate(-3deg);
+    text-shadow: 1px 1px 0 rgba(231,111,81,0.3);
+  }
+  .sheet-foot .rings { display: flex; align-items: center; gap: 4px; font-size: 15px; font-weight: 700; color: var(--coral); letter-spacing: 1px; }
 
   .layout-actions { display: flex; gap: 12px; margin-top: 14px; justify-content: center; flex-wrap: wrap; }
 
@@ -367,10 +401,10 @@
 
   /* caption lucu — strip di atas barcode */
   .caps { margin: 4px 14px 6px; display: flex; flex-direction: column; gap: 4px;
-    background: rgba(255,255,255,0.45); border-left: 4px solid var(--gold); border-radius: 0 10px 10px 0;
-    padding: 6px 10px; max-width: calc(100% - 28px); }
+    background: rgba(255,255,255,0.7); border-left: 4px solid var(--coral); border-radius: 0 12px 12px 0;
+    padding: 6px 10px; max-width: calc(100% - 28px); box-shadow: 0 2px 4px rgba(66,13,30,0.08); }
   .caps[hidden] { display: none !important; }
-  .cap-line { font-family: system-ui, sans-serif; font-weight: 600; color: #34221e; font-size: clamp(11px, 2.8vw, 14px); line-height: 1.35;
+  .cap-line { font-family: 'Fredoka', system-ui, sans-serif; font-weight: 600; color: #2b1e16; font-size: clamp(11px, 2.8vw, 14px); line-height: 1.35;
     display: flex; align-items: center; gap: 6px; word-break: break-word; overflow-wrap: anywhere; }
   .cap-line .cap-face { flex: none; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 15px; line-height: 1; }
   .caps:empty { display: none; }
@@ -1153,9 +1187,15 @@ async function renderSheet(asDataUrl) {
 
   ctx.save();
   ctx.translate(titleCenterX, titleCenterY); ctx.rotate(-0.026);
-  ctx.fillStyle = '#6b1f3a'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.font = '700 27px "Luckiest Guy", "Comic Sans MS", cursive';
-  ctx.shadowColor = 'rgba(201,162,39,0.35)'; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2;
+  // Gradien warna judul kaya di CSS
+  const tg = ctx.createLinearGradient(-tRect.width / 2, 0, tRect.width / 2, 0);
+  tg.addColorStop(0, '#7c1a3b');
+  tg.addColorStop(0.5, '#e76f51');
+  tg.addColorStop(1, '#f4b41a');
+  ctx.fillStyle = tg;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = '700 27px "Shrikhand", "Luckiest Guy", cursive';
+  ctx.shadowColor = 'rgba(66,13,30,0.25)'; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2;
   ctx.fillText('UKM EXPO UHN', 0, 0);
   ctx.restore();
   ctx.shadowColor = 'transparent';
@@ -1166,12 +1206,13 @@ async function renderSheet(asDataUrl) {
     ctx.save();
     ctx.translate((pRect.left - sRect.left) + pRect.width / 2, (pRect.top - sRect.top) + pRect.height / 2);
     ctx.rotate(-0.14);
-    ctx.fillStyle = '#6b1f3a'; ctx.font = '18px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#e76f51'; ctx.font = '18px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(244,180,26,0.5)'; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
     ctx.fillText('▶', 0, 0);
     ctx.restore();
   }
   ctx.save();
-  ctx.fillStyle = '#6b1f3a'; ctx.font = '18px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#f4b41a'; ctx.font = '18px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText('✳', sRect.width - 24, titleCenterY);
   ctx.restore();
 
@@ -1252,21 +1293,25 @@ async function renderSheet(asDataUrl) {
 
     ctx.save();
     ctx.translate(18, footCenterY); ctx.rotate(0.026);
-    ctx.fillStyle = '#6b1f3a'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.font = '700 15px "Luckiest Guy", cursive';
+    ctx.fillStyle = '#2f567f'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.font = '700 15px "Fredoka", sans-serif';
+    ctx.shadowColor = 'rgba(244,180,26,0.4)'; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
     ctx.fillText('SAINS DATA', 0, 0);
     ctx.restore();
+    ctx.shadowColor = 'transparent';
 
-    ctx.font = '700 13px system-ui'; ctx.fillStyle = '#6b1f3a';
+    ctx.font = '700 15px system-ui'; ctx.fillStyle = '#e76f51';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText('⭯ ⭮', sRect.width / 2, footCenterY);
 
     ctx.save();
     ctx.translate(sRect.width - 18, footCenterY); ctx.rotate(-0.052);
-    ctx.fillStyle = '#34221e'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-    ctx.font = '700 17px Pacifico, "Brush Script MT", cursive';
+    ctx.fillStyle = '#7c1a3b'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.font = '700 22px "Caveat", "Pacifico", cursive';
+    ctx.shadowColor = 'rgba(231,111,81,0.3)'; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
     ctx.fillText('Dovey', 0, 0);
     ctx.restore();
+    ctx.shadowColor = 'transparent';
   }
 
   // 6. Caption Strip (.caps di DOM)
@@ -1277,9 +1322,9 @@ async function renderSheet(asDataUrl) {
     const capW = cpRect.width;
     const capH = cpRect.height;
 
-    ctx.fillStyle = 'rgba(255,255,255,0.45)';
-    roundRect(ctx, capX, capY, capW, capH, 10); ctx.fill();
-    ctx.fillStyle = '#c9a227'; ctx.fillRect(capX, capY, 4, capH); // border-left 4px
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    roundRect(ctx, capX, capY, capW, capH, 12); ctx.fill();
+    ctx.fillStyle = '#e76f51'; ctx.fillRect(capX, capY, 4, capH); // border-left coral
 
     const capLines = capsEl.querySelectorAll('.cap-line');
     capLines.forEach((cl) => {
@@ -1290,11 +1335,11 @@ async function renderSheet(asDataUrl) {
       const fullTxt = cl.textContent.replace(faceTxt, '').trim();
 
       ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-      ctx.font = '16px system-ui';
-      ctx.fillText(faceTxt, capX + 12, ly);
-      ctx.fillStyle = '#34221e';
-      ctx.font = '600 14px system-ui';
-      ctx.fillText(fullTxt, capX + 36, ly);
+      ctx.font = '15px system-ui';
+      ctx.fillText(faceTxt, capX + 10, ly);
+      ctx.fillStyle = '#2b1e16';
+      ctx.font = '600 13px "Fredoka", sans-serif';
+      ctx.fillText(fullTxt, capX + 32, ly);
     });
   }
 
