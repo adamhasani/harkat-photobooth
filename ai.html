@@ -184,28 +184,44 @@
     padding: 6px 14px; border-radius: 12px; border: 1.5px solid var(--gold);
     font-size: 14px; letter-spacing: 0.5px; opacity: 0; transition: opacity .3s; pointer-events: none; }
 
-  /* AI & Filter Controls */
-  .ai-controls {
-    display: flex; flex-direction: column; gap: 6px; padding: 4px 10px;
+  /* AI & Filter Controls (Accordion / Toggle Bar) */
+  .ai-bar-wrap {
+    display: flex; flex-direction: column; gap: 4px; padding: 2px 10px;
     max-width: 520px; margin: 0 auto 4px; width: 100%;
   }
-  .ai-row {
-    display: flex; gap: 4px; align-items: center; justify-content: center;
-    overflow-x: auto; padding: 2px 0; -webkit-overflow-scrolling: touch;
+  .ai-toggle-row {
+    display: flex; gap: 8px; justify-content: center; align-items: center;
   }
-  .ai-label {
-    font-size: 11px; font-weight: 700; color: var(--maroon-deep);
-    white-space: nowrap; flex-shrink: 0; margin-right: 2px;
+  .btn-toggle {
+    font-family: 'Fredoka', sans-serif; font-size: 13px; font-weight: 700;
+    padding: 6px 14px; border-radius: 999px; border: 2px solid var(--maroon-deep);
+    background: #fbf5e6; color: var(--maroon-deep); cursor: pointer;
+    box-shadow: 0 2px 0 var(--maroon-deep); transition: all 0.15s;
+  }
+  .btn-toggle.open {
+    background: var(--maroon); color: #fff6e2;
+  }
+  .ai-popup-panel {
+    background: rgba(255, 250, 236, 0.95); border: 2px solid var(--maroon-deep);
+    border-radius: 14px; padding: 6px 8px; box-shadow: 0 3px 6px rgba(74,0,0,0.15);
+    animation: fadeIn 0.15s ease-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .ai-scroll-row {
+    display: flex; gap: 6px; align-items: center;
+    overflow-x: auto; padding: 2px 2px; -webkit-overflow-scrolling: touch;
   }
   .ai-btn, .filter-btn {
-    font-family: 'Fredoka', sans-serif; font-size: 14px; font-weight: 700;
-    padding: 4px 8px; border-radius: 999px; border: 1.5px solid var(--maroon-deep);
-    background: var(--cream-dark); color: var(--maroon-deep); cursor: pointer;
+    font-family: 'Fredoka', sans-serif; font-size: 13px; font-weight: 700;
+    padding: 5px 12px; border-radius: 999px; border: 1.5px solid var(--maroon-deep);
+    background: #ffffff; color: var(--maroon-deep); cursor: pointer;
     box-shadow: 0 1.5px 0 rgba(74,0,0,0.2); transition: all 0.1s;
-    white-space: nowrap; flex-shrink: 0; min-width: 30px; height: 30px;
+    white-space: nowrap; flex-shrink: 0; height: 32px;
     display: flex; align-items: center; justify-content: center;
   }
-  .filter-btn { font-size: 12px; padding: 4px 10px; }
   .ai-btn.active, .filter-btn.active {
     background: var(--maroon); color: #fff6e2; border-color: var(--maroon-deep);
     box-shadow: 0 1.5px 0 var(--maroon-deep);
@@ -485,31 +501,41 @@
         <div class="hud" id="hud" style="display:none"></div>
         <div class="toast" id="toast"></div>
       </div>
-      <!-- AI & Filter Control Bar -->
-      <div class="ai-controls" id="aiControls">
-        <div class="ai-row">
-          <span class="ai-label">👑 AR Props:</span>
-          <button class="ai-btn active" data-prop="none">🚫</button>
-          <button class="ai-btn" data-prop="👑">👑</button>
-          <button class="ai-btn" data-prop="🕶️">🕶️</button>
-          <button class="ai-btn" data-prop="🎀">🎀</button>
-          <button class="ai-btn" data-prop="🌸">🌸</button>
-          <button class="ai-btn" data-prop="🐱">🐱</button>
-          <button class="ai-btn" data-prop="🐰">🐰</button>
-          <button class="ai-btn" data-prop="✨">✨</button>
-          <button class="ai-btn" data-prop="💖">💖</button>
-          <button class="ai-btn" data-prop="🧸">🧸</button>
-          <button class="ai-btn" data-prop="🍓">🍓</button>
-          <button class="ai-btn" data-prop="⭐">⭐</button>
-          <button class="ai-btn" data-prop="🥳">🥳</button>
+      <!-- AI & Filter Toggle Buttons (Popup Accordion) -->
+      <div class="ai-bar-wrap">
+        <div class="ai-toggle-row">
+          <button class="btn-toggle" id="btnToggleProp">👑 Emoji Props ▾</button>
+          <button class="btn-toggle" id="btnToggleFilter">🎨 Filter Kamera ▾</button>
         </div>
-        <div class="ai-row">
-          <span class="ai-label">🎨 Filter:</span>
-          <button class="filter-btn active" data-filter="none">Normal</button>
-          <button class="filter-btn" data-filter="glow">✨ Glow</button>
-          <button class="filter-btn" data-filter="vintage">📷 Vintage</button>
-          <button class="filter-btn" data-filter="soft">🌸 Soft Pastel</button>
-          <button class="filter-btn" data-filter="bw">🖤 B&W</button>
+
+        <!-- Popup Menu Props -->
+        <div class="ai-popup-panel" id="panelProp" style="display:none;">
+          <div class="ai-scroll-row">
+            <button class="ai-btn active" data-prop="none">🚫 Off</button>
+            <button class="ai-btn" data-prop="👑">👑 Mahkota</button>
+            <button class="ai-btn" data-prop="🕶️">🕶️ Kacamata</button>
+            <button class="ai-btn" data-prop="🎀">🎀 Pita</button>
+            <button class="ai-btn" data-prop="🌸">🌸 Bunga</button>
+            <button class="ai-btn" data-prop="🐱">🐱 Kucing</button>
+            <button class="ai-btn" data-prop="🐰">🐰 Kelinci</button>
+            <button class="ai-btn" data-prop="✨">✨ Sparkle</button>
+            <button class="ai-btn" data-prop="💖">💖 Blush</button>
+            <button class="ai-btn" data-prop="🧸">🧸 Teddy</button>
+            <button class="ai-btn" data-prop="🍓">🍓 Stroberi</button>
+            <button class="ai-btn" data-prop="⭐">⭐ Bintang</button>
+            <button class="ai-btn" data-prop="🥳">🥳 Pesta</button>
+          </div>
+        </div>
+
+        <!-- Popup Menu Filter -->
+        <div class="ai-popup-panel" id="panelFilter" style="display:none;">
+          <div class="ai-scroll-row">
+            <button class="filter-btn active" data-filter="none">Normal</button>
+            <button class="filter-btn" data-filter="glow">✨ Korean Glow</button>
+            <button class="filter-btn" data-filter="vintage">📷 90s Vintage</button>
+            <button class="filter-btn" data-filter="soft">🌸 Soft Pastel</button>
+            <button class="filter-btn" data-filter="bw">🖤 Classic B&W</button>
+          </div>
         </div>
       </div>
       <div class="cam-controls">
@@ -965,7 +991,7 @@ function capture() {
   cx.drawImage(video, 0, 0, w, h);
   cx.filter = 'none';
 
-  // Render AR Props ke dalam foto yang ditangkap
+    // Render AR Props ke dalam foto yang ditangkap (di luar transform mirror agar tidak terbalik horizontal!)
   if (lastFaces && lastFaces.length) {
     let smileWinnerIdx = -1, maxSmile = 0;
     if (lastFaces.length > 1 && lastBs) {
@@ -975,6 +1001,7 @@ function capture() {
       }
     }
     for (let fi = 0; fi < lastFaces.length; fi++) {
+      // Pada cx yang sudah kembali ke orientasi normal (unflipped), isMirror = (facing === 'user')
       drawArProps(cx, lastFaces[fi], w, h, facing === 'user', smileWinnerIdx, fi);
     }
   }
@@ -1662,12 +1689,35 @@ $('btnClearStickers').addEventListener('click', () => {
   invalidateGallery();
 });
 
+// Toggle Accordion Panels
+const btnToggleProp = $('btnToggleProp');
+const btnToggleFilter = $('btnToggleFilter');
+const panelProp = $('panelProp');
+const panelFilter = $('panelFilter');
+
+btnToggleProp.addEventListener('click', () => {
+  const isOpen = panelProp.style.display !== 'none';
+  panelProp.style.display = isOpen ? 'none' : 'block';
+  panelFilter.style.display = 'none';
+  btnToggleProp.classList.toggle('open', !isOpen);
+  btnToggleFilter.classList.remove('open');
+});
+
+btnToggleFilter.addEventListener('click', () => {
+  const isOpen = panelFilter.style.display !== 'none';
+  panelFilter.style.display = isOpen ? 'none' : 'block';
+  panelProp.style.display = 'none';
+  btnToggleFilter.classList.toggle('open', !isOpen);
+  btnToggleProp.classList.remove('open');
+});
+
 // AI Props Selection Buttons
 document.querySelectorAll('.ai-btn[data-prop]').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.ai-btn[data-prop]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentProp = btn.dataset.prop;
+    btnToggleProp.textContent = currentProp === 'none' ? '👑 Emoji Props ▾' : `${currentProp} ${btn.textContent.trim()} ▾`;
   });
 });
 
@@ -1677,6 +1727,7 @@ document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
     document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentFilter = btn.dataset.filter;
+    btnToggleFilter.textContent = `🎨 ${btn.textContent.trim()} ▾`;
     applyFilterStyle(video);
   });
 });
