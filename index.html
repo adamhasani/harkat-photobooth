@@ -304,18 +304,19 @@
 
   /* Toolbar Sticker Customizer di Tab Cetak */
   .sticker-bar {
-    display: flex; align-items: center; justify-content: center; gap: 8px; margin: 10px auto 4px;
-    background: var(--cream-dark); border: 2px solid var(--maroon-deep); border-radius: 12px;
-    padding: 6px 12px; flex-wrap: wrap; max-width: 480px; box-shadow: 2px 2px 0 rgba(74,16,36,0.2);
+    display: flex; align-items: center; justify-content: center; gap: 6px; margin: 10px auto 4px;
+    background: var(--cream-dark); border: 2px solid var(--maroon-deep); border-radius: 14px;
+    padding: 8px 12px; flex-wrap: wrap; max-width: 520px; box-shadow: 2px 2px 0 rgba(74,16,36,0.2);
   }
-  .sticker-bar span { font-size: 12px; font-weight: 700; color: var(--maroon-deep); }
+  .sticker-bar span { font-size: 13px; font-weight: 700; color: var(--maroon-deep); width: 100%; text-align: center; margin-bottom: 2px; }
   .sticker-btn {
     font-size: 20px; background: #fff; border: 1.5px solid var(--gold); border-radius: 8px;
-    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: transform 0.1s;
+    width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: transform 0.1s, background 0.1s;
   }
+  .sticker-btn:hover { background: #fff8e8; }
   .sticker-btn:active { transform: scale(0.9); }
-  .sticker-btn.clear { font-size: 13px; font-weight: 700; width: auto; padding: 0 8px; color: var(--maroon); border-color: var(--maroon); }
+  .sticker-btn.clear { font-size: 12px; font-weight: 700; width: auto; padding: 0 10px; height: 36px; color: var(--maroon); border-color: var(--maroon); background: #ffebeb; }
 
   /* Floating drag sticker on sheet */
   .sheet-sticker {
@@ -455,14 +456,23 @@
         
         <!-- Sticker Customizer Bar -->
         <div class="sticker-bar" id="stickerBar">
-          <span>🎨 Tambah Stiker:</span>
-          <button class="sticker-btn" data-st="✨">✨</button>
-          <button class="sticker-btn" data-st="💖">💖</button>
-          <button class="sticker-btn" data-st="🌸">🌸</button>
-          <button class="sticker-btn" data-st="🎀">🎀</button>
-          <button class="sticker-btn" data-st="⭐">⭐</button>
-          <button class="sticker-btn" data-st="👑">👑</button>
-          <button class="sticker-btn" data-st="🍀">🍀</button>
+          <span>🎨 Hias Stiker:</span>
+          <button class="sticker-btn" data-st="👑" title="Mahkota">👑</button>
+          <button class="sticker-btn" data-st="🎀" title="Pita">🎀</button>
+          <button class="sticker-btn" data-st="💖" title="Hati">💖</button>
+          <button class="sticker-btn" data-st="✨" title="Sparkle">✨</button>
+          <button class="sticker-btn" data-st="⭐" title="Bintang">⭐</button>
+          <button class="sticker-btn" data-st="🌸" title="Bunga">🌸</button>
+          <button class="sticker-btn" data-st="🐱" title="Kucing">🐱</button>
+          <button class="sticker-btn" data-st="🕶️" title="Kacamata">🕶️</button>
+          <button class="sticker-btn" data-st="🥳" title="Pesta">🥳</button>
+          <button class="sticker-btn" data-st="🧁" title="Cupcake">🧁</button>
+          <button class="sticker-btn" data-st="🍀" title="Semanggi">🍀</button>
+          <button class="sticker-btn" data-st="🍓" title="Stroberi">🍓</button>
+          <button class="sticker-btn" data-st="🧸" title="Teddy">🧸</button>
+          <button class="sticker-btn" data-st="🍭" title="Permen">🍭</button>
+          <button class="sticker-btn" data-st="🦋" title="Kupu-kupu">🦋</button>
+          <button class="sticker-btn" data-st="🔥" title="Keren">🔥</button>
           <button class="sticker-btn clear" id="btnClearStickers">Bersihkan</button>
         </div>
 
@@ -1017,10 +1027,10 @@ function renderQr(text) {
 
 function invalidateGallery() {
   galleryUrl = null;
-  $('qrBox').hidden = true;
-  $('qrCode').innerHTML = '';
-  const a = $('galleryLink');
-  a.textContent = ''; a.removeAttribute('href'); a.style.display = '';
+  // Tetap buat QR baru jika ada foto di layout
+  if (photos.length) {
+    ensureGallery().catch(() => {});
+  }
 }
 
 // ============ DOWNLOAD SHEET (canvas, no deps) ============
