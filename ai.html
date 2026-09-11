@@ -4,97 +4,62 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔮</text></svg>">
-<title>UKM EXPO UHN — Photo Booth</title>
+<title>UKM EXPO UHN — AI Face Scanner & Fun Vision</title>
+<link rel="stylesheet" href="/assets/fonts/LuckiestGuy.css">
+<link rel="stylesheet" href="/assets/fonts/Pacifico.css">
 <style>
-  /* ============ FONTS (self-hosted) ============ */
-  @font-face {
-    font-family: 'Luckiest Guy';
-    src: url('assets/fonts/LuckiestGuy.ttf') format('truetype');
-    font-display: swap;
-  }
-  @font-face {
-    font-family: 'Pacifico';
-    src: url('assets/fonts/Pacifico.ttf') format('truetype');
-    font-display: swap;
-  }
-  @font-face {
-    font-family: 'Shrikhand';
-    src: url('assets/fonts/Shrikhand.ttf') format('truetype');
-    font-display: swap;
-  }
+  /* ============ FONTS ============ */
   @font-face {
     font-family: 'Fredoka';
-    src: url('assets/fonts/Fredoka-Bold.ttf') format('truetype');
+    src: url('/assets/fonts/Fredoka-Bold.ttf') format('truetype');
     font-weight: 700;
     font-display: swap;
   }
   @font-face {
     font-family: 'Caveat';
-    src: url('assets/fonts/Caveat-Bold.ttf') format('truetype');
+    src: url('/assets/fonts/Caveat-Bold.ttf') format('truetype');
     font-weight: 700;
     font-display: swap;
   }
 
   :root {
-    --cream: #faf5ea;
-    --cream-dark: #f0e6d2;
-    --maroon: #8b0000; /* Merah Maroon Tegas & Menyala */
+    --cream: #fbf5e6;
+    --cream-sheet: #f6ecd2;
+    --maroon: #681a34;
     --maroon-deep: #4a0000;
-    --gold: #cfa138;
-    --gold-soft: #dfbb6c;
+    --gold: #f5b722;
+    --gold-glow: #ffd86b;
+    --blue: #1e3a5f;
+    --teal: #0d6e5a;
     --ink: #2d1d23;
-    --stroke: rgba(74, 0, 0, 0.55);
   }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  html, body {
-    background: var(--cream);
-    font-family: 'Fredoka', 'Sniglet', 'Comic Sans MS', system-ui, sans-serif;
-    color: var(--ink);
-    -webkit-tap-highlight-color: transparent;
-    overflow-x: hidden;
-    width: 100%;
-  }
-
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body {
-      /* hand-drawn grain texture + dashed film-strip side borders + confetti dots */
-      background-image:
-        repeating-linear-gradient(90deg, rgba(63,90,122,0.16) 0 6px, transparent 6px 14px),
-        repeating-linear-gradient(90deg, transparent 0 calc(100% - 14px), rgba(63,90,122,0.16) calc(100% - 14px) calc(100% - 8px)),
-        radial-gradient(rgba(52,34,30,0.10) 1px, transparent 1.2px),
-        radial-gradient(rgba(52,34,30,0.08) 1px, transparent 1.4px),
-        radial-gradient(rgba(201,162,39,0.30) 1px, transparent 1.6px),
-        radial-gradient(rgba(63,90,122,0.24) 1px, transparent 1.5px),
-        linear-gradient(var(--cream), #f2e7c8);
-      background-size: auto, auto, 14px 14px, 22px 22px, 37px 37px, 29px 29px, cover;
-      background-position: 0 0, 100% 0, 0 0, 11px 7px, 13px 21px, 7px 9px, 0 0;
-      background-repeat: repeat, repeat, repeat, repeat, repeat, repeat, no-repeat;
-      min-height: 100dvh;
-    }
-
-  /* dashed center film strip (vertical) */
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    pointer-events: none;
-    background:
-      linear-gradient(90deg, transparent calc(50vw - 4px), rgba(63,90,122,0.10) calc(50vw - 4px), rgba(63,90,122,0.10) calc(50vw + 4px), transparent calc(50vw + 4px));
-    z-index: 0;
+    background: #200812;
+    background-image: 
+      radial-gradient(circle at 10% 20%, rgba(245,183,34,0.15) 0%, transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(104,26,52,0.3) 0%, transparent 45%),
+      repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 8px);
+    font-family: 'Fredoka', system-ui, -apple-system, sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
-  .app { position: relative; z-index: 1; min-height: 100dvh; display: flex; flex-direction: column; }
-
-  /* ============ DESKTOP: frame tengah kayak booth (film strip kiri-kanan) ============ */
-  @media (min-width: 780px) {
-    .app {
-      max-width: 720px; margin: 0 auto;
-      border-left: 8px dashed var(--blue); border-right: 8px dashed var(--blue);
-      background: rgba(245,236,207,0.35);
-    }
-    .toolbar { padding: 16px 24px; }
-    .cam-wrap { width: min(480px, calc(100% - 24px)); }
-    .sheet { max-width: 620px; }
+  .app {
+    width: 100%;
+    max-width: 500px;
+    min-height: 100vh;
+    background: var(--cream-sheet);
+    border-left: 2px solid var(--maroon-deep);
+    border-right: 2px solid var(--maroon-deep);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 0 24px rgba(0,0,0,0.5);
   }
 
   /* ============ TOOLBAR ============ */
@@ -116,401 +81,253 @@
   .btn-home:active { transform: translateY(1px); }
   .brand { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
   .brand h1 {
-    font-family: 'Luckiest Guy', 'Comic Sans MS', cursive;
-    color: var(--maroon); font-size: clamp(16px, 4.5vw, 30px);
+    font-family: 'Luckiest Guy', cursive;
+    color: var(--maroon); font-size: clamp(16px, 4.5vw, 24px);
     letter-spacing: 1px; line-height: 1.1;
-    transform: rotate(-1.5deg); text-shadow: 1.5px 1.5px 0 rgba(201,162,39,0.35);
+    transform: rotate(-1.5deg); text-shadow: 1.5px 1.5px 0 rgba(245,183,34,0.4);
     white-space: nowrap;
   }
   .brand small {
-    font-family: 'Pacifico', 'Brush Script MT', cursive;
-    color: var(--maroon-deep); font-size: clamp(11px, 2.5vw, 16px); transform: rotate(2deg);
+    font-family: 'Pacifico', cursive;
+    color: var(--maroon-deep); font-size: clamp(11px, 2.5vw, 15px); transform: rotate(2deg);
     white-space: nowrap;
   }
-  .count-badge {
-    background: var(--maroon); color: #ffe9c9; padding: 4px 10px;
-    border-radius: 999px; font-size: clamp(12px, 3.2vw, 15px); letter-spacing: 0.5px;
-    box-shadow: 1.5px 2px 0 rgba(74,16,36,0.35); white-space: nowrap; flex-shrink: 0;
-  }
-  .count-badge b { color: #ffd66b; font-size: clamp(14px, 3.8vw, 18px); }
 
-  /* ============ TABS ============ */
-  .tabs { display: flex; gap: 0; padding: 0 12px; margin-top: 10px; }
-  .tab {
-    flex: 1; text-align: center; padding: 10px 8px; font-size: 16px; letter-spacing: 1px;
-    background: var(--cream-dark); color: var(--maroon-deep);
-    border: 3px solid var(--maroon-deep); border-bottom: none;
-    border-radius: 16px 16px 0 0; cursor: pointer;
-    transform: translateY(3px); transition: transform .15s, background .15s;
-    user-select: none;
+  /* ============ MODE SELECTOR TABS ============ */
+  .mode-nav {
+    display: flex; gap: 6px; padding: 8px 10px; overflow-x: auto;
+    background: #f1e4c3; border-bottom: 2px solid var(--maroon-deep);
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
   }
-  .tab.active {
-    background: var(--maroon); color: #ffe9c9; transform: translateY(0);
-    box-shadow: 0 -3px 0 var(--gold);
-  }
-
-  .panels { flex: 1; display: flex; flex-direction: column; }
-  .panel { display: none; flex-direction: column; flex: 1; }
-  .panel.active { display: flex; }
-
-  /* ============ CAMERA PANEL ============ */
-  .cam-wrap {
-    position: relative; margin: 8px auto 6px; border-radius: 18px; overflow: hidden;
-    border: 3.5px solid var(--maroon-deep);
-    box-shadow: 0 4px 0 rgba(74,16,36,0.35);
-    background: #1a1420; aspect-ratio: 3/4; max-height: 52vh;
-    width: calc(100% - 24px);
-  }
-  #video { width: 100%; height: 100%; object-fit: contain; display: block; }
-  #video.mirror { transform: scaleX(-1); }
-
-  /* HUD: satu bur per wajah, vertical di sebelah (emoji + label + bar + %) */
-  .hud {
-    position: absolute; top: 8px; left: 8px; z-index: 5;
-    background: rgba(255,250,236,0.92); border: 2.5px solid var(--maroon-deep);
-    border-radius: 12px; padding: 6px 10px; display: flex;
-    flex-direction: column; gap: 4px; max-height: 78%;
-    box-shadow: 2px 2px 0 rgba(74,16,36,0.35); font-family: 'Luckiest Guy', cursive;
-  }
-  .chip { display: flex; align-items: center; gap: 6px; }
-  .chip .n { width: 18px; height: 18px; border-radius: 50%; background: var(--gold); color: var(--maroon-deep);
-    font-size: 11px; display: flex; align-items: center; justify-content: center; flex: none; }
-  .chip .emoji { width: 34px; height: 34px; line-height: 1; display: flex; align-items: center; justify-content: center; font-size: 24px;
-    background: #fff; border: 1.5px solid var(--gold); border-radius: 50%; transform: rotate(-4deg);
-    box-shadow: 1.5px 1.5px 0 rgba(74,16,36,0.3); }
-  .chip .label { font-size: 11px; color: var(--maroon-deep); letter-spacing: 0.5px; min-width: 60px; text-align: center; }
-  .chip .pct { font-size: 15px; color: var(--maroon); min-width: 36px; text-align: right; }
-  .chip .bar-outer { width: 50px; height: 10px; background: #e3d5ae; border-radius: 6px; border: 1.5px solid var(--maroon-deep); overflow: hidden; }
-  .chip .bar-inner { height: 100%; width: 0%; background: linear-gradient(90deg, #7a1f3f, #e0a63f); border-radius: 4px; }
-
-  /* scanning guide frame — sticker lucu "SMILE!" */
-  .scan-hint { position: absolute; top: 10px; right: 10px; z-index: 4; pointer-events: none;
-    background: var(--cream); color: var(--maroon); border: 2.5px solid var(--maroon-deep);
-    border-radius: 12px; padding: 6px 10px; font-size: 15px; letter-spacing: 1px; text-align: center;
-    box-shadow: 2px 2px 0 rgba(74,16,36,0.35); transform: rotate(3deg); max-width: 48%; line-height: 1.15; }
-  .scan-hint:empty { display: none; }
-
-  .toast { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); z-index: 6;
-    background: rgba(107,31,58,0.94); color: #fff6e2; font-family: 'Luckiest Guy', cursive;
-    padding: 6px 14px; border-radius: 12px; border: 1.5px solid var(--gold);
-    font-size: 14px; letter-spacing: 0.5px; opacity: 0; transition: opacity .3s; pointer-events: none; }
-
-  /* AI & Filter Controls (Accordion / Toggle Bar) */
-  .ai-bar-wrap {
-    display: flex; flex-direction: column; gap: 4px; padding: 2px 10px;
-    max-width: 520px; margin: 0 auto 4px; width: 100%;
-  }
-  .ai-toggle-row {
-    display: flex; gap: 8px; justify-content: center; align-items: center;
-  }
-  .btn-toggle {
-    font-family: 'Fredoka', sans-serif; font-size: 13px; font-weight: 700;
-    padding: 6px 14px; border-radius: 999px; border: 2px solid var(--maroon-deep);
-    background: #fbf5e6; color: var(--maroon-deep); cursor: pointer;
-    box-shadow: 0 2px 0 var(--maroon-deep); transition: all 0.15s;
-  }
-  .btn-toggle.open {
-    background: var(--maroon); color: #fff6e2;
-  }
-  .ai-popup-panel {
-    background: rgba(255, 250, 236, 0.95); border: 2px solid var(--maroon-deep);
-    border-radius: 14px; padding: 6px 8px; box-shadow: 0 3px 6px rgba(74,0,0,0.15);
-    animation: fadeIn 0.15s ease-out;
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-4px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .ai-scroll-row {
-    display: flex; gap: 6px; align-items: center;
-    overflow-x: auto; padding: 2px 2px; -webkit-overflow-scrolling: touch;
-  }
-  .ai-btn, .filter-btn {
-    font-family: 'Fredoka', sans-serif; font-size: 13px; font-weight: 700;
-    padding: 5px 12px; border-radius: 999px; border: 1.5px solid var(--maroon-deep);
+  .mode-nav::-webkit-scrollbar { display: none; }
+  .mode-btn {
+    font-family: 'Fredoka', sans-serif; font-size: 12.5px; font-weight: 700;
+    padding: 6px 12px; border-radius: 999px; border: 2px solid var(--maroon-deep);
     background: #ffffff; color: var(--maroon-deep); cursor: pointer;
-    box-shadow: 0 1.5px 0 rgba(74,0,0,0.2); transition: all 0.1s;
-    white-space: nowrap; flex-shrink: 0; height: 32px;
-    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 0 var(--maroon-deep); white-space: nowrap; flex-shrink: 0;
+    transition: all 0.12s; display: inline-flex; align-items: center; gap: 5px;
   }
-  .ai-btn.active, .filter-btn.active {
-    background: var(--maroon); color: #fff6e2; border-color: var(--maroon-deep);
-    box-shadow: 0 1.5px 0 var(--maroon-deep);
+  .mode-btn.active {
+    background: var(--maroon); color: #ffd66b;
+    box-shadow: 0 2px 0 var(--maroon-deep); transform: translateY(-1px);
   }
 
-  .cam-controls { display: flex; gap: 8px; justify-content: center; padding: 4px 10px 4px; align-items: center; flex-wrap: wrap; }
-  .cam-shoot-row { display: flex; justify-content: center; padding: 2px 10px 10px; }
-  .btn {
-    font-family: 'Fredoka', 'Luckiest Guy', cursive; font-weight: 700; font-size: 16px; letter-spacing: 0.5px;
-    border: 2px solid var(--maroon-deep); border-radius: 999px; padding: 10px 20px; cursor: pointer;
-    color: #fff6e2; background: #8b0000;
-    box-shadow: 0 3px 0 var(--maroon-deep), 0 4px 8px rgba(0,0,0,0.2);
-    transition: transform .1s, box-shadow .1s; touch-action: manipulation;
+  /* ============ CAMERA VIEWPORT ============ */
+  .cam-container {
+    padding: 10px 12px 6px;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
   }
-  .btn:active { transform: translateY(3px); box-shadow: 0 0 0 var(--maroon-deep); }
-  .btn.gold { background: #cfa138; color: #3f1020; border-color: #3f1020; box-shadow: 0 3px 0 #7c5310; }
-  .btn.ghost { background: #f0e6d2; color: #4a0000; border-color: #4a0000; box-shadow: 0 3px 0 rgba(74,0,0,0.4); }
-  .btn.blue { background: #2f567f; color: #ffffff; border-color: #1a334d; box-shadow: 0 3px 0 #1a334d; }
-  .btn.big { font-size: 19px; padding: 12px 30px; }
-  .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+  .cam-wrap {
+    position: relative; width: 100%; border-radius: 18px; overflow: hidden;
+    background: #000; border: 3px solid var(--maroon-deep);
+    box-shadow: 0 4px 0 var(--maroon-deep), 0 6px 12px rgba(0,0,0,0.2);
+    aspect-ratio: 4 / 3; max-height: 52vh;
+  }
+  #video {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  #video.mirror { transform: scaleX(-1); }
+  #overlayCanvas {
+    position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3;
+  }
 
-  /* JEPRET pulse halus biar menggoda */
-  @keyframes jeppulse {
-    0%, 100% { transform: scale(1); box-shadow: 0 4px 0 var(--maroon-deep), 0 6px 10px rgba(0,0,0,0.2); }
-    50% { transform: scale(1.045); box-shadow: 0 4px 0 var(--maroon-deep), 0 0 18px rgba(201,162,39,0.65); }
+  /* Scanner Laser Animation */
+  .scan-laser {
+    position: absolute; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, transparent, #ffd86b, #ff4081, #ffd86b, transparent);
+    box-shadow: 0 0 12px #ff4081, 0 0 6px #ffd86b;
+    z-index: 4; pointer-events: none; opacity: 0.85;
+    animation: laserScan 2.2s ease-in-out infinite alternate;
   }
-  .btn.big:not(:disabled) { animation: jeppulse 1.6s ease-in-out infinite; }
-  .btn.big:not(:disabled):active { animation: none; transform: translateY(4px); }
+  @keyframes laserScan {
+    0% { top: 6%; }
+    100% { top: 92%; }
+  }
 
-  /* ============ LAYOUT / PRINT PANEL ============ */
-  .layout-panel { padding: 12px; flex: 1; display: flex; flex-direction: column; align-items: center; }
-  .sheet {
-    width: 100%; max-width: 560px;
-    background:
-      radial-gradient(rgba(52,34,30,0.08) 1px, transparent 1.2px),
-      radial-gradient(rgba(201,162,39,0.22) 1.5px, transparent 1.8px),
-      radial-gradient(rgba(63,90,122,0.18) 1.2px, transparent 1.6px),
-      linear-gradient(var(--cream), #f2e7c8);
-    background-size: 16px 16px, 34px 34px, 28px 28px, cover;
-    border: 4px solid var(--maroon-deep);
-    border-radius: 20px; padding: 16px 14px 10px;
-    box-shadow: 0 8px 0 rgba(74,16,36,0.35);
-    position: relative;
+  /* Status / Hint Badge */
+  .scan-badge {
+    position: absolute; top: 10px; left: 10px; z-index: 5;
+    background: rgba(74,0,0,0.85); color: #ffd86b;
+    border: 1.5px solid var(--gold); border-radius: 8px;
+    padding: 3px 8px; font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; gap: 5px;
+    backdrop-filter: blur(4px); box-shadow: 0 2px 4px rgba(0,0,0,0.3);
   }
-  /* dashed film-strip borders on sheet */
-  .sheet::before, .sheet::after {
-    content: ''; position: absolute; top: 14px; bottom: 14px; width: 8px;
-    background: repeating-linear-gradient(180deg, rgba(63,90,122,0.35) 0 6px, transparent 6px 14px);
+  .dot-live {
+    width: 7px; height: 7px; border-radius: 50%; background: #00ff88;
+    box-shadow: 0 0 6px #00ff88; animation: pulse 1.2s infinite;
   }
-  .sheet::before { left: 8px; }
-  .sheet::after { right: 8px; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
 
-  .sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 2px 18px 8px; position: relative; }
-  /* washi tape scotch-style di pojok sheet */
-  .sheet-head::before, .sheet-head::after {
-    content: ''; position: absolute; top: -18px; width: 84px; height: 24px;
-    background: repeating-linear-gradient(45deg, rgba(201,162,39,0.9) 0 8px, rgba(237,211,133,0.9) 8px 16px);
-    border-radius: 3px; box-shadow: 0 2px 3px rgba(52,34,30,0.22);
-    opacity: .92; z-index: 5;
+  /* ============ LIVE AI ANALYSIS HUD ============ */
+  .hud-panel {
+    width: 100%; background: #ffffff; border: 2.5px solid var(--maroon-deep);
+    border-radius: 16px; padding: 10px 14px; box-shadow: 0 3px 0 var(--maroon-deep);
+    display: flex; flex-direction: column; gap: 6px;
   }
-  .sheet-head::before { left: 8px; transform: rotate(-5deg); }
-  .sheet-head::after { right: 8px; transform: rotate(5deg); }
-  .sheet-head h2 {
-    font-family: 'Fredoka', 'Luckiest Guy', sans-serif;
-    font-weight: 700;
-    color: var(--maroon); font-size: clamp(22px, 6vw, 30px);
-    letter-spacing: 2px;
-    text-shadow: 2px 2px 0 rgba(207,161,56,0.35);
-    transform: rotate(-1.5deg);
+  .hud-header {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1.5px dashed #ecdcb9; padding-bottom: 4px;
   }
-  .sheet-head .play { color: var(--maroon); font-size: 18px; transform: rotate(-8deg); text-shadow: 1px 1px 0 rgba(207,161,56,0.3); }
+  .hud-title {
+    font-family: 'Luckiest Guy', cursive; color: var(--maroon); font-size: 16px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .hud-confidence {
+    font-size: 11px; font-weight: 700; color: var(--teal);
+    background: #e6f7f2; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--teal);
+  }
 
-  .sheet-body { display: flex; gap: 12px; padding: 10px 16px; position: relative; }
-  .sheet-col { flex: 1; display: flex; flex-direction: column; gap: 12px; }
-  
-  /* Polaroid-style mini card: foto kotak atas + tag teks ekspresi di bawahnya */
-  .box {
-    border-radius: 14px; position: relative;
-    background: #ffffff;
-    border: 2px solid var(--maroon-deep);
-    box-shadow: 0 3px 0 rgba(74,16,36,0.18);
-    padding: 5px 5px 4px;
-    cursor: grab;
-    user-select: none;
-    transition: transform 0.15s, box-shadow 0.15s;
-    display: flex;
-    flex-direction: column;
+  .hud-body {
+    display: flex; align-items: center; gap: 12px;
   }
-  .box.drag-over {
-    transform: scale(1.04);
-    box-shadow: 0 0 10px var(--gold);
-    border-color: var(--gold);
+  .hud-avatar {
+    font-size: 32px; width: 50px; height: 50px; border-radius: 12px;
+    background: #fbf5e6; border: 2px solid var(--maroon-deep);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
-  .box.dragging {
-    opacity: 0.4;
+  .hud-info {
+    flex: 1; min-width: 0;
   }
-  .box-img-wrap {
-    position: relative; width: 100%; aspect-ratio: 1; border-radius: 9px; overflow: hidden;
-    background: repeating-linear-gradient(45deg, #dcd3ba 0 10px, #efe6cc 10px 20px);
-    border: 1px solid rgba(74,0,0,0.15);
+  .hud-main-text {
+    font-family: 'Fredoka', sans-serif; font-size: 15px; font-weight: 700;
+    color: var(--maroon-deep); line-height: 1.2;
   }
-  .box .ph {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    color: rgba(107,31,58,0.35); font-size: 34px;
+  .hud-sub-text {
+    font-size: 12px; color: #5c3540; font-weight: 600; margin-top: 2px;
   }
-  .box .ph svg { width: 100%; height: 100%; opacity: .5; }
-  .box img {
-    width: 100%; height: 100%;
-    object-fit: cover; position: absolute; inset: 0;
-    pointer-events: none;
+
+  /* Metric Breakdown Bar */
+  .hud-stats {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 2px;
   }
-  /* Tag kata-kata unik & persen di bawah foto */
-  .box-tag {
-    margin-top: 4px; padding: 0 2px;
-    font-family: 'Fredoka', system-ui, sans-serif;
-    font-size: clamp(9px, 2.4vw, 11px); font-weight: 600;
-    color: var(--ink); line-height: 1.2;
-    text-align: center;
-    white-space: normal;
-    word-break: break-word;
-    overflow-wrap: break-word;
-    display: flex;
-    align-items: center;
+  .stat-chip {
+    background: #fbf8f0; border: 1px solid #ecdcb9; border-radius: 8px;
+    padding: 3px 6px; font-size: 11px; display: flex; justify-content: space-between;
+    font-weight: 600;
+  }
+  .stat-chip b { color: var(--maroon); }
+
+  /* ============ PROPS & FILTER SUB-PANEL (for Mode 4) ============ */
+  .props-row {
+    display: none; width: 100%; gap: 6px; overflow-x: auto; padding: 4px 0;
+    scrollbar-width: none;
+  }
+  .props-row::-webkit-scrollbar { display: none; }
+  .prop-chip, .filter-chip {
+    font-family: 'Fredoka', sans-serif; font-size: 12px; font-weight: 700;
+    padding: 4px 10px; border-radius: 999px; border: 1.5px solid var(--maroon-deep);
+    background: #fff; color: var(--maroon-deep); cursor: pointer;
+    box-shadow: 0 1.5px 0 var(--maroon-deep); white-space: nowrap; flex-shrink: 0;
+  }
+  .prop-chip.active, .filter-chip.active {
+    background: var(--gold); color: var(--maroon-deep);
+  }
+
+  /* ============ CAMERA BUTTON CONTROLS ============ */
+  .cam-controls {
+    display: flex; gap: 10px; width: 100%; justify-content: center; align-items: center;
+    padding: 4px 0 10px;
+  }
+  .btn-action {
+    font-family: 'Luckiest Guy', cursive; font-size: 15px; letter-spacing: 0.5px;
+    padding: 10px 16px; border-radius: 999px; border: 2.5px solid var(--maroon-deep);
+    cursor: pointer; box-shadow: 0 3px 0 var(--maroon-deep); transition: all 0.1s;
+    display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+  }
+  .btn-action:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--maroon-deep); }
+  .btn-flip {
+    background: #ffffff; color: var(--maroon-deep); font-size: 13px; font-family: 'Fredoka', sans-serif; font-weight: 700;
+  }
+  .btn-scan {
+    background: var(--gold); color: var(--maroon-deep); font-size: 16px; flex: 1; max-width: 280px;
     justify-content: center;
-    min-height: 22px;
   }
-  .box.empty .box-tag { visibility: hidden; }
+  .btn-scan:hover { background: var(--gold-glow); }
 
-  .box .n {
-    position: absolute; top: -6px; left: -6px; background: var(--gold); color: var(--maroon-deep);
-    min-width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700; border: 1.5px solid var(--maroon-deep); z-index: 4;
-    box-shadow: 1px 1.5px 0 rgba(74,16,36,0.2);
+  /* ============ RESULT POPUP MODAL (CERTIFICATE CARD) ============ */
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(32,8,18,0.85); z-index: 50;
+    display: none; align-items: center; justify-content: center; padding: 14px;
+    backdrop-filter: blur(5px);
   }
-  .box .x {
-    position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 6px;
-    background: var(--cream); color: var(--maroon); border: 1.5px solid var(--maroon-deep); font-size: 13px;
-    display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 4;
+  .modal-card {
+    background: #ffffff; border: 3.5px solid var(--maroon-deep); border-radius: 20px;
+    width: 100%; max-width: 420px; max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 8px 0 var(--maroon-deep), 0 16px 32px rgba(0,0,0,0.4);
+    padding: 16px; display: flex; flex-direction: column; gap: 12px;
+    animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
-  .box.empty .x { display: none; }
-  /* emoji lucu pojok kanan atas tiap foto — gelembung putih border emas */
-  .box .e {
-    position: absolute; top: -4px; right: -4px; width: 30px; height: 30px; z-index: 4;
-    display: inline-flex; align-items: center; justify-content: center; text-align: center;
-    background: #fff; border: 2px solid var(--gold); border-radius: 50%;
-    box-shadow: 1px 1.5px 0 rgba(74,0,0,0.25);
-    font-size: 16px; line-height: 1;
-    cursor: pointer;
-  }
-  .box.empty .e { display: none; }
-
-  /* mini washi scotch tape di sudut foto 1 & 8 untuk aksen scrapbook */
-  .sheet-col:first-child .box:first-child::after {
-    content: ''; position: absolute; top: -3px; left: 14px; width: 28px; height: 9px;
-    background: rgba(201,162,39,0.75); border-radius: 2px; transform: rotate(-12deg); z-index: 3;
-    box-shadow: 0 1px 2px rgba(52,34,30,0.2);
-  }
-  .sheet-col:last-child .box:last-child::after {
-    content: ''; position: absolute; bottom: -3px; right: 14px; width: 28px; height: 9px;
-    background: rgba(201,162,39,0.75); border-radius: 2px; transform: rotate(-8deg); z-index: 3;
-    box-shadow: 0 1px 2px rgba(52,34,30,0.2);
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
   }
 
-  /* Ornamen Scrapbook Stiker di sela-sela grid */
-  .deco-sticker {
-    position: absolute; pointer-events: none; z-index: 6; font-size: 18px;
-    filter: drop-shadow(1px 2px 0 rgba(74,16,36,0.25));
+  .cert-header {
+    text-align: center; border-bottom: 2px solid var(--maroon-deep); padding-bottom: 8px;
+  }
+  .cert-tag {
+    font-size: 10.5px; font-weight: 700; color: var(--maroon); background: #ffd86b;
+    padding: 2px 10px; border-radius: 999px; border: 1px solid var(--maroon-deep);
+    display: inline-block; margin-bottom: 4px;
+  }
+  .cert-header h2 {
+    font-family: 'Luckiest Guy', cursive; color: var(--maroon); font-size: 22px;
+    letter-spacing: 1px; line-height: 1.1;
+  }
+  .cert-header small {
+    font-family: 'Pacifico', cursive; color: var(--gold); font-size: 14px;
   }
 
-  /* Hint Interaktif */
-  .custom-hint {
-    background: rgba(255, 250, 236, 0.92); border: 2px dashed var(--maroon-deep);
-    border-radius: 12px; padding: 6px 12px; margin: 8px auto 2px;
-    font-size: clamp(11px, 2.8vw, 13px); color: var(--maroon-deep);
-    text-align: center; max-width: 520px; line-height: 1.35;
-    box-shadow: 1.5px 2px 0 rgba(74,16,36,0.18);
+  .cert-photo-wrap {
+    width: 100%; aspect-ratio: 1; border-radius: 12px; overflow: hidden;
+    border: 2px solid var(--maroon-deep); background: #000; position: relative;
   }
-  .custom-hint b { color: var(--maroon); }
+  .cert-photo-wrap img { width: 100%; height: 100%; object-fit: cover; }
 
-  /* Toolbar Sticker Customizer di Tab Cetak */
-  .sticker-bar {
-    display: flex; align-items: center; justify-content: center; gap: 6px; margin: 10px auto 4px;
-    background: var(--cream-dark); border: 2px solid var(--maroon-deep); border-radius: 14px;
-    padding: 8px 12px; flex-wrap: wrap; max-width: 520px; box-shadow: 2px 2px 0 rgba(74,16,36,0.2);
+  .cert-results-box {
+    background: #fbf8f0; border: 2px solid var(--maroon-deep); border-radius: 12px;
+    padding: 10px 12px; display: flex; flex-direction: column; gap: 8px;
   }
-  .sticker-bar span { font-size: 13px; font-weight: 700; color: var(--maroon-deep); width: 100%; text-align: center; margin-bottom: 2px; }
-  .sticker-btn {
-    font-size: 20px; background: #fff; border: 1.5px solid var(--gold); border-radius: 8px;
-    width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: transform 0.1s, background 0.1s;
+  .cert-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px; font-weight: 700; color: #38242b;
   }
-  .sticker-btn:hover { background: #fff8e8; }
-  .sticker-btn:active { transform: scale(0.9); }
-  .sticker-btn.clear { font-size: 12px; font-weight: 700; width: auto; padding: 0 10px; height: 36px; color: var(--maroon); border-color: var(--maroon); background: #ffebeb; }
-
-  /* Floating drag sticker on sheet */
-  .sheet-sticker {
-    position: absolute; font-size: 26px; cursor: grab; user-select: none; z-index: 10;
-    filter: drop-shadow(1px 2px 0 rgba(74,16,36,0.25));
-    touch-action: none;
-    will-change: transform, left, top;
-  }
-  .sheet-sticker:active { cursor: grabbing; }
-  .sheet-sticker .del {
-    position: absolute; top: -8px; right: -8px; width: 18px; height: 18px; border-radius: 50%;
-    background: var(--maroon); color: #fff; font-size: 11px; display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3); border: 1.5px solid #fff;
+  .cert-row span { color: #681a34; }
+  .cert-row b { color: var(--maroon-deep); font-size: 14px; }
+  .cert-quote {
+    background: #ffffff; border-left: 3px solid var(--gold); padding: 6px 10px;
+    border-radius: 0 8px 8px 0; font-size: 12px; color: #4a2832; line-height: 1.35;
   }
 
-  .sheet-foot { display: flex; align-items: center; justify-content: space-between; padding: 6px 18px 2px; }
-  .sheet-foot .sains {
-    font-family: 'Fredoka', 'Luckiest Guy', sans-serif; font-weight: 700;
-    color: var(--maroon); font-size: clamp(14px, 3.4vw, 17px); letter-spacing: 2px;
-    transform: rotate(1.5deg); text-shadow: 1px 1px 0 rgba(207,161,56,0.3);
+  .cert-stamp {
+    text-align: center; font-family: 'Caveat', cursive; font-size: 18px; font-weight: 700;
+    color: var(--maroon); transform: rotate(-2deg); margin-top: -4px;
   }
-  .sheet-foot .dovey {
-    font-family: 'Caveat', 'Pacifico', cursive; font-size: clamp(21px, 5vw, 27px);
-    color: var(--maroon-deep); font-weight: 700; transform: rotate(-3deg);
-    text-shadow: 1px 1px 0 rgba(207,161,56,0.25);
+
+  .cert-actions {
+    display: flex; gap: 8px;
   }
-  .sheet-foot .rings { display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 700; color: var(--gold); letter-spacing: 1px; }
-
-  .layout-actions { display: flex; gap: 12px; margin-top: 14px; justify-content: center; flex-wrap: wrap; }
-
-  /* QR download box on print sheet */
-  .qr-box {
-    display: flex; align-items: center; gap: 12px; margin: 2px 20px 0;
-    background: rgba(255,255,255,0.55); border: 2px dashed var(--maroon-deep);
-    border-radius: 14px; padding: 8px 12px;
+  .btn-cert-dl {
+    flex: 1; background: var(--gold); color: var(--maroon-deep);
+    border: 2px solid var(--maroon-deep); padding: 10px; border-radius: 10px;
+    font-family: 'Luckiest Guy', cursive; font-size: 14px; cursor: pointer;
+    box-shadow: 0 2px 0 var(--maroon-deep); text-align: center; text-decoration: none;
   }
-  .qr-box[hidden] { display: none !important; }
-  .qr-box .qr { flex: none; width: 150px; height: 150px; }
-  .qr-box svg { width: 150px; height: 150px; display: block; }
-  .qr-box p { font-size: 13px; color: var(--maroon-deep); line-height: 1.35; letter-spacing: .3px; }
-  .qr-box .dl-link { display: none; font-size: 12px; word-break: break-all; color: var(--blue); margin-top: 3px; }
-
-  /* caption lucu — strip di atas barcode */
-  .caps { margin: 4px 14px 6px; display: flex; flex-direction: column; gap: 5px;
-    background: rgba(255,255,255,0.65); border-left: 3.5px solid var(--gold); border-radius: 0 10px 10px 0;
-    padding: 6px 10px; max-width: calc(100% - 28px); box-shadow: 0 1px 3px rgba(63,16,32,0.06); }
-  .caps[hidden] { display: none !important; }
-  .cap-line { font-family: 'Fredoka', system-ui, sans-serif; font-weight: 600; color: var(--ink); font-size: clamp(10px, 2.5vw, 12.5px); line-height: 1.35;
-    display: flex; align-items: flex-start; gap: 6px; width: 100%; }
-  .cap-line .cap-face { flex: none; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 14px; line-height: 1; margin-top: 1px; }
-  .cap-line .cap-text { flex: 1; min-width: 0; word-break: break-word; overflow-wrap: anywhere; }
-  .caps:empty { display: none; }
-
-  .empty-state { text-align: center; margin-top: 10px; color: var(--maroon-deep); opacity: .8; font-size: 15px; letter-spacing: 1px; }
-
-  /* ============ PRINT ============ */
-  @media print {
-    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-    body { background: var(--cream) !important; }
-    body::before { display: none !important; }
-    .app { display: block !important; }
-    .toolbar, .tabs, .cam-wrap, .cam-controls, .layout-actions, .empty-state, .scan-hint { display: none !important; }
-    .panels, .panel { display: block !important; }
-    .layout-panel { padding: 0 !important; }
-    .sheet {
-      max-width: 100% !important; border: 3px solid var(--maroon-deep) !important;
-      border-radius: 0 !important; box-shadow: none !important; margin: 0 auto;
-      width: 100%;
-    }
-    /* A4 portrait: 8 boxes fit nicely */
-    .sheet-body { padding: 8px 16px; }
-    .box { break-inside: avoid; }
-    .box img { opacity: 1 !important; filter: none !important; visibility: visible !important; }
-    .box .x { display: none !important; }  /* tombol hapus nggak ikut cetak */
-    .qr-box { display: flex !important; border-style: solid; }
-    .qr-box .dl-link { display: none !important; }
-    .caps { display: flex !important; }
-    .cap-line { font-size: 13px; }
+  .btn-cert-close {
+    background: #fbf5e6; color: var(--maroon-deep);
+    border: 2px solid var(--maroon-deep); padding: 10px 14px; border-radius: 10px;
+    font-family: 'Fredoka', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 2px 0 var(--maroon-deep);
   }
 </style>
 </head>
 <body>
-<div class="app" id="app">
+<div class="app">
+  <!-- TOOLBAR -->
   <div class="toolbar">
     <div class="toolbar-left">
       <a href="/" class="btn-home">🏠 Menu</a>
@@ -519,264 +336,201 @@
         <small>AI VISION ✦</small>
       </div>
     </div>
-    <div class="count-badge">📸 <b id="countBox">0</b>/8</div>
+    <a href="/photobooth" class="btn-home" style="background:#ffcc4d;">📸 Photobooth</a>
   </div>
 
-  <div class="tabs">
-    <div class="tab active" data-panel="cam" id="tabCam">📷 KAMERA</div>
-    <div class="tab" data-panel="layout" id="tabLayout">🖼️ CETAK</div>
+  <!-- MODE TABS -->
+  <div class="mode-nav">
+    <button class="mode-btn active" data-mode="age">🎂 Tebak Umur</button>
+    <button class="mode-btn" data-mode="beauty">✨ Rating Pesona</button>
+    <button class="mode-btn" data-mode="lookalike">🎭 Kembaran Tokoh</button>
+    <button class="mode-btn" data-mode="props">👑 AR Props & Tone</button>
   </div>
 
-  <div class="panels">
-    <!-- ============ CAMERA ============ -->
-    <div class="panel active" id="panel-cam">
-      <div class="cam-wrap" id="camWrap">
-        <video id="video" autoplay playsinline muted></video>
-        <canvas id="arCanvas" style="position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:3;"></canvas>
-        <div class="scan-hint" id="scanHint">SMILE! 😁</div>
-        <div class="hud" id="hud" style="display:none"></div>
-        <div class="toast" id="toast"></div>
-      </div>
-      <!-- AI & Filter Toggle Buttons (Popup Accordion) -->
-      <div class="ai-bar-wrap">
-        <div class="ai-toggle-row">
-          <button class="btn-toggle" id="btnToggleProp">👑 Emoji Props ▾</button>
-          <button class="btn-toggle" id="btnToggleFilter">🎨 Filter Kamera ▾</button>
-        </div>
-
-        <!-- Popup Menu Props -->
-        <div class="ai-popup-panel" id="panelProp" style="display:none;">
-          <div class="ai-scroll-row">
-            <button class="ai-btn active" data-prop="none">🚫 Off</button>
-            <button class="ai-btn" data-prop="👑">👑 Mahkota</button>
-            <button class="ai-btn" data-prop="🕶️">🕶️ Kacamata</button>
-            <button class="ai-btn" data-prop="🎀">🎀 Pita</button>
-            <button class="ai-btn" data-prop="🌸">🌸 Bunga</button>
-            <button class="ai-btn" data-prop="🐱">🐱 Kucing</button>
-            <button class="ai-btn" data-prop="🐰">🐰 Kelinci</button>
-            <button class="ai-btn" data-prop="✨">✨ Sparkle</button>
-            <button class="ai-btn" data-prop="💖">💖 Blush</button>
-            <button class="ai-btn" data-prop="🧸">🧸 Teddy</button>
-            <button class="ai-btn" data-prop="🍓">🍓 Stroberi</button>
-            <button class="ai-btn" data-prop="⭐">⭐ Bintang</button>
-            <button class="ai-btn" data-prop="🥳">🥳 Pesta</button>
-          </div>
-        </div>
-
-        <!-- Popup Menu Filter -->
-        <div class="ai-popup-panel" id="panelFilter" style="display:none;">
-          <div class="ai-scroll-row">
-            <button class="filter-btn active" data-filter="none">Normal</button>
-            <button class="filter-btn" data-filter="glow">✨ Korean Glow</button>
-            <button class="filter-btn" data-filter="vintage">📷 90s Vintage</button>
-            <button class="filter-btn" data-filter="soft">🌸 Soft Pastel</button>
-            <button class="filter-btn" data-filter="bw">🖤 Classic B&W</button>
-          </div>
-        </div>
-      </div>
-      <div class="cam-controls">
-        <button class="btn ghost" id="btnFlip">🔄 Kamera</button>
-        <button class="btn gold" id="btnDone">✅ Done</button>
-        <button class="btn blue" id="btnReset">🗑️ Reset</button>
-      </div>
-      <div class="cam-shoot-row">
-        <button class="btn big" id="btnShoot">📸 JEPRET!</button>
+  <!-- CAMERA -->
+  <div class="cam-container">
+    <div class="cam-wrap" id="camWrap">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="overlayCanvas"></canvas>
+      <div class="scan-laser" id="scanLaser"></div>
+      <div class="scan-badge">
+        <span class="dot-live"></span>
+        <span id="scanStatusText">AI Scanning Active</span>
       </div>
     </div>
 
-    <!-- ============ LAYOUT ============ -->
-    <div class="panel" id="panel-layout">
-      <div class="layout-panel">
-        <div class="sheet" id="sheet">
-          <div class="sheet-head">
-            <span class="play">▶</span>
-            <h2>UKM EXPO UHN</h2>
-            <span style="color:var(--maroon)">✳</span>
-          </div>
-          <div class="sheet-body">
-            <div class="sheet-col" id="colA">
-              <div class="box empty" data-i="0">
-                <div class="n">1</div><div class="x">✕</div><div class="e" style="display:none"></div>
-                <div class="box-img-wrap"><div class="ph">✦</div></div>
-                <div class="box-tag"></div>
-              </div>
-              <div class="box empty" data-i="2">
-                <div class="n">3</div><div class="x">✕</div><div class="e" style="display:none"></div>
-                <div class="box-img-wrap"><div class="ph">✦</div></div>
-                <div class="box-tag"></div>
-              </div>
-              <div class="box empty" data-i="4">
-                <div class="n">5</div><div class="x">✕</div><div class="e" style="display:none"></div>
-                <div class="box-img-wrap"><div class="ph">✦</div></div>
-                <div class="box-tag"></div>
-              </div>
-              <div class="box empty" data-i="6">
-                <div class="n">7</div><div class="x">✕</div><div class="e" style="display:none"></div>
-                <div class="box-img-wrap"><div class="ph">✦</div></div>
-                <div class="box-tag"></div>
-              </div>
-            </div>
-            <div class="sheet-col" id="colB">
-              <div class="box empty" data-i="1">
-                <div class="n">2</div><div class="x">✕</div><div class="e" style="display:none"></div>
-                <div class="box-img-wrap"><div class="ph">✦</div></div>
-                <div class="box-tag"></div>
-              </div>
-              <div class="box empty" data-i="3">
-                <div class="n">4</div><div class="x">✕</div><div class="e" style="display:none"></div>
-                <div class="box-img-wrap"><div class="ph">✦</div></div>
-                <div class="box-tag"></div>
-              </div>
-              <div class="box empty" data-i="5">
-                <div class="n">6</div><div class="x">✕</div><div class="e" style="display:none"></div>
-                <div class="box-img-wrap"><div class="ph">✦</div></div>
-                <div class="box-tag"></div>
-              </div>
-              <div class="box empty" data-i="7">
-                <div class="n">8</div><div class="x">✕</div><div class="e" style="display:none"></div>
-                <div class="box-img-wrap"><div class="ph">✦</div></div>
-                <div class="box-tag"></div>
-              </div>
-            </div>
-          </div>
-          <div class="sheet-foot">
-            <span class="sains">SAINS DATA</span>
-            <span class="rings">⭯ ⭮</span>
-            <span class="dovey">Dovey</span>
-          </div>
-          <div class="caps" id="capStrip" hidden></div>
-          <div class="qr-box" id="qrBox" hidden>
-            <div class="qr" id="qrCode" aria-label="QR download foto"></div>
-            <p>Scan untuk download foto kamu.<br><a class="dl-link" id="galleryLink" href="#" style="display:none"></a></p>
-          </div>
-        </div>
-        <div class="empty-state" id="emptyState">Belum ada foto — jepret dulu di tab Kamera 📸</div>
-        
-        <!-- Hint Interaktif agar user tahu foto bisa ditukar posisi & emoji bisa diganti -->
-        <div class="custom-hint" id="customHint">
-          💡 <b>Tips:</b> Tarik/geser foto untuk tukar posisi • Tap emoji di foto untuk ganti • Tap stiker di bawah untuk menempel!
-        </div>
-
-        <!-- Sticker Customizer Bar -->
-        <div class="sticker-bar" id="stickerBar">
-          <span>🎨 Hias Stiker:</span>
-          <button class="sticker-btn" data-st="👑" title="Mahkota">👑</button>
-          <button class="sticker-btn" data-st="🎀" title="Pita">🎀</button>
-          <button class="sticker-btn" data-st="💖" title="Hati">💖</button>
-          <button class="sticker-btn" data-st="✨" title="Sparkle">✨</button>
-          <button class="sticker-btn" data-st="⭐" title="Bintang">⭐</button>
-          <button class="sticker-btn" data-st="🌸" title="Bunga">🌸</button>
-          <button class="sticker-btn" data-st="🐱" title="Kucing">🐱</button>
-          <button class="sticker-btn" data-st="🕶️" title="Kacamata">🕶️</button>
-          <button class="sticker-btn" data-st="🥳" title="Pesta">🥳</button>
-          <button class="sticker-btn" data-st="🧁" title="Cupcake">🧁</button>
-          <button class="sticker-btn" data-st="🍀" title="Semanggi">🍀</button>
-          <button class="sticker-btn" data-st="🍓" title="Stroberi">🍓</button>
-          <button class="sticker-btn" data-st="🧸" title="Teddy">🧸</button>
-          <button class="sticker-btn" data-st="🍭" title="Permen">🍭</button>
-          <button class="sticker-btn" data-st="🦋" title="Kupu-kupu">🦋</button>
-          <button class="sticker-btn" data-st="🔥" title="Keren">🔥</button>
-          <button class="sticker-btn clear" id="btnClearStickers">Bersihkan</button>
-        </div>
-
-        <div class="layout-actions">
-          <button class="btn blue" id="btnGoCam">📸 Ambil Foto</button>
-          <button class="btn gold big" id="btnPrint">🖨️ CETAK</button>
+    <!-- LIVE AI ANALYSIS CARD -->
+    <div class="hud-panel" id="hudPanel">
+      <div class="hud-header">
+        <div class="hud-title" id="hudTitle">🎂 PREDIKSI USIA & GENERASI</div>
+        <div class="hud-confidence" id="hudConfidence">AI Conf: 96%</div>
+      </div>
+      <div class="hud-body">
+        <div class="hud-avatar" id="hudAvatar">🎓</div>
+        <div class="hud-info">
+          <div class="hud-main-text" id="hudMainText">19 Tahun • Gen-Z Fresh</div>
+          <div class="hud-sub-text" id="hudSubText">Wajah baby face, aura maba siap ospek! ✨</div>
         </div>
       </div>
+      <div class="hud-stats" id="hudStats">
+        <div class="stat-chip"><span>Kategori:</span> <b id="stat1">Maba UHN</b></div>
+        <div class="stat-chip"><span>Ekspresi:</span> <b id="stat2">Senyum 92%</b></div>
+      </div>
+    </div>
+
+    <!-- PROPS & FILTER CONTROLS (Only visible in Mode 4) -->
+    <div class="props-row" id="propsRow">
+      <button class="prop-chip active" data-prop="none">Polos</button>
+      <button class="prop-chip" data-prop="crown">👑 Mahkota</button>
+      <button class="prop-chip" data-prop="bunny">🐰 Kelinci</button>
+      <button class="prop-chip" data-prop="shades">😎 Thug Life</button>
+      <button class="prop-chip" data-prop="grad">🎓 Toga Wisuda</button>
+      <button class="prop-chip" data-prop="sparkle">✨ Sparkle</button>
+    </div>
+    <div class="props-row" id="filterRow">
+      <button class="filter-chip active" data-filter="none">Tone Normal</button>
+      <button class="filter-chip" data-filter="glow">✨ Korean Glow</button>
+      <button class="filter-chip" data-filter="vintage">📷 90s Vintage</button>
+      <button class="filter-chip" data-filter="soft">🌸 Soft Pastel</button>
+      <button class="filter-chip" data-filter="bw">🖤 Classic B&W</button>
+    </div>
+
+    <!-- CAMERA ACTION BUTTONS -->
+    <div class="cam-controls">
+      <button class="btn-action btn-flip" id="btnFlip">🔄 Kamera</button>
+      <button class="btn-action btn-scan" id="btnScan">🔮 SCAN & CETAK HASIL AI</button>
     </div>
   </div>
 </div>
 
-<script src="assets/qrcode.js"></script>
-<script type="module">
-// ============ ASSETS ============
-const MODEL_URL = 'assets/model/face_landmarker.task';
+<!-- MODAL RESULT CERTIFICATE -->
+<div class="modal-backdrop" id="modalResult">
+  <div class="modal-card">
+    <div class="cert-header">
+      <div class="cert-tag">✨ OFFICIAL AI VISION REPORT</div>
+      <h2>UKM EXPO UHN</h2>
+      <small>Sains Data & Artificial Intelligence Lab</small>
+    </div>
 
-// ============ STATE ============
-let photos = [];          // array of dataURL, up to 8
-let customStickers = [];  // array of { id, emoji, x, y, rot }
-let faceMode = false;     // mediapipe ready?
+    <div class="cert-photo-wrap">
+      <img id="certImg" src="" alt="Hasil Scan AI">
+    </div>
+
+    <div class="cert-results-box">
+      <div class="cert-row">
+        <span>Kategori Analisis:</span>
+        <b id="certModeLabel">Tebak Umur & Generasi</b>
+      </div>
+      <div class="cert-row">
+        <span>Hasil Deteksi Utama:</span>
+        <b id="certPrimaryResult">19 Tahun (Gen-Z)</b>
+      </div>
+      <div class="cert-row">
+        <span>Skor / Kemiripan:</span>
+        <b id="certSecondaryResult">98% Match</b>
+      </div>
+      <div class="cert-quote" id="certQuote">
+        "Wajah cerdas berkarisma tinggi, potensi meraih IPK 4.0 dan jadi bintang kampus UHN!"
+      </div>
+    </div>
+
+    <div class="cert-stamp">Verified by Sains Data UHN • 2026</div>
+
+    <div class="cert-actions">
+      <a class="btn-cert-dl" id="btnDownloadCert" href="#" download="ai-face-report-uhn.png">⬇️ Download Kartu (PNG)</a>
+      <button class="btn-cert-close" id="btnCloseModal">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { FilesetResolver, FaceLandmarker } from '/assets/wasm/vision_bundle.mjs';
+
+const $ = id => document.getElementById(id);
+const video = $('video');
+const canvas = $('overlayCanvas');
+const ctx = canvas.getContext('2d');
+const camWrap = $('camWrap');
+
+let currentMode = 'age'; // 'age', 'beauty', 'lookalike', 'props'
+let currentProp = 'none';
+let currentFilter = 'none';
+let facing = 'user';
 let stream = null;
-let facing = 'user';      // 'user' | 'environment'
 let landmarker = null;
 let frameT = null;
+let lastDet = 0;
+let lastFaces = [];
+let lastBs = null;
 
-// AR & Beauty State
-let currentProp = 'none'; // 'none' | emoji char ('👑','🕶️','🎀','🌸','🐱','✨','💖','🧸','🍓','⭐','🐰','🥳')
-let currentFilter = 'none'; // 'none' | 'glow' | 'vintage' | 'bw' | 'soft'
+// Personalities database for Mode 3 (Lookalike)
+const CELEBS = [
+  { name: 'Maudy Ayunda 🎓', role: 'Aktris & Edukator Cerdas', avatar: '👩🎓', jaw: 0.45, smile: 0.7, eyeDist: 0.38, comment: 'Punya bentuk wajah proporsional dan aura cerdas berprestasi!' },
+  { name: 'Nicholas Saputra 🕶️', role: 'Aktor Karismatik & Cool', avatar: '😎', jaw: 0.62, smile: 0.3, eyeDist: 0.42, comment: 'Tatapan mata tajam & garis rahang tegas yang memikat!' },
+  { name: 'Reza Rahadian 🎬', role: 'Aktor Serba Bisa', avatar: '🎭', jaw: 0.55, smile: 0.6, eyeDist: 0.40, comment: 'Ekspresif banget, cocok jadi bintang panggung & public speaker!' },
+  { name: 'B.J. Habibie 🚀', role: 'Visioner & Jenius Teknologi', avatar: '🧠', jaw: 0.48, smile: 0.65, eyeDist: 0.37, comment: 'Aura pemikir strategis, cocok jadi master Data Science!' },
+  { name: 'Albert Einstein ⚡', role: 'Fisikawan Jenius Dunia', avatar: '💡', jaw: 0.52, smile: 0.5, eyeDist: 0.41, comment: 'Otak encer, selalu penasaran dan suka eksplorasi hal baru!' },
+  { name: 'Elon Musk 🚀', role: 'Tech Innovator & Futuris', avatar: '💻', jaw: 0.60, smile: 0.4, eyeDist: 0.43, comment: 'Ambisius dan punya pandangan masa depan yang luas!' },
+  { name: 'Taylor Swift ✨', role: 'Musisi & Superstar Dunia', avatar: '🎤', jaw: 0.42, smile: 0.8, eyeDist: 0.36, comment: 'Senyum manis menawan dan aura bintang panggung memukau!' },
+  { name: 'Dosen Favorit UHN 📚', role: 'Akademisi Teladan Kampus', avatar: '👨🏫', jaw: 0.50, smile: 0.55, eyeDist: 0.39, comment: 'Wibawa tinggi, ramah, dan disukai banyak mahasiswa!' },
+  { name: 'Ketua BEM Inspiratif 🔥', role: 'Leader Masa Depan', avatar: '🏆', jaw: 0.58, smile: 0.75, eyeDist: 0.40, comment: 'Punya jiwa kepemimpinan tinggi dan energik!' }
+];
 
-// ============ DOM ============
-const $ = (id) => document.getElementById(id);
-const video = $('video'), hud = $('hud'), arCanvas = $('arCanvas');
-const countBox = $('countBox'), scanHint = $('scanHint'), camWrap = $('camWrap');
+// Quotes database
+const AGE_QUOTES = [
+  'Wajah fresh, semangat membara, maba kebanggaan jurusan!',
+  'Baby face abis, awet muda 10 tahun ke depan!',
+  'Aura mahasiswa berprestasi, calon lulusan cumlaude!',
+  'Wajah tenang penuh kharisma, siap hadapi perkuliahan!'
+];
+const BEAUTY_QUOTES = [
+  'Simetri wajah mendekati Golden Ratio para model profesional!',
+  'Pesona senyummu bikin suasana booth makin cerah & hangat!',
+  'Tingkat karisma maksimal, auranya magnetik banget!',
+  'Kombinasi manis dan elegan, wajib masuk majalah kampus!'
+];
 
-// ============ MEDIAPIPE FACE LANDMARKER (local assets) ============
+// ============ VISION INIT ============
 async function initVision() {
-  // CPU only: WASM+GPU delegate hangs on many phones / headless; CPU is reliable everywhere
   try {
-    const { FilesetResolver, FaceLandmarker } = await import('./assets/wasm/vision_bundle.mjs');
-    const vision = await FilesetResolver.forVisionTasks('./assets/wasm/');
-    landmarker = await FaceLandmarker.createFromOptions(vision, {
-      baseOptions: { modelAssetPath: MODEL_URL, delegate: 'CPU' },
+    const fileset = await FilesetResolver.forVisionTasks('/assets/wasm');
+    landmarker = await FaceLandmarker.createFromOptions(fileset, {
+      baseOptions: { modelAssetPath: '/assets/model/face_landmarker.task', delegate: 'CPU' },
       runningMode: 'VIDEO',
-      numFaces: 5,
+      numFaces: 4,
+      minFaceDetectionConfidence: 0.5,
+      minFacePresenceConfidence: 0.5,
+      minTrackingConfidence: 0.5,
       outputFaceBlendshapes: true
     });
-    faceMode = true;
-    console.log('FaceLandmarker ready (CPU)');
-    setHint('💡 Arah ke kamera');
-  } catch (e) {
-    console.error('MediaPipe init failed:', e);
-    setHint('⚠️ AI wajah tadi start — foto tetap jalan');
+    console.log('AI FaceLandmarker Ready ✓');
+  } catch (err) {
+    console.warn('Fallback vision init error:', err);
   }
 }
 
-function setHint(html) {
-  scanHint.innerHTML = html;
-}
-
-// ============ CAMERA ============
+// ============ CAMERA MANAGEMENT ============
 async function startCamera() {
   stopCamera();
-  const facingMode = facing === 'environment' ? { exact: 'environment' } : 'user';
-  // No resolution constraint: camera native FOV -> framing normal aja kamera biasa (head+shoulders)
-  const opts = {
-    video: { facingMode },
-    audio: false
+  const constraints = {
+    audio: false,
+    video: {
+      facingMode: facing,
+      width: { ideal: 1280 },
+      height: { ideal: 720 }
+    }
   };
   try {
-    stream = await navigator.mediaDevices.getUserMedia(opts);
-  } catch (e) {
-    // fallback: any camera
-    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-  }
-  video.srcObject = stream;
-  await video.play().catch(() => {});
-  // mirror preview HANYA kamera depan; kamera belakang tampil normal
-  video.classList.toggle('mirror', facing === 'user');
-  video.addEventListener('loadedmetadata', adaptFrame, { once: true });
-  loop();
-}
-
-// Apply filter styling on video live preview & capture canvas
-function applyFilterStyle(el) {
-  if (currentFilter === 'glow') {
-    el.style.filter = 'brightness(1.15) contrast(1.08) saturate(1.25)';
-  } else if (currentFilter === 'vintage') {
-    el.style.filter = 'sepia(0.45) contrast(1.15) brightness(0.95) saturate(1.2)';
-  } else if (currentFilter === 'soft') {
-    el.style.filter = 'brightness(1.18) contrast(0.95) saturate(1.15) hue-rotate(-5deg)';
-  } else if (currentFilter === 'bw') {
-    el.style.filter = 'grayscale(1) contrast(1.25) brightness(1.05)';
-  } else {
-    el.style.filter = 'none';
-  }
-}
-function adaptFrame() {
-  if (video.videoWidth && video.videoHeight) {
-    const a = video.videoWidth + ' / ' + video.videoHeight;
-    if (camWrap.style.aspectRatio !== a) camWrap.style.aspectRatio = a;
+    stream = await navigator.mediaDevices.getUserMedia(constraints);
+    video.srcObject = stream;
+    video.classList.toggle('mirror', facing === 'user');
+    await new Promise(r => video.onloadedmetadata = r);
+    video.play();
+    adaptSize();
+    loop();
+  } catch (err) {
+    console.error('Camera access failed:', err);
+    $('scanStatusText').textContent = 'Kamera tidak dapat diakses';
   }
 }
 
@@ -788,1056 +542,448 @@ function stopCamera() {
   if (frameT) { cancelAnimationFrame(frameT); frameT = null; }
 }
 
-// ============ AR PROPS DRAWING ============
-function drawArProps(ctx, landmarks, w, h, isMirror, smileWinnerIdx, faceIdx) {
-  if (!landmarks || !landmarks.length) return;
+function adaptSize() {
+  if (video.videoWidth && video.videoHeight) {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    camWrap.style.aspectRatio = `${video.videoWidth} / ${video.videoHeight}`;
+  }
+}
 
-  const getPt = (idx) => {
-    const pt = landmarks[idx];
-    if (!pt) return { x: 0, y: 0 };
-    const px = isMirror ? (1 - pt.x) * w : pt.x * w;
-    const py = pt.y * h;
-    return { x: px, y: py };
+// ============ AI METRICS HELPER ============
+function getFaceMetrics(landmarks, blendshapes) {
+  if (!landmarks || landmarks.length < 468) return null;
+  
+  // Keypoints: 1=nose tip, 33=left eye, 263=right eye, 152=chin, 10=top forehead, 61=left mouth, 291=right mouth
+  const nose = landmarks[1];
+  const leftEye = landmarks[33];
+  const rightEye = landmarks[263];
+  const chin = landmarks[152];
+  const forehead = landmarks[10];
+  const leftMouth = landmarks[61];
+  const rightMouth = landmarks[291];
+
+  // Distances
+  const eyeDist = Math.hypot(rightEye.x - leftEye.x, rightEye.y - leftEye.y);
+  const faceHeight = Math.hypot(chin.x - forehead.x, chin.y - forehead.y);
+  const mouthWidth = Math.hypot(rightMouth.x - leftMouth.x, rightMouth.y - leftMouth.y);
+
+  // Blendshapes (if available)
+  let smileScore = 0.5;
+  if (blendshapes && blendshapes.categories) {
+    const sL = blendshapes.categories.find(c => c.categoryName === 'mouthSmileLeft');
+    const sR = blendshapes.categories.find(c => c.categoryName === 'mouthSmileRight');
+    if (sL || sR) smileScore = Math.max((sL ? sL.score : 0), (sR ? sR.score : 0));
+  }
+
+  // 1. Age Calculation (Derived geometrically & blendshape features)
+  const ratio = (eyeDist / (faceHeight || 0.01));
+  let estAge = Math.round(18 + (0.42 - ratio) * 25 + (1 - smileScore) * 3);
+  estAge = Math.max(16, Math.min(26, estAge));
+  const gen = estAge <= 24 ? 'Gen-Z Fresh 🎓' : 'Young Professional 💼';
+
+  // 2. Beauty / Golden Ratio Symmetry Score
+  const leftSym = Math.hypot(nose.x - leftEye.x, nose.y - leftEye.y);
+  const rightSym = Math.hypot(nose.x - rightEye.x, nose.y - rightEye.y);
+  const symRatio = Math.min(leftSym, rightSym) / (Math.max(leftSym, rightSym) || 0.01);
+  const beautyScore = Math.min(99, Math.max(88, Math.round(symRatio * 80 + smileScore * 18 + 2)));
+  const symmetryPct = Math.min(99, Math.round(symRatio * 100));
+
+  // 3. Celebrity / Alumni Matcher (Find closest Euclidean match)
+  let bestMatch = CELEBS[0];
+  let minDiff = 999;
+  CELEBS.forEach(c => {
+    const diff = Math.abs(c.eyeDist - eyeDist) * 3 + Math.abs(c.smile - smileScore);
+    if (diff < minDiff) { minDiff = diff; bestMatch = c; }
+  });
+  const matchPct = Math.min(98, Math.max(82, Math.round(100 - minDiff * 25)));
+
+  return {
+    estAge, gen, beautyScore, symmetryPct, smilePct: Math.round(smileScore * 100),
+    bestMatch, matchPct,
+    box: {
+      minX: Math.min(...landmarks.map(p => p.x)),
+      maxX: Math.max(...landmarks.map(p => p.x)),
+      minY: Math.min(...landmarks.map(p => p.y)),
+      maxY: Math.max(...landmarks.map(p => p.y)),
+      forehead, chin, nose, leftEye, rightEye
+    }
   };
+}
 
-  const pA = getPt(33);
-  const pB = getPt(263);
-  const leftVisualEye = pA.x < pB.x ? pA : pB;
-  const rightVisualEye = pA.x < pB.x ? pB : pA;
+// ============ REALTIME DETECTION LOOP ============
+function loop() {
+  if (video.readyState >= 2 && video.videoWidth) {
+    adaptSize();
+    const now = performance.now();
+    if (landmarker && (now - lastDet >= 70)) {
+      lastDet = now;
+      let res = null;
+      try { res = landmarker.detectForVideo(video, now); } catch (_) {}
+      lastFaces = (res && res.faceLandmarks) || [];
+      lastBs = (res && res.faceBlendshapes) || [];
+    }
 
-  const forehead = getPt(10);
-  const leftCheek = getPt(234);
-  const rightCheek = getPt(454);
+    renderOverlay();
+  }
+  frameT = requestAnimationFrame(loop);
+}
 
-  const edx = rightVisualEye.x - leftVisualEye.x;
-  const edy = rightVisualEye.y - leftVisualEye.y;
-  const eyeDist = Math.hypot(edx, edy);
-  const angle = Math.atan2(edy, edx);
+// ============ RENDER OVERLAYS ON CANVAS ============
+function renderOverlay() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const w = canvas.width, h = canvas.height;
+  const isMirror = facing === 'user';
 
-  const activeProp = currentProp;
-  if (activeProp === 'none') return;
+  if (!lastFaces.length) {
+    $('scanStatusText').textContent = 'Mencari Wajah...';
+    return;
+  }
+
+  $('scanStatusText').textContent = `${lastFaces.length} Wajah Terdeteksi ✓`;
+
+  // Draw detection HUD for each face
+  for (let i = 0; i < lastFaces.length; i++) {
+    const lm = lastFaces[i];
+    const bs = lastBs && lastBs[i];
+    const metrics = getFaceMetrics(lm, bs);
+    if (!metrics) continue;
+
+    // Transform coordinates
+    const b = metrics.box;
+    let bx = b.minX * w, by = b.minY * h, bw = (b.maxX - b.minX) * w, bh = (b.maxY - b.minY) * h;
+    if (isMirror) {
+      bx = w - (b.maxX * w);
+    }
+
+    // Expand bounding box slightly
+    bx -= bw * 0.1; by -= bh * 0.15; bw *= 1.2; bh *= 1.3;
+
+    // Draw Cyber/Expo HUD Box
+    ctx.save();
+    ctx.strokeStyle = '#ffd86b';
+    ctx.lineWidth = 2.5;
+    ctx.shadowColor = '#ffd86b';
+    ctx.shadowBlur = 8;
+
+    // Corner brackets
+    const cLen = Math.min(24, bw * 0.2);
+    // Top-Left
+    ctx.beginPath(); ctx.moveTo(bx, by + cLen); ctx.lineTo(bx, by); ctx.lineTo(bx + cLen, by); ctx.stroke();
+    // Top-Right
+    ctx.beginPath(); ctx.moveTo(bx + bw - cLen, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw, by + cLen); ctx.stroke();
+    // Bottom-Left
+    ctx.beginPath(); ctx.moveTo(bx, by + bh - cLen); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + cLen, by + bh); ctx.stroke();
+    // Bottom-Right
+    ctx.beginPath(); ctx.moveTo(bx + bw - cLen, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by + bh - cLen); ctx.stroke();
+    ctx.restore();
+
+    // Floating Badge over the head
+    ctx.save();
+    let badgeTxt = '';
+    let badgeColor = '#681a34';
+    if (currentMode === 'age') {
+      badgeTxt = `🎂 ${metrics.estAge} Thn • ${metrics.gen}`;
+    } else if (currentMode === 'beauty') {
+      badgeTxt = `💖 Pesona ${metrics.beautyScore}% • Simetri ${metrics.symmetryPct}%`;
+      badgeColor = '#0d6e5a';
+    } else if (currentMode === 'lookalike') {
+      badgeTxt = `🎭 ${metrics.matchPct}% ${metrics.bestMatch.name}`;
+      badgeColor = '#1e3a5f';
+    } else if (currentMode === 'props') {
+      badgeTxt = `👑 AR Active`;
+    }
+
+    ctx.font = '700 13px "Fredoka", sans-serif';
+    const txtW = ctx.measureText(badgeTxt).width + 16;
+    const badgeX = bx + bw / 2 - txtW / 2;
+    const badgeY = Math.max(20, by - 12);
+
+    ctx.fillStyle = badgeColor;
+    roundRect(ctx, badgeX, badgeY - 16, txtW, 24, 6);
+    ctx.fill();
+    ctx.strokeStyle = '#ffd86b'; ctx.lineWidth = 1.5; ctx.stroke();
+
+    ctx.fillStyle = '#ffd86b';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(badgeTxt, badgeX + txtW / 2, badgeY - 4);
+    ctx.restore();
+
+    // Draw AR Props if selected
+    if (currentMode === 'props' && currentProp !== 'none') {
+      drawArProp(ctx, lm, w, h, isMirror, currentProp);
+    }
+
+    // Update bottom HUD info based on the first face
+    if (i === 0) {
+      updateHudPanel(metrics);
+    }
+  }
+}
+
+// Draw AR Props onto the canvas
+function drawArProp(ctx, lm, w, h, isMirror, prop) {
+  const topHead = lm[10];
+  const nose = lm[1];
+  const leftEye = lm[33];
+  const rightEye = lm[263];
+
+  let hx = topHead.x * w, hy = topHead.y * h;
+  let ex = (leftEye.x + rightEye.x) / 2 * w, ey = (leftEye.y + rightEye.y) / 2 * h;
+  if (isMirror) {
+    hx = w - hx;
+    ex = w - ex;
+  }
+  const eyeSpan = Math.hypot((rightEye.x - leftEye.x) * w, (rightEye.y - leftEye.y) * h);
 
   ctx.save();
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  if (activeProp === '👑') {
-    const cw = eyeDist * 1.5;
-    ctx.translate(forehead.x, forehead.y - cw * 0.45);
-    ctx.rotate(angle);
-    ctx.font = `${Math.round(cw * 0.8)}px system-ui`;
-    ctx.fillText('👑', 0, 0);
-  } else if (activeProp === '🕶️') {
-    const gw = eyeDist * 2.2;
-    const mx = (leftVisualEye.x + rightVisualEye.x) / 2;
-    const my = (leftVisualEye.y + rightVisualEye.y) / 2;
-    ctx.translate(mx, my);
-    ctx.rotate(angle);
-    ctx.font = `${Math.round(gw * 0.7)}px system-ui`;
-    ctx.fillText('🕶️', 0, 0);
-  } else if (activeProp === '🎀' || activeProp === '🌸' || activeProp === '⭐') {
-    const propSize = eyeDist * 0.8;
-    ctx.translate(forehead.x + eyeDist * 0.6, forehead.y - propSize * 0.3);
-    ctx.rotate(angle);
-    ctx.font = `${Math.round(propSize)}px system-ui`;
-    ctx.fillText(activeProp, 0, 0);
-  } else if (activeProp === '🐱' || activeProp === '🐰' || activeProp === '🥳' || activeProp === '🧸') {
-    const cw = eyeDist * 1.6;
-    ctx.translate(forehead.x, forehead.y - cw * 0.4);
-    ctx.rotate(angle);
-    ctx.font = `${Math.round(cw * 0.75)}px system-ui`;
-    ctx.fillText(activeProp, 0, 0);
-  } else if (activeProp === '💖' || activeProp === '✨' || activeProp === '🍓') {
-    const bw = eyeDist * 0.45;
-    for (let cp of [leftCheek, rightCheek]) {
-      ctx.save();
-      ctx.translate(cp.x, cp.y);
-      ctx.font = `${Math.round(bw)}px system-ui`;
-      ctx.fillText(activeProp, 0, 0);
-      ctx.restore();
-    }
+  if (prop === 'crown') {
+    ctx.font = `${Math.round(eyeSpan * 1.6)}px system-ui`;
+    ctx.fillText('👑', hx, hy - eyeSpan * 0.6);
+  } else if (prop === 'bunny') {
+    ctx.font = `${Math.round(eyeSpan * 1.8)}px system-ui`;
+    ctx.fillText('🐰', hx, hy - eyeSpan * 0.7);
+  } else if (prop === 'shades') {
+    ctx.font = `${Math.round(eyeSpan * 1.3)}px system-ui`;
+    ctx.fillText('😎', ex, ey);
+  } else if (prop === 'grad') {
+    ctx.font = `${Math.round(eyeSpan * 1.7)}px system-ui`;
+    ctx.fillText('🎓', hx, hy - eyeSpan * 0.6);
+  } else if (prop === 'sparkle') {
+    ctx.font = `${Math.round(eyeSpan * 0.9)}px system-ui`;
+    ctx.fillText('✨', hx + eyeSpan * 0.8, hy);
+    ctx.fillText('⭐', hx - eyeSpan * 0.8, hy + eyeSpan * 0.3);
   }
   ctx.restore();
 }
 
-// ============ OVERLAY LOOP ============
-let lastFaces = [], lastBs = null, lastDet = 0;
-function loop() {
-  if (!faceMode || !landmarker) {
-    return requestAnimationFrame(loop);
-  }
-  if (video.readyState >= 2 && video.videoWidth) {
-    adaptFrame();
-    // throttle detection: CPU wasm ~12fps is smooth enough, keeps phone cool
-    const now = performance.now();
-    if (now - lastDet >= 80) {
-      lastDet = now;
-      let result;
-      try {
-        result = landmarker.detectForVideo(video, now);
-      } catch (e) { /* skip frame */ }
-      lastFaces = (result && result.faceLandmarks) || [];
-      lastBs = result ? result.faceBlendshapes : null;
-    }
-
-    if (lastFaces.length) {
-      hud.style.display = 'flex';
-      setHint('');
-      renderHud(lastFaces, lastBs);
-
-      // Render AR Props Realtime on arCanvas
-      arCanvas.width = video.videoWidth;
-      arCanvas.height = video.videoHeight;
-      const arCtx = arCanvas.getContext('2d');
-      arCtx.clearRect(0, 0, arCanvas.width, arCanvas.height);
-
-      for (let fi = 0; fi < lastFaces.length; fi++) {
-        drawArProps(arCtx, lastFaces[fi], arCanvas.width, arCanvas.height, facing === 'user', -1, fi);
-      }
-    } else {
-      hud.style.display = 'none';
-      hud.innerHTML = '';
-      if (arCanvas.width) {
-        const arCtx = arCanvas.getContext('2d');
-        arCtx.clearRect(0, 0, arCanvas.width, arCanvas.height);
-      }
-      if (!scanHint.innerHTML) setHint('🔍 Cari wajah &hellip;');
-    }
-  }
-  frameT = requestAnimationFrame(loop);
-}
-
-// ============ EMOJI + PERSEN (live, cam only) ============
-// faceBlendshapes[i] = CategoryMask { categories:[{categoryName,score}] };
-// be tolerant of both shapes (some builds return [CategoryMask])
-function categoriesOf(bs) {
-  if (!bs) return null;
-  if (Array.isArray(bs) && bs.length && bs[0] && bs[0].categories) return bs[0].categories;
-  return bs.categories || null;
-}
-function blendshape(bs, name) {
-  const cats = categoriesOf(bs);
-  if (!cats) return 0;
-  const c = cats.find(x => x.categoryName === name);
-  return c ? c.score : 0;
-}
-
-// emotion of one face based on its blendshapes -> {emoji,label,pct}
-function emotion(bs) {
-  const smile = Math.max(blendshape(bs, 'mouthSmileLeft'), blendshape(bs, 'mouthSmileRight'));
-  const jaw = blendshape(bs, 'jawOpen');
-  const brow = Math.max(blendshape(bs, 'browInnerUp'), blendshape(bs, 'browOuterUpLeft') + blendshape(bs, 'browOuterUpRight'));
-  const eyeBlinkR = blendshape(bs, 'eyeBlinkRight');
-  const eyeBlinkL = blendshape(bs, 'eyeBlinkLeft');
-  const mouthFrown = Math.max(blendshape(bs, 'mouthFrownLeft'), blendshape(bs, 'mouthFrownRight'));
-  const eyesWide = Math.max(blendshape(bs, 'eyeWideLeft'), blendshape(bs, 'eyeWideRight'));
-  const tongue = blendshape(bs, 'tongueOut');
-
-  if (smile > 0.45) return { emoji: '😄', label: 'SENYUM', pct: Math.round(smile * 100) };
-  if (tongue > 0.35) return { emoji: '😜', label: 'CILUK BA', pct: Math.round(tongue * 100) };
-  if (jaw > 0.30) return { emoji: '😮', label: 'TERKEJUT', pct: Math.round(Math.min(1, jaw + smile) * 100) };
-  if (eyesWide > 0.6 && brow > 0.5) return { emoji: '😳', label: 'KAGET', pct: Math.round(Math.min(1, eyesWide + brow) * 100) };
-  if (brow > 0.35) return { emoji: '🤨', label: 'HERAN', pct: Math.round(Math.min(1, brow + smile) * 100) };
-  if ((eyeBlinkR > 0.7) !== (eyeBlinkL > 0.7)) return { emoji: '😉', label: 'KEDIP', pct: 92 };
-  if (mouthFrown > 0.25) return { emoji: '😒', label: 'CEMBERUT', pct: Math.round(mouthFrown * 100) };
-  if (smile > 0.15) return { emoji: '🙂', label: 'TENANG', pct: Math.round(smile * 90) };
-  return { emoji: '🗿', label: 'POLOS', pct: Math.max(25, Math.round((1 - jaw) * 40)) };
-}
-
-// one chip per face (up to 5 wajah) — each with its own emoji + persen
-function renderHud(faces, blendshapes) {
-  const n = Math.min(faces.length, 5);
-  // ensure exact chip count
-  while (hud.children.length < n) {
-    const c = document.createElement('div');
-    c.className = 'chip';
-    c.innerHTML = '<span class="n"></span><span class="emoji"></span><span class="label"></span>' +
-      '<span class="bar-outer"><span class="bar-inner"></span></span><span class="pct"></span>';
-    hud.appendChild(c);
-  }
-  while (hud.children.length > n) hud.removeChild(hud.lastChild);
-
-  for (let i = 0; i < n; i++) {
-    const chip = hud.children[i];
-    const e = emotion(blendshapes && blendshapes[i]);
-    chip.querySelector('.n').textContent = n > 1 ? (i + 1) + '' : '';
-    chip.querySelector('.emoji').textContent = e.emoji;
-    chip.querySelector('.label').textContent = e.label;
-    chip.querySelector('.pct').textContent = e.pct + '%';
-    chip.querySelector('.bar-inner').style.width = Math.min(100, e.pct) + '%';
+// Update DOM HUD panel with rich data
+function updateHudPanel(m) {
+  if (currentMode === 'age') {
+    $('hudTitle').textContent = '🎂 PREDIKSI USIA & GENERASI';
+    $('hudConfidence').textContent = 'AI Conf: 96%';
+    $('hudAvatar').textContent = m.estAge <= 20 ? '🎓' : '💼';
+    $('hudMainText').textContent = `${m.estAge} Tahun • ${m.gen}`;
+    $('hudSubText').textContent = AGE_QUOTES[m.estAge % AGE_QUOTES.length];
+    $('stat1').textContent = m.estAge <= 21 ? 'Maba / Mahasiswa UHN' : 'Alumni Muda';
+    $('stat2').textContent = `Senyum ${m.smilePct}%`;
+  } else if (currentMode === 'beauty') {
+    $('hudTitle').textContent = '✨ RATING PESONA & AURA';
+    $('hudConfidence').textContent = 'AI Conf: 98%';
+    $('hudAvatar').textContent = '💖';
+    $('hudMainText').textContent = `Skor Pesona: ${m.beautyScore}% / 100`;
+    $('hudSubText').textContent = BEAUTY_QUOTES[m.beautyScore % BEAUTY_QUOTES.length];
+    $('stat1').textContent = `Simetri: ${m.symmetryPct}%`;
+    $('stat2').textContent = `Daya Tarik: ${m.smilePct}%`;
+  } else if (currentMode === 'lookalike') {
+    $('hudTitle').textContent = '🎭 KEMBARAN TOKOH & ALUMNI';
+    $('hudConfidence').textContent = `${m.matchPct}% Match`;
+    $('hudAvatar').textContent = m.bestMatch.avatar;
+    $('hudMainText').textContent = `${m.matchPct}% Mirip ${m.bestMatch.name}`;
+    $('hudSubText').textContent = m.bestMatch.comment;
+    $('stat1').textContent = m.bestMatch.role;
+    $('stat2').textContent = 'Tipe: High Resonance';
+  } else if (currentMode === 'props') {
+    $('hudTitle').textContent = '👑 AR PROPS & FILTER TONE';
+    $('hudConfidence').textContent = 'Live Render';
+    $('hudAvatar').textContent = '🎨';
+    $('hudMainText').textContent = `Filter: ${currentFilter} • Prop: ${currentProp}`;
+    $('hudSubText').textContent = 'Pilih filter dan hiasan kepala di tombol bawah!';
+    $('stat1').textContent = 'AR Tracker: Active';
+    $('stat2').textContent = '60 FPS Smooth';
   }
 }
 
-// ============ CAPTURE ============
-// test hook (harmless)
-window.__h = { renderHud, emotion, capture, renderSheet, landmarker: () => landmarker, downloadSheet, setTestFace: (f, b) => { lastFaces = f; lastBs = b; } };
-
-// funny caption + emoji per photo (dari % emoji hasil deteksi wajah)
-const FUN_EMOJI = ['🥳','😜','🤪','😍','🤩','😎','🥸','🤡','👻','🥴','😺','🤣','🦄','🍭','🎈','💃'];
-const CAPS_HIGH = [
-  '{e} {p}% Calon Penghuni Surga',
-  '{e} {p}% Senyum Semanis Gula',
-  '{e} {p}% Bintang Iklan Siap Debut',
-  '{e} {p}% Kece Wajib Dibingkai',
-  '{e} {p}% Cantik/Ganteng Maksimal',
-  '{e} {p}% Senyum Bikin Meleleh'
-];
-const CAPS_MID = [
-  '{e} {p}% Pabrik Senyum Aktif',
-  '{e} {p}% Dikit Lagi Masuk TV',
-  '{e} {p}% Senyum Pembawa Rezeki',
-  '{e} {p}% Manisnya Bikin Meleleh',
-  '{e} {p}% Vibes Positif Banget',
-  '{e} {p}% Hepi Seharian Penuh'
-];
-const CAPS_LOW = [
-  '{e} {p}% Stone Face tapi Kece',
-  '{e} {p}% Masih Malu Gemoy',
-  '{e} {p}% Senyum Masih Loading',
-  '{e} {p}% Kurang Senyum Dikit',
-  '{e} {p}% Mode Cool & Misterius',
-  '{e} {p}% Senyum Hemat Energi'
-];
-function randCap(pct, label, faceEmoji) {
-  const fe = faceEmoji || '😄';
-  let pool;
-  if (label === 'CILUK BA') {
-    pool = ['{e} {p}% Ciluk Ba Gemoy', '{e} {p}% Pose Lucu Banget', '{e} {p}% Ekspresi Jahil'];
-  } else if (label === 'TERKEJUT' || label === 'KAGET') {
-    pool = ['{e} {p}% Kaget tapi Kece', '{e} {p}% Syok Menggemaskan', '{e} {p}% Spontan Kaget'];
-  } else if (label === 'KEDIP') {
-    pool = ['{e} {p}% Kedipan Manja', '{e} {p}% Wink Menawan', '{e} {p}% Kedip Bikin Meleleh'];
-  } else if (label === 'HERAN') {
-    pool = ['{e} {p}% Heran tapi Manis', '{e} {p}% Mikir Keras Gemoy', '{e} {p}% Mode Penasaran'];
-  } else if (label === 'CEMBERUT') {
-    pool = ['{e} {p}% Cemberut Gemas', '{e} {p}% Jutek tapi Kangen', '{e} {p}% Ngambek Imut'];
-  } else if (label === 'TENANG') {
-    pool = ['{e} {p}% Senyum Tipis Kalem', '{e} {p}% Vibes Adem & Positif', '{e} {p}% Manis Natural'];
-  } else {
-    pool = pct >= 90 ? CAPS_HIGH : pct >= 70 ? CAPS_MID : CAPS_LOW;
-  }
-  const t = pool[Math.floor(Math.random() * pool.length)];
-  return t.replace('{e}', fe).replace('{p}', pct).replace('{l}', label || '');
-}
-
-function randEmoji(exclude) {
-  // anti-repeat: foto berikutnya ga boleh emoji sama dgn foto terakhir
-  const pool = exclude && FUN_EMOJI.includes(exclude) ? FUN_EMOJI.filter(e => e !== exclude) : FUN_EMOJI;
-  return pool[Math.floor(Math.random() * pool.length)];
-}
-
-function capture() {
-  if (!stream) return;
-  if (photos.length >= 8) {
-    toast('⛔ 8 kotak penuh — tap Reset atau Done');
-    return;
-  }
-  const w = video.videoWidth, h = video.videoHeight;
-  const c = document.createElement('canvas');
-  c.width = w; c.height = h;
-  const cx = c.getContext('2d');
-
-  // Filter effect pada saat capture
-  if (currentFilter === 'glow') {
-    cx.filter = 'brightness(1.15) contrast(1.08) saturate(1.25)';
-  } else if (currentFilter === 'vintage') {
-    cx.filter = 'sepia(0.45) contrast(1.15) brightness(0.95) saturate(1.2)';
-  } else if (currentFilter === 'soft') {
-    cx.filter = 'brightness(1.18) contrast(0.95) saturate(1.15) hue-rotate(-5deg)';
-  } else if (currentFilter === 'bw') {
-    cx.filter = 'grayscale(1) contrast(1.25) brightness(1.05)';
-  }
-
-  // mirror to match preview — hanya kamera depan
-  if (facing === 'user') { cx.translate(w, 0); cx.scale(-1, 1); }
-  cx.drawImage(video, 0, 0, w, h);
-  cx.filter = 'none';
-
-  // Render AR Props ke dalam foto yang ditangkap (hanya prop yang dipilih user)
-  if (lastFaces && lastFaces.length && currentProp !== 'none') {
-    for (let fi = 0; fi < lastFaces.length; fi++) {
-      drawArProps(cx, lastFaces[fi], w, h, facing === 'user', -1, fi);
-    }
-  }
-
-  const dataURL = c.toDataURL('image/jpeg', 0.92);
-
-  // emoji & persen dari deteksi wajah di kamera (fallback acak jika wajah tidak terdeteksi)
-  let e = null;
-  if (lastFaces.length && lastBs && lastBs[0]) e = emotion(lastBs[0]);
-  const pct = e ? e.pct : 50 + Math.floor(Math.random() * 50);
-  const faceEmoji = (e && e.emoji) ? e.emoji : randEmoji(photos.length ? photos[photos.length - 1].emoji : null);
-  const emoji = faceEmoji;
-  const cap = randCap(pct, e ? e.label : null, faceEmoji);
-
-  photos.push({ url: dataURL, pct, emoji, cap });
-  renderLayout();
-  // 1 cekrek = 1 foto — tetap di KAMERA, nanti Done if finish
-  toast('📸 Foto ' + photos.length + '/8 ✓');
-  if (photos.length >= 8) toast('🎉 Penuh! Tap Done buat cetak');
-}
-
-// transient message at bottom of camera
-let toastT = null;
-function toast(msg) {
-  const t = $('toast');
-  t.innerHTML = msg;
-  t.style.opacity = 1;
-  clearTimeout(toastT);
-  toastT = setTimeout(() => { t.style.opacity = 0; }, 2000);
-}
-
-// ============ LAYOUT RENDER ============
-function renderLayout() {
-  // Isi 8 kotak: kalau cuma 1 foto -> semua kotak foto itu; kalau >1 -> urut, ulang sampai 8
-  const boxes = document.querySelectorAll('.box');
-  let fill = [];
-  if (photos.length === 0) {
-    fill = [];
-  } else if (photos.length === 1) {
-    fill = Array(8).fill(photos[0]);
-  } else {
-    for (let i = 0; i < 8; i++) fill.push(photos[i % photos.length]);
-  }
-  boxes.forEach(box => {
-    const i = +box.dataset.i;
-    const img = box.querySelector('img');
-    const ph = box.querySelector('.ph');
-    const xBtn = box.querySelector('.x');
-    const eBadge = box.querySelector('.e');
-    const tagEl = box.querySelector('.box-tag');
-    const wrap = box.querySelector('.box-img-wrap');
-    if (fill[i]) {
-      if (!img && wrap) {
-        const im = document.createElement('img');
-        im.alt = 'foto';
-        wrap.appendChild(im);
-      }
-      const actualImg = box.querySelector('img');
-      if (actualImg) actualImg.src = fill[i].url;
-      if (ph) ph.style.display = 'none';
-      box.classList.remove('empty');
-      xBtn.style.display = 'flex';
-      if (eBadge) { eBadge.textContent = fill[i].emoji || '😄'; eBadge.style.display = 'inline-flex'; }
-      if (tagEl) {
-        tagEl.textContent = fill[i].cap || `${fill[i].pct || 80}% Senyum`;
-      }
-      box.draggable = true;
-    } else {
-      if (img) img.remove();
-      if (ph) ph.style.display = 'flex';
-      box.classList.add('empty');
-      xBtn.style.display = 'none';
-      if (eBadge) eBadge.style.display = 'none';
-      if (tagEl) tagEl.textContent = '';
-      box.draggable = false;
-    }
-  });
-  countBox.textContent = photos.length;
-  $('emptyState').style.display = photos.length ? 'none' : '';
-  renderCaptions();
-  renderDomStickers();
-}
-
-// Ganti emoji acak per foto saat tap pada badge emoji
-function setupEmojiPicker() {
-  const EMOJI_LIST = ['😄', '😍', '✨', '😎', '🥳', '🥰', '😜', '👻', '🤡', '💃', '👑', '💖', '⭐', '🌸'];
-  document.querySelectorAll('.box .e').forEach(el => {
-    el.onclick = (e) => {
-      e.stopPropagation();
-      const box = el.closest('.box');
-      const slot = +box.dataset.i;
-      if (!photos.length) return;
-      const pIdx = photos.length === 1 ? 0 : (slot % photos.length);
-      const cur = photos[pIdx].emoji;
-      const next = EMOJI_LIST[(EMOJI_LIST.indexOf(cur) + 1) % EMOJI_LIST.length];
-      photos[pIdx].emoji = next;
-      if (photos[pIdx].cap && cur && photos[pIdx].cap.startsWith(cur)) {
-        photos[pIdx].cap = next + photos[pIdx].cap.slice(cur.length);
-      }
-      renderLayout();
-      invalidateGallery();
-    };
-  });
-}
-
-// Drag and drop foto untuk tukar posisi
-let draggedSlot = null;
-function setupDragDrop() {
-  const boxes = document.querySelectorAll('.box');
-  boxes.forEach(box => {
-    box.addEventListener('dragstart', (e) => {
-      if (box.classList.contains('empty')) return;
-      draggedSlot = +box.dataset.i;
-      box.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
-    });
-    box.addEventListener('dragend', () => {
-      box.classList.remove('dragging');
-      boxes.forEach(b => b.classList.remove('drag-over'));
-    });
-    box.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      if (!box.classList.contains('empty') && draggedSlot !== null) {
-        box.classList.add('drag-over');
-      }
-    });
-    box.addEventListener('dragleave', () => {
-      box.classList.remove('drag-over');
-    });
-    box.addEventListener('drop', (e) => {
-      e.preventDefault();
-      box.classList.remove('drag-over');
-      const targetSlot = +box.dataset.i;
-      if (draggedSlot !== null && targetSlot !== draggedSlot && photos.length > 1) {
-        const idxA = draggedSlot % photos.length;
-        const idxB = targetSlot % photos.length;
-        if (idxA !== idxB) {
-          const temp = photos[idxA];
-          photos[idxA] = photos[idxB];
-          photos[idxB] = temp;
-          renderLayout();
-          invalidateGallery();
-        }
-      }
-      draggedSlot = null;
-    });
-  });
-}
-
-// Custom Drag Floating Stickers on Sheet
-function addSticker(emoji) {
-  const sheet = $('sheet');
-  const id = 'st_' + Date.now();
-  // Posisi default di tengah sheet
-  const x = sheet.offsetWidth / 2 + (Math.random() * 40 - 20);
-  const y = sheet.offsetHeight / 2 + (Math.random() * 40 - 20);
-  const rot = (Math.random() * 0.4 - 0.2);
-  customStickers.push({ id, emoji, x, y, rot });
-  renderDomStickers();
-  invalidateGallery();
-}
-
-function renderDomStickers() {
-  document.querySelectorAll('.sheet-sticker').forEach(el => el.remove());
-  const sheet = $('sheet');
-  customStickers.forEach(st => {
-    const el = document.createElement('div');
-    el.className = 'sheet-sticker';
-    el.id = st.id;
-    el.textContent = st.emoji;
-    el.style.left = (st.x - 12) + 'px';
-    el.style.top = (st.y - 12) + 'px';
-    el.style.transform = `rotate(${st.rot}rad)`;
-
-    const del = document.createElement('div');
-    del.className = 'del';
-    del.textContent = '✕';
-    del.onclick = (e) => {
-      e.stopPropagation();
-      customStickers = customStickers.filter(s => s.id !== st.id);
-      renderDomStickers();
-      invalidateGallery();
-    };
-    el.appendChild(del);
-
-    // Smooth pointer drag for mobile touch & desktop mouse
-    let isDragging = false, startX, startY, origX, origY;
-    
-    el.addEventListener('pointerdown', (e) => {
-      if (e.target.classList.contains('del')) return;
-      isDragging = true;
-      startX = e.clientX; startY = e.clientY;
-      origX = st.x; origY = st.y;
-      el.setPointerCapture(e.pointerId);
-      e.preventDefault();
-    });
-
-    el.addEventListener('pointermove', (e) => {
-      if (!isDragging) return;
-      e.preventDefault();
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-      st.x = Math.max(12, Math.min(sheet.offsetWidth - 12, origX + dx));
-      st.y = Math.max(12, Math.min(sheet.offsetHeight - 12, origY + dy));
-      el.style.left = (st.x - 13) + 'px';
-      el.style.top = (st.y - 13) + 'px';
-    });
-
-    const onPointerUp = (e) => {
-      if (isDragging) {
-        isDragging = false;
-        try { el.releasePointerCapture(e.pointerId); } catch (_) {}
-        invalidateGallery();
-      }
-    };
-    el.addEventListener('pointerup', onPointerUp);
-    el.addEventListener('pointercancel', onPointerUp);
-
-    sheet.appendChild(el);
-  });
-}
-
-// caption lucu per foto — tidak perlu strip bawah lagi karena sudah ada di bawah tiap kotak foto
-function renderCaptions() {
-  const strip = $('capStrip');
-  if (!strip) return;
-  strip.innerHTML = '';
-  strip.hidden = true;
-}
-
-// remove one photo (index in original list by deleting last slot of that photo is tricky;
-// simplest: x on box i removes the actual photo that maps to slot i)
-function removeAtSlot(slot) {
-  if (photos.length === 0) return;
-  if (photos.length === 1) {
-    // semua kotak foto yang sama -> hapus foto
-    photos = [];
-  } else {
-    const idx = slot % photos.length;
-    photos.splice(idx, 1);
-  }
-  renderLayout();
-}
-
-// ============ GALLERY (QR DOWNLOAD) ============
-let galleryUrl = null;
-let sheetDone = false;
-// backend public: same-origin kalau host photobooth/localhost; Pages fallback ke apa.zonalayar
-const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.hostname.endsWith('harkatpoto.my.id'))
-  ? '' : 'https://apa.zonalayar.my.id/harkat';
-
-async function generateQrNow() {
-  if (!photos.length) return null;
-  const qrBox = $('qrBox');
-  const btnPrint = $('btnPrint');
-  const origText = btnPrint.textContent;
-  btnPrint.textContent = '⏳ Memproses QR...';
-  btnPrint.disabled = true;
-
-  try {
-    // 1. Render sheet PNG HD TERLEBIH DAHULU (sebelum kotak QR ditampilkan di DOM)
-    // Supaya hasil download PNG bersih dan pas di bawah tanpa ada ruang tinggi QR
-    const pngData = await renderSheet(true);
-
-    const res = await fetch(API_BASE + '/api/session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ photos: photos.map(p => p.url) })
-    });
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || 'gagal upload');
-    galleryUrl = data.url;
-    let qrTarget = galleryUrl;
-
-    try {
-      const sres = await fetch(API_BASE + '/api/sheet', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: data.id, png: pngData })
-      });
-      const sdata = await sres.json();
-      if (sdata.ok) {
-        sheetDone = true;
-        const base = galleryUrl.replace(/\/gallery\/[0-9a-f-]+$/, '');
-        qrTarget = base + '/download/' + data.id;
-      }
-    } catch (e2) { console.log('sheet upload failed, QR->gallery:', e2); }
-
-    const full = qrTarget.startsWith('http') ? qrTarget : location.origin + qrTarget;
-    renderQr(full);
-    qrBox.hidden = false;
-    const a = $('galleryLink');
-    a.textContent = '⬇️ Download foto (PNG)';
-    a.href = '#';
-    a.onclick = async (ev) => { ev.preventDefault(); await downloadSheet(); };
-    a.style.display = 'block';
-    toast('🎉 QR Code siap di-scan!');
-  } catch (e) {
-    console.error('gallery upload failed:', e);
-    toast('⚠️ Gagal membuat QR — periksa koneksi');
-  } finally {
-    btnPrint.textContent = origText;
-    btnPrint.disabled = false;
-  }
-  return galleryUrl;
-}
-
-function renderQr(text) {
-  const qr = qrcode(0, 'M');
-  qr.addData(text);
-  qr.make();
-  $('qrCode').innerHTML = qr.createSvgTag({ cellSize: 6, margin: 1, scalable: true });
-}
-
-function invalidateGallery() {
-  galleryUrl = null;
-  // Saat foto/stiker berubah, QR di-reset sampai user menekan CETAK
-  $('qrBox').hidden = true;
-  $('qrCode').innerHTML = '';
-  const a = $('galleryLink');
-  a.textContent = ''; a.removeAttribute('href'); a.style.display = '';
-}
-
-// ============ DOWNLOAD SHEET (canvas, no deps) ============
-// Render layout 2×4 ke PNG — klik link QR = langsung unduh file, bukan buka halaman.
-function b64ToImg(src) {
-  return new Promise((ok, err) => {
-    const img = new Image();
-    img.onload = () => ok(img);
-    img.onerror = err;
-    img.src = src;
-  });
-}
-// renderSheet(true) -> dataURL PNG (upload); renderSheet() -> Blob (download)
-async function renderSheet(asDataUrl) {
-  // === 100% PRECISE DOM CLONE ===
-  // Membaca posisi dan ukuran setiap elemen langsung dari getBoundingClientRect() DOM
-  await document.fonts.ready;
-  const sheetEl = document.querySelector('.sheet');
-  const sRect = sheetEl.getBoundingClientRect();
-  // Hitung batas bawah elemen konten terakhir di dalam sheet (caption strip atau footer)
-  let contentBottomRel = sRect.height;
-  const capsEl = document.querySelector('.caps');
-  const footEl = document.querySelector('.sheet-foot');
-  if (capsEl && !capsEl.hidden && capsEl.innerHTML.trim() !== '') {
-    contentBottomRel = (capsEl.getBoundingClientRect().bottom - sRect.top) + 8;
-  } else if (footEl) {
-    contentBottomRel = (footEl.getBoundingClientRect().bottom - sRect.top) + 8;
-  }
-
-  const cvW = sRect.width;
-  const cvH = Math.min(sRect.height, contentBottomRel);
-
-  const SCALE = 2.5; // Resolusi HD
-  const W = Math.round(cvW * SCALE);
-  const H = Math.round(cvH * SCALE);
-
-  const cv = document.createElement('canvas');
-  cv.width = W; cv.height = H;
-  const ctx = cv.getContext('2d');
-  ctx.scale(SCALE, SCALE); // Semua gambar di canvas menggunakan skala 1:1 DOM coordinate space
-
-  // 1. Background Dasar & Multi-layer Dots (Persis CSS .sheet)
-  const g = ctx.createLinearGradient(0, 0, 0, cvH);
-  g.addColorStop(0, '#f5eccf'); g.addColorStop(1, '#f2e7c8');
-  ctx.fillStyle = g; ctx.fillRect(0, 0, cvW, cvH);
-
-  // Confetti dots
-  ctx.fillStyle = 'rgba(52,34,30,0.08)';
-  for (let dy = 0; dy < cvH; dy += 16)
-    for (let dx = 0; dx < cvW; dx += 16) ctx.fillRect(dx, dy, 1, 1);
-
-  ctx.fillStyle = 'rgba(201,162,39,0.22)';
-  for (let dy = 4; dy < cvH; dy += 34)
-    for (let dx = 6; dx < cvW; dx += 34) {
-      ctx.beginPath(); ctx.arc(dx, dy, 1.2, 0, Math.PI * 2); ctx.fill();
-    }
-
-  ctx.fillStyle = 'rgba(63,90,122,0.18)';
-  for (let dy = 8; dy < cvH; dy += 28)
-    for (let dx = 12; dx < cvW; dx += 28) {
-      ctx.beginPath(); ctx.arc(dx, dy, 1, 0, Math.PI * 2); ctx.fill();
-    }
-
-  // Film-strip di tepi kiri (left: 8px) & kanan (right: 8px)
-  ctx.fillStyle = 'rgba(63,90,122,0.35)';
-  for (let sx of [8, cvW - 16]) {
-    for (let sy = 14; sy < cvH - 14; sy += 20) {
-      ctx.fillRect(sx, sy, 8, 6);
-    }
-  }
-
-  // Border luar sheet
-  ctx.strokeStyle = '#4a1024'; ctx.lineWidth = 4;
-  roundRect(ctx, 2, 2, cvW - 4, cvH - 4, 20); ctx.stroke();
-
-  // 2. Washi Tape di pojok kiri atas & kanan atas (.sheet-head::before & ::after)
-  function washiTape(x, y, rot) {
-    const tw = 84, th = 24;
-    ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
-    ctx.shadowColor = 'rgba(52,34,30,0.22)'; ctx.shadowOffsetY = 2; ctx.shadowBlur = 1;
-    ctx.beginPath(); ctx.rect(-tw / 2, -th / 2, tw, th); ctx.clip();
-    ctx.fillStyle = 'rgba(237,211,133,0.92)'; ctx.fillRect(-tw / 2, -th / 2, tw, th);
-    ctx.save(); ctx.rotate(Math.PI / 4);
-    for (let sx = -60; sx < tw + 60; sx += 16) {
-      ctx.fillStyle = 'rgba(201,162,39,0.9)';
-      ctx.fillRect(sx - 8, -60, 8, 120);
-    }
-    ctx.restore();
-    ctx.restore();
-  }
-  const headEl = document.querySelector('.sheet-head');
-  const hRect = headEl.getBoundingClientRect();
-  const headRelY = hRect.top - sRect.top;
-  washiTape(14 + 42, headRelY + 2, -0.09);
-  washiTape(sRect.width - 14 - 42, headRelY + 2, 0.09);
-
-  // 3. Header Text & Simbol (Persis posisi DOM)
-  const titleEl = headEl.querySelector('h2');
-  const tRect = titleEl.getBoundingClientRect();
-  const titleCenterX = (tRect.left - sRect.left) + tRect.width / 2;
-  const titleCenterY = (tRect.top - sRect.top) + tRect.height / 2;
-
-  ctx.save();
-  ctx.translate(titleCenterX, titleCenterY); ctx.rotate(-0.026);
-  ctx.fillStyle = '#681a34';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.font = '700 27px "Fredoka", "Luckiest Guy", sans-serif';
-  ctx.shadowColor = 'rgba(207,161,56,0.35)'; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2;
-  ctx.fillText('UKM EXPO UHN', 0, 0);
-  ctx.restore();
-  ctx.shadowColor = 'transparent';
-
-  const playEl = headEl.querySelector('.play');
-  if (playEl) {
-    const pRect = playEl.getBoundingClientRect();
-    ctx.save();
-    ctx.translate((pRect.left - sRect.left) + pRect.width / 2, (pRect.top - sRect.top) + pRect.height / 2);
-    ctx.rotate(-0.14);
-    ctx.fillStyle = '#681a34'; ctx.font = '18px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(207,161,56,0.3)'; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
-    ctx.fillText('▶', 0, 0);
-    ctx.restore();
-  }
-  ctx.save();
-  ctx.fillStyle = '#cfa138'; ctx.font = '18px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('✳', sRect.width - 24, titleCenterY);
-  ctx.restore();
-
-  // 4. Boxes Foto (Membaca posisi exact dari tiap .box di DOM)
-  const imgs = await Promise.all(photos.map(p => b64ToImg(p.url)));
-  let fill = [];
-  if (photos.length === 1) fill = Array(8).fill(0);
-  else for (let i = 0; i < 8; i++) fill.push(i % photos.length);
-
-  const boxEls = document.querySelectorAll('.box');
-  for (let i = 0; i < boxEls.length; i++) {
-    const bEl = boxEls[i];
-    const bRect = bEl.getBoundingClientRect();
-    const bx = bRect.left - sRect.left;
-    const by = bRect.top - sRect.top;
-    const bw = bRect.width;
-    const bh = bRect.height;
-
-    // Frame Putih (.box)
-    ctx.save();
-    ctx.shadowColor = 'rgba(74,0,0,0.18)'; ctx.shadowOffsetY = 3; ctx.shadowBlur = 0;
-    roundRect(ctx, bx, by, bw, bh, 14);
-    ctx.fillStyle = '#ffffff'; ctx.fill();
-    ctx.restore();
-    ctx.strokeStyle = '#4a0000'; ctx.lineWidth = 2;
-    roundRect(ctx, bx, by, bw, bh, 14); ctx.stroke();
-
-    const src = fill[i];
-    if (src !== undefined && imgs[src]) {
-      // Foto di dalam Box (inset 5px, aspect square)
-      const pw = bw - 10;
-      const ph = pw; // square image
-      const px = bx + 5, py = by + 5;
-      ctx.save();
-      roundRect(ctx, px, py, pw, ph, 9); ctx.clip();
-      drawCover(ctx, imgs[src], px, py, pw, ph);
-      ctx.restore();
-      ctx.strokeStyle = 'rgba(74,0,0,0.15)'; ctx.lineWidth = 1;
-      roundRect(ctx, px, py, pw, ph, 9); ctx.stroke();
-
-      // Tag Caption & Persen di bawah foto (di dalam kartu polaroid)
-      const tagTxt = (photos[src] && (photos[src].cap || `${photos[src].pct || 80}% Senyum`)) || '';
-      if (tagTxt) {
-        const chinCenterY = by + 5 + ph + (bh - 5 - ph) / 2;
-        ctx.save();
-        ctx.fillStyle = '#2d1d23';
-        ctx.font = '600 10px "Fredoka", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        
-        const maxTW = bw - 8;
-        if (ctx.measureText(tagTxt).width <= maxTW) {
-          ctx.fillText(tagTxt, bx + bw / 2, chinCenterY);
-        } else {
-          // Wrap into 2 lines
-          const words = tagTxt.split(' ');
-          let line1 = '', line2 = '';
-          for (let w of words) {
-            const test = line1 ? line1 + ' ' + w : w;
-            if (ctx.measureText(test).width <= maxTW && !line2) {
-              line1 = test;
-            } else {
-              line2 = line2 ? line2 + ' ' + w : w;
-            }
-          }
-          if (line2) {
-            if (ctx.measureText(line2).width > maxTW) {
-              while (line2.length > 4 && ctx.measureText(line2 + '…').width > maxTW) {
-                line2 = line2.slice(0, -1);
-              }
-              line2 += '…';
-            }
-            ctx.fillText(line1, bx + bw / 2, chinCenterY - 5.5);
-            ctx.fillText(line2, bx + bw / 2, chinCenterY + 5.5);
-          } else {
-            ctx.fillText(line1, bx + bw / 2, chinCenterY);
-          }
-        }
-        ctx.restore();
-      }
-    }
-
-    // Washi Tape mini aksen di foto 1 & 8
-    if (i === 0) {
-      ctx.save(); ctx.translate(bx + 24, by + 2); ctx.rotate(-0.2);
-      ctx.fillStyle = 'rgba(207,161,56,0.75)'; roundRect(ctx, -14, -4, 28, 9, 2); ctx.fill();
-      ctx.restore();
-    } else if (i === 7) {
-      ctx.save(); ctx.translate(bx + bw - 24, by + bh - 2); ctx.rotate(-0.14);
-      ctx.fillStyle = 'rgba(207,161,56,0.75)'; roundRect(ctx, -14, -4, 28, 9, 2); ctx.fill();
-      ctx.restore();
-    }
-
-    // Nomor Gold kiri atas (.box .n)
-    const numX = bx - 6, numY = by - 6, numSize = 22;
-    ctx.fillStyle = '#cfa138';
-    roundRect(ctx, numX, numY, numSize, numSize, 6); ctx.fill();
-    ctx.strokeStyle = '#4a0000'; ctx.lineWidth = 1.5; ctx.stroke();
-    ctx.fillStyle = '#3f1020'; ctx.font = '700 11px "Fredoka", sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(i + 1, numX + numSize / 2, numY + numSize / 2 + 0.5);
-
-    // Emoji Gelembung Putih kanan atas (.box .e)
-    const emojiSize = 30;
-    const emX = bx + bw + 4 - emojiSize / 2;
-    const emY = by - 4 + emojiSize / 2;
-    ctx.save();
-    ctx.translate(emX, emY);
-    ctx.beginPath(); ctx.arc(0, 0, emojiSize / 2, 0, Math.PI * 2);
-    ctx.fillStyle = '#ffffff'; ctx.fill();
-    ctx.strokeStyle = '#cfa138'; ctx.lineWidth = 2; ctx.stroke();
-    ctx.font = '16px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText((photos[src] && photos[src].emoji) || '😄', 0, 0.5);
-    ctx.restore();
-  }
-
-  // 5. Footer: SAINS DATA · ⭯ ⭮ · Dovey (.sheet-foot)
-  if (footEl) {
-    const fRect = footEl.getBoundingClientRect();
-    const footCenterY = (fRect.top - sRect.top) + fRect.height / 2;
-
-    ctx.save();
-    ctx.translate(18, footCenterY); ctx.rotate(0.026);
-    ctx.fillStyle = '#681a34'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.font = '700 15px "Fredoka", sans-serif';
-    ctx.shadowColor = 'rgba(207,161,56,0.3)'; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
-    ctx.fillText('SAINS DATA', 0, 0);
-    ctx.restore();
-    ctx.shadowColor = 'transparent';
-
-    ctx.font = '700 14px system-ui'; ctx.fillStyle = '#cfa138';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('⭯ ⭮', sRect.width / 2, footCenterY);
-
-    ctx.save();
-    ctx.translate(sRect.width - 18, footCenterY); ctx.rotate(-0.052);
-    ctx.fillStyle = '#3f1020'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-    ctx.font = '700 22px "Caveat", "Pacifico", cursive';
-    ctx.shadowColor = 'rgba(207,161,56,0.25)'; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
-    ctx.fillText('Dovey', 0, 0);
-    ctx.restore();
-    ctx.shadowColor = 'transparent';
-  }
-
-  // 6. Caption Strip (.caps di DOM)
-  if (capsEl && !capsEl.hidden) {
-    const cpRect = capsEl.getBoundingClientRect();
-    const capX = cpRect.left - sRect.left;
-    const capY = cpRect.top - sRect.top;
-    const capW = cpRect.width;
-    const capH = cpRect.height;
-
-    ctx.fillStyle = 'rgba(255,255,255,0.65)';
-    roundRect(ctx, capX, capY, capW, capH, 10); ctx.fill();
-    ctx.fillStyle = '#cfa138'; ctx.fillRect(capX, capY, 3.5, capH); // border-left gold
-
-    const capLines = capsEl.querySelectorAll('.cap-line');
-    capLines.forEach((cl) => {
-      const clRect = cl.getBoundingClientRect();
-      const ly = (clRect.top - sRect.top) + clRect.height / 2;
-      const faceEl = cl.querySelector('.cap-face');
-      const faceTxt = faceEl ? faceEl.textContent : '😄';
-      const textEl = cl.querySelector('.cap-text');
-      let fullTxt = textEl ? textEl.textContent.trim() : cl.textContent.replace(faceTxt, '').trim();
-
-      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-      ctx.font = '14px system-ui';
-      ctx.fillText(faceTxt, capX + 8, ly);
-      ctx.fillStyle = '#2d1d23';
-      ctx.font = '600 12px "Fredoka", sans-serif';
-
-      // Pastikan teks tidak pernah menembus batas kotak kanvas
-      const maxTextW = capW - 36;
-      if (ctx.measureText(fullTxt).width > maxTextW) {
-        while (fullTxt.length > 4 && ctx.measureText(fullTxt + '…').width > maxTextW) {
-          fullTxt = fullTxt.slice(0, -1);
-        }
-        fullTxt += '…';
-      }
-      ctx.fillText(fullTxt, capX + 28, ly);
-    });
-  }
-
-  // 7. Custom Drag Stickers di atas Canvas (Posisi 100% Exact dari DOM)
-  const stickerEls = document.querySelectorAll('.sheet-sticker');
-  stickerEls.forEach(stEl => {
-    const stRect = stEl.getBoundingClientRect();
-    const stX = (stRect.left - sRect.left) + stRect.width / 2;
-    const stY = (stRect.top - sRect.top) + stRect.height / 2;
-    const emoji = stEl.childNodes[0].nodeValue || stEl.textContent.replace('✕', '').trim();
-
-    ctx.save();
-    ctx.translate(stX, stY);
-    ctx.shadowColor = 'rgba(74,16,36,0.25)'; ctx.shadowOffsetY = 2; ctx.shadowBlur = 1;
-    ctx.font = '24px system-ui';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(emoji, 0, 0);
-    ctx.restore();
-  });
-
-  if (asDataUrl) return cv.toDataURL('image/png');
-  return new Promise((resolve, reject) => {
-    cv.toBlob(blob => {
-      if (blob) resolve(blob);
-      else reject(new Error('Canvas toBlob failed'));
-    }, 'image/png');
-  });
-}
-async function downloadSheet() {
-  if (!photos.length) return;
-  const dataUrl = await renderSheet(true);
-  const a = document.createElement('a');
-  a.href = dataUrl;
-  a.download = 'ukmexpo-foto-' + Date.now() + '.png';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-}
-function drawCover(ctx, img, x, y, w, h) {
-  const s = Math.max(w / img.width, h / img.height);
-  const dw = img.width * s, dh = img.height * s;
-  ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
-}
+// Helper: Canvas rounded rect
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
-  ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
   ctx.closePath();
 }
 
-// ============ NAV ============
-function setActive(panel) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.panel === panel));
-  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + panel));
+// ============ GENERATE SCAN CERTIFICATE / REPORT ============
+async function generateScanCard() {
+  if (!video.videoWidth) return;
+
+  // 1. Capture clean frame with AR overlay
+  const capCv = document.createElement('canvas');
+  capCv.width = video.videoWidth; capCv.height = video.videoHeight;
+  const capCtx = capCv.getContext('2d');
+
+  // Apply Filter
+  if (currentFilter === 'glow') {
+    capCtx.filter = 'brightness(1.15) contrast(1.08) saturate(1.25)';
+  } else if (currentFilter === 'vintage') {
+    capCtx.filter = 'sepia(0.45) contrast(1.15) brightness(0.95) saturate(1.2)';
+  } else if (currentFilter === 'soft') {
+    capCtx.filter = 'brightness(1.18) contrast(0.95) saturate(1.15) hue-rotate(-5deg)';
+  } else if (currentFilter === 'bw') {
+    capCtx.filter = 'grayscale(1) contrast(1.25) brightness(1.05)';
+  }
+
+  if (facing === 'user') {
+    capCtx.translate(capCv.width, 0); capCtx.scale(-1, 1);
+  }
+  capCtx.drawImage(video, 0, 0, capCv.width, capCv.height);
+  capCtx.filter = 'none';
+
+  // Draw AR Props & HUD onto photo
+  if (lastFaces.length) {
+    const lm = lastFaces[0];
+    const bs = lastBs && lastBs[0];
+    const m = getFaceMetrics(lm, bs);
+    if (m && currentProp !== 'none') {
+      drawArProp(capCtx, lm, capCv.width, capCv.height, facing === 'user', currentProp);
+    }
+  }
+
+  const photoDataUrl = capCv.toDataURL('image/jpeg', 0.92);
+
+  // 2. Render Full HD Certificate Card
+  const certCv = document.createElement('canvas');
+  certCv.width = 1080; certCv.height = 1440;
+  const cCtx = certCv.getContext('2d');
+
+  // Background Vintage Cream
+  const bgGrad = cCtx.createLinearGradient(0, 0, 0, 1440);
+  bgGrad.addColorStop(0, '#fdfaf2'); bgGrad.addColorStop(1, '#f6eed6');
+  cCtx.fillStyle = bgGrad; cCtx.fillRect(0, 0, 1080, 1440);
+
+  // Decorative border
+  cCtx.strokeStyle = '#4a0000'; cCtx.lineWidth = 8;
+  roundRect(cCtx, 20, 20, 1040, 1400, 32); cCtx.stroke();
+  cCtx.strokeStyle = '#f5b722'; cCtx.lineWidth = 3;
+  roundRect(cCtx, 32, 32, 1016, 1376, 24); cCtx.stroke();
+
+  // Header
+  cCtx.fillStyle = '#681a34'; cCtx.font = '700 52px "Fredoka", "Luckiest Guy", sans-serif';
+  cCtx.textAlign = 'center'; cCtx.textBaseline = 'middle';
+  cCtx.fillText('UKM EXPO UHN', 540, 90);
+
+  cCtx.fillStyle = '#cfa138'; cCtx.font = '700 32px "Caveat", "Pacifico", cursive';
+  cCtx.fillText('Sains Data & AI Vision Experience', 540, 140);
+
+  // Photo Area (Square 680x680)
+  const imgObj = new Image();
+  imgObj.src = photoDataUrl;
+  await new Promise(r => imgObj.onload = r);
+
+  const px = 200, py = 180, pw = 680, ph = 680;
+  cCtx.save();
+  roundRect(cCtx, px, py, pw, ph, 24); cCtx.clip();
+  cCtx.drawImage(imgObj, px, py, pw, ph);
+  cCtx.restore();
+  cCtx.strokeStyle = '#4a0000'; cCtx.lineWidth = 5;
+  roundRect(cCtx, px, py, pw, ph, 24); cCtx.stroke();
+
+  // Metrics Box
+  const lm = lastFaces.length ? lastFaces[0] : null;
+  const bs = lastBs.length ? lastBs[0] : null;
+  const m = getFaceMetrics(lm, bs) || {
+    estAge: 19, gen: 'Gen-Z Fresh 🎓', beautyScore: 98, symmetryPct: 96,
+    bestMatch: CELEBS[0], matchPct: 94
+  };
+
+  const by = 900, bw = 840, bh = 380, bx = 120;
+  cCtx.fillStyle = '#ffffff';
+  roundRect(cCtx, bx, by, bw, bh, 20); cCtx.fill();
+  cCtx.strokeStyle = '#4a0000'; cCtx.lineWidth = 4;
+  roundRect(cCtx, bx, by, bw, bh, 20); cCtx.stroke();
+
+  cCtx.textAlign = 'left';
+  cCtx.fillStyle = '#681a34'; cCtx.font = '700 32px "Fredoka", sans-serif';
+  cCtx.fillText('📊 HASIL PEMINDAIAN AI:', bx + 30, by + 50);
+
+  cCtx.fillStyle = '#2d1d23'; cCtx.font = '600 26px "Fredoka", sans-serif';
+  cCtx.fillText(`• Estimasi Usia & Generasi:  ${m.estAge} Tahun (${m.gen})`, bx + 30, by + 105);
+  cCtx.fillText(`• Skor Pesona & Simetri:  ${m.beautyScore}% (Simetri ${m.symmetryPct}%)`, bx + 30, by + 155);
+  cCtx.fillText(`• Kembaran Tokoh Terdekat:  ${m.matchPct}% Mirip ${m.bestMatch.name}`, bx + 30, by + 205);
+
+  cCtx.fillStyle = '#5c3540'; cCtx.font = 'italic 23px "Fredoka", sans-serif';
+  cCtx.fillText(`"${m.bestMatch.comment}"`, bx + 30, by + 270);
+
+  cCtx.fillStyle = '#cfa138'; cCtx.font = '700 24px "Fredoka", sans-serif';
+  cCtx.fillText('★ Verified by Sains Data UHN • AI Lab 2026', bx + 30, by + 335);
+
+  // Footer Stamp
+  cCtx.fillStyle = '#681a34'; cCtx.textAlign = 'center';
+  cCtx.font = '700 26px "Caveat", cursive';
+  cCtx.fillText('Dovey ✦ Sains Data Experience', 540, 1370);
+
+  const certDataUrl = certCv.toDataURL('image/png');
+
+  // Display in Modal
+  $('certImg').src = certDataUrl;
+  $('btnDownloadCert').href = certDataUrl;
+  $('certModeLabel').textContent = currentMode === 'age' ? 'Tebak Umur' : currentMode === 'beauty' ? 'Rating Pesona' : 'Kembaran Tokoh';
+  $('certPrimaryResult').textContent = currentMode === 'age' ? `${m.estAge} Tahun (${m.gen})` : currentMode === 'beauty' ? `Skor Pesona ${m.beautyScore}%` : `${m.matchPct}% Mirip ${m.bestMatch.name}`;
+  $('certSecondaryResult').textContent = `Simetri Wajah: ${m.symmetryPct}%`;
+  $('certQuote').textContent = `"${m.bestMatch.comment}"`;
+
+  $('modalResult').style.display = 'flex';
 }
 
-// ============ EVENTS ============
-$('tabCam').addEventListener('click', () => setActive('cam'));
-$('tabLayout').addEventListener('click', () => setActive('layout'));
-$('btnGoCam').addEventListener('click', () => setActive('cam'));
-$('btnShoot').addEventListener('click', capture);
-$('btnDone').addEventListener('click', () => setActive('layout'));
-$('btnFlip').addEventListener('click', async () => {
-  facing = facing === 'user' ? 'environment' : 'user';
-  await startCamera();
-});
-$('btnReset').addEventListener('click', () => {
-  photos = [];
-  customStickers = [];
-  invalidateGallery();
-  renderLayout();
-});
-// CETAK: Generate QR Code dengan posisi foto & stiker final + langsung download PNG tanpa buka dialog PDF
-$('btnPrint').addEventListener('click', async () => {
-  if (!photos.length) {
-    toast('⚠️ Belum ada foto untuk dicetak!');
-    return;
-  }
-  await generateQrNow();
-  // Langsung unduh file PNG secara otomatis
-  await downloadSheet();
-});
-// hapus foto (✕ di kotak) -> QR jadi stale, buat ulang saat Done/print berikutnya
-document.querySelectorAll('.box .x').forEach(x => {
-  x.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const box = x.closest('.box');
-    removeAtSlot(+box.dataset.i);
-    invalidateGallery();
-  });
+// ============ EVENT LISTENERS ============
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentMode = btn.dataset.mode;
+
+    // Show/hide props & filter bar
+    const isPropsMode = currentMode === 'props';
+    $('propsRow').style.display = isPropsMode ? 'flex' : 'none';
+    $('filterRow').style.display = isPropsMode ? 'flex' : 'none';
+  };
 });
 
-// ESC key in print dialogs etc.
-window.addEventListener('beforeprint', () => { /* nothing special needed */ });
-
-// Sticker Bar Buttons
-document.querySelectorAll('.sticker-btn[data-st]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    addSticker(btn.dataset.st);
-  });
-});
-$('btnClearStickers').addEventListener('click', () => {
-  customStickers = [];
-  renderDomStickers();
-  invalidateGallery();
-});
-
-// Toggle Accordion Panels
-const btnToggleProp = $('btnToggleProp');
-const btnToggleFilter = $('btnToggleFilter');
-const panelProp = $('panelProp');
-const panelFilter = $('panelFilter');
-
-btnToggleProp.addEventListener('click', () => {
-  const isOpen = panelProp.style.display !== 'none';
-  panelProp.style.display = isOpen ? 'none' : 'block';
-  panelFilter.style.display = 'none';
-  btnToggleProp.classList.toggle('open', !isOpen);
-  btnToggleFilter.classList.remove('open');
-});
-
-btnToggleFilter.addEventListener('click', () => {
-  const isOpen = panelFilter.style.display !== 'none';
-  panelFilter.style.display = isOpen ? 'none' : 'block';
-  panelProp.style.display = 'none';
-  btnToggleFilter.classList.toggle('open', !isOpen);
-  btnToggleProp.classList.remove('open');
-});
-
-// AI Props Selection Buttons
-document.querySelectorAll('.ai-btn[data-prop]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.ai-btn[data-prop]').forEach(b => b.classList.remove('active'));
+document.querySelectorAll('.prop-chip').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.prop-chip').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentProp = btn.dataset.prop;
-    btnToggleProp.textContent = currentProp === 'none' ? '👑 Emoji Props ▾' : `${currentProp} ${btn.textContent.trim()} ▾`;
-  });
+  };
 });
 
-// Filter Selection Buttons
-document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
+document.querySelectorAll('.filter-chip').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentFilter = btn.dataset.filter;
-    btnToggleFilter.textContent = `🎨 ${btn.textContent.trim()} ▾`;
-    applyFilterStyle(video);
-  });
+    // Apply CSS filter for preview
+    if (currentFilter === 'glow') video.style.filter = 'brightness(1.15) contrast(1.08) saturate(1.25)';
+    else if (currentFilter === 'vintage') video.style.filter = 'sepia(0.45) contrast(1.15) brightness(0.95)';
+    else if (currentFilter === 'soft') video.style.filter = 'brightness(1.18) contrast(0.95) saturate(1.15)';
+    else if (currentFilter === 'bw') video.style.filter = 'grayscale(1) contrast(1.25)';
+    else video.style.filter = 'none';
+  };
 });
 
+$('btnFlip').onclick = () => {
+  facing = facing === 'user' ? 'environment' : 'user';
+  startCamera();
+};
+
+$('btnScan').onclick = () => {
+  generateScanCard();
+};
+
+$('btnCloseModal').onclick = () => {
+  $('modalResult').style.display = 'none';
+};
+
 // ============ INIT ============
-window.__h = { renderHud, emotion, capture, renderSheet, landmarker: () => landmarker, downloadSheet, getProp: () => currentProp, getFilter: () => currentFilter, drawArProps, setTestFace: (f, b) => { lastFaces = f; lastBs = b; } };
-renderLayout();
-setupEmojiPicker();
-setupDragDrop();
 initVision();
 startCamera();
 </script>
