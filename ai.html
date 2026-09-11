@@ -463,14 +463,14 @@
   </div>
 </div>
 
-<script type="module">
-import { FilesetResolver, FaceLandmarker } from '/assets/wasm/vision_bundle.mjs';
-
+<script>
 const $ = id => document.getElementById(id);
 const video = $('video');
 const canvas = $('overlayCanvas');
 const ctx = canvas.getContext('2d');
 const camWrap = $('camWrap');
+
+const MODEL_URL = './assets/model/face_landmarker.task';
 
 let currentMode = 'age'; // 'age', 'beauty', 'lookalike', 'props'
 let currentProp = 'none';
@@ -525,9 +525,10 @@ const LIPS_INDICES = [61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 308, 32
 // ============ VISION INIT ============
 async function initVision() {
   try {
-    const vision = await FilesetResolver.forVisionTasks('/assets/wasm/');
+    const { FilesetResolver, FaceLandmarker } = await import('./assets/wasm/vision_bundle.mjs');
+    const vision = await FilesetResolver.forVisionTasks('./assets/wasm/');
     landmarker = await FaceLandmarker.createFromOptions(vision, {
-      baseOptions: { modelAssetPath: '/assets/model/face_landmarker.task', delegate: 'CPU' },
+      baseOptions: { modelAssetPath: MODEL_URL, delegate: 'CPU' },
       runningMode: 'VIDEO',
       numFaces: 4,
       outputFaceBlendshapes: true
@@ -545,11 +546,7 @@ async function startCamera() {
   stopCamera();
   const facingMode = facing === 'environment' ? { exact: 'environment' } : 'user';
   const opts = {
-    video: {
-      facingMode,
-      width: { ideal: 1280 },
-      height: { ideal: 720 }
-    },
+    video: { facingMode },
     audio: false
   };
 
