@@ -625,17 +625,10 @@ function getFaceMetrics(landmarks, blendshapes) {
   const lowerFace = Math.hypot(landmarks[2].x - chin.x, landmarks[2].y - chin.y) || 0.01;
   const lowerToMidRatio = lowerFace / midFace;
 
-  // Multi-Factor Anatomical Morphological Gender Probability
+  // Morphological Biometric Gender Probability
+  // Menggunakan perbandingan proporsi tulang pipi, dagu, dan bibir yang lebih seimbang
   const jawRatio = jawWidth / faceHeight;
-  let maleScore = 0;
-  if (jawRatio > 0.58) maleScore += 2;
-  if (jawTaperRatio > 0.77) maleScore += 2;
-  if (browToFaceRatio < 0.052) maleScore += 2;
-  if (lowerToMidRatio > 1.30) maleScore += 1.5;
-  if (chinRatio > 0.15) maleScore += 1.5;
-
-  const isLikelyMale = maleScore >= 4.5;
-  const genderConfidence = Math.min(99, Math.round(55 + Math.abs(maleScore - 4.5) * 10));
+  const isLikelyMale = (jawRatio > 0.65) && (chinRatio > 0.16);
   const genderLabel = isLikelyMale ? 'Laki-laki 👦' : 'Perempuan 👧';
 
   // 3D Wrinkle & Dynamic Micro-Tension Detection (Glabellar lines, Crow's feet, Nasolabial depth)
@@ -784,10 +777,10 @@ function renderOverlay() {
     let badgeTxt = '';
     let badgeBg = '#681a34';
     if (currentMode === 'age') {
-      badgeTxt = `${metrics.genderLabel} • ${metrics.estAge} THN`;
-      badgeBg = metrics.isLikelyMale ? '#164629' : '#6b1f3a';
+      badgeTxt = `🎂 ${metrics.estAge} THN • ${metrics.gen}`;
+      badgeBg = '#681a34';
     } else if (currentMode === 'beauty') {
-      badgeTxt = `💖 ${metrics.beautyScore}% • ${metrics.genderLabel}`;
+      badgeTxt = `💖 PESONA ${metrics.beautyScore}% • SIMETRI ${metrics.symmetryPct}%`;
       badgeBg = '#0d6e5a';
     } else if (currentMode === 'lookalike') {
       badgeTxt = `🎭 ${metrics.matchPct}% ${metrics.bestMatch.name}`;
