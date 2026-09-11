@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>UKM EXPO UHN — Sains Data & AI Photobooth</title>
+<title>UKM EXPO UHN — Sains Data & AI</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📸</text></svg>">
 <link rel="stylesheet" href="/assets/fonts/LuckiestGuy.css">
 <link rel="stylesheet" href="/assets/fonts/Pacifico.css">
@@ -20,23 +20,14 @@
     font-weight: 700;
     font-display: swap;
   }
-  @font-face {
-    font-family: 'Shrikhand';
-    src: url('/assets/fonts/Shrikhand.ttf') format('truetype');
-    font-weight: 400;
-    font-display: swap;
-  }
 
   :root {
     --cream: #fbf5e6;
-    --cream-sheet: #f5eccf;
     --maroon: #681a34;
     --maroon-deep: #4a0000;
     --gold: #cfa138;
     --gold-glow: #e2b448;
-    --blue: #3f5a7a;
     --ink: #2d1d23;
-    --card-bg: #ffffff;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -52,32 +43,33 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 16px 12px 36px;
+    justify-content: center;
+    padding: 20px 16px;
   }
 
   .container {
     width: 100%;
-    max-width: 540px;
+    max-width: 440px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
   }
 
   /* ============ HEADER ============ */
   .hero {
     background: var(--cream);
     border: 3px solid var(--maroon-deep);
-    border-radius: 20px;
-    padding: 18px 16px 16px;
+    border-radius: 24px;
+    padding: 20px 16px 18px;
     text-align: center;
     position: relative;
-    box-shadow: 0 4px 0 var(--maroon-deep), 0 8px 16px rgba(0,0,0,0.3);
+    box-shadow: 0 5px 0 var(--maroon-deep), 0 8px 16px rgba(0,0,0,0.3);
   }
   .hero::before, .hero::after {
     content: '';
     position: absolute;
     top: -8px;
-    width: 60px;
+    width: 54px;
     height: 16px;
     background: rgba(207,161,56,0.85);
     border-radius: 2px;
@@ -95,7 +87,7 @@
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 1px;
-    padding: 3px 12px;
+    padding: 4px 12px;
     border-radius: 999px;
     margin-bottom: 8px;
     border: 1.5px solid var(--gold);
@@ -105,7 +97,7 @@
   .hero h1 {
     font-family: 'Luckiest Guy', cursive;
     color: var(--maroon);
-    font-size: clamp(26px, 7vw, 36px);
+    font-size: clamp(28px, 8vw, 36px);
     line-height: 1.1;
     letter-spacing: 1.5px;
     text-shadow: 2px 2px 0 rgba(207,161,56,0.4);
@@ -115,191 +107,104 @@
   .hero-subtitle {
     font-family: 'Pacifico', cursive;
     color: var(--gold);
-    font-size: clamp(16px, 4.5vw, 20px);
+    font-size: clamp(16px, 5vw, 20px);
     margin-top: 2px;
     text-shadow: 1px 1px 0 var(--maroon-deep);
   }
 
-  .hero-desc {
-    font-size: 12.5px;
-    line-height: 1.4;
-    color: #4a2832;
-    margin-top: 8px;
-    padding: 0 4px;
-  }
-
-  /* ============ MENU CARDS ============ */
-  .menu-grid {
+  /* ============ 2 BIG BUTTONS ============ */
+  .button-group {
     display: flex;
     flex-direction: column;
     gap: 16px;
   }
 
-  .menu-card {
-    background: #ffffff;
-    border: 3px solid var(--maroon-deep);
-    border-radius: 20px;
-    padding: 16px;
-    box-shadow: 0 4px 0 var(--maroon-deep), 0 6px 14px rgba(0,0,0,0.25);
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    transition: transform 0.15s, box-shadow 0.15s;
+  .main-btn {
     text-decoration: none;
-    color: inherit;
-  }
-  .menu-card:active {
-    transform: translateY(2px);
-    box-shadow: 0 2px 0 var(--maroon-deep), 0 3px 8px rgba(0,0,0,0.2);
-  }
-
-  .card-top {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
+    gap: 16px;
+    padding: 18px 20px;
+    border-radius: 20px;
+    border: 3px solid var(--maroon-deep);
+    position: relative;
+    box-shadow: 0 5px 0 var(--maroon-deep), 0 8px 18px rgba(0,0,0,0.25);
+    transition: transform 0.1s, box-shadow 0.1s;
+    user-select: none;
+  }
+  .main-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 var(--maroon-deep), 0 4px 10px rgba(0,0,0,0.2);
   }
 
-  .card-badge {
-    font-size: 11px;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 999px;
-    border: 1.5px solid var(--maroon-deep);
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .badge-hot {
-    background: #ffeb3b;
-    color: #4a0000;
-  }
-  .badge-ai {
-    background: #e0f2fe;
-    color: #0369a1;
-  }
-
-  .card-num {
-    width: 24px;
-    height: 24px;
-    background: var(--gold);
-    color: var(--maroon-deep);
-    border: 1.5px solid var(--maroon-deep);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 700;
-  }
-
-  .card-header-main {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 10px;
-  }
-  .card-icon {
-    font-size: 34px;
-    width: 52px;
-    height: 52px;
-    background: var(--cream);
-    border: 2px solid var(--maroon-deep);
-    border-radius: 14px;
+  .btn-icon {
+    font-size: 38px;
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    border: 2px solid var(--maroon-deep);
     box-shadow: 0 2px 0 rgba(74,0,0,0.2);
   }
-  .card-title-wrap {
+
+  .btn-text {
     flex: 1;
     min-width: 0;
   }
-  .card-title {
+  .btn-title {
     font-family: 'Luckiest Guy', cursive;
     font-size: clamp(20px, 5.5vw, 24px);
-    color: var(--maroon);
-    letter-spacing: 0.8px;
     line-height: 1.15;
+    letter-spacing: 0.8px;
   }
-  .card-tagline {
-    font-size: 12px;
-    color: #6b414e;
-    font-weight: 600;
-    margin-top: 2px;
-  }
-
-  /* Feature list */
-  .feature-list {
-    background: #fbf8f0;
-    border: 1.5px solid #ecdcb9;
-    border-radius: 14px;
-    padding: 10px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    margin-bottom: 14px;
-  }
-  .feature-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    font-size: 12px;
-    line-height: 1.35;
-    color: #38242b;
-  }
-  .feature-bullet {
+  .btn-sub {
     font-size: 13px;
-    flex-shrink: 0;
-    margin-top: -1px;
-  }
-  .feature-item b {
-    color: var(--maroon-deep);
-    font-weight: 700;
+    font-weight: 600;
+    margin-top: 3px;
+    opacity: 0.9;
   }
 
-  /* Button Action */
-  .card-btn {
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 12px;
-    border: 2px solid var(--maroon-deep);
-    font-size: 14px;
+  .btn-arrow {
+    font-size: 22px;
     font-weight: 700;
-    letter-spacing: 0.5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    cursor: pointer;
-    box-shadow: 0 3px 0 var(--maroon-deep);
-    transition: all 0.1s;
+    flex-shrink: 0;
   }
+
+  /* Button Themes */
   .btn-photobooth {
     background: var(--gold);
     color: var(--maroon-deep);
   }
-  .btn-photobooth:hover {
-    background: var(--gold-glow);
+  .btn-photobooth .btn-icon {
+    background: #ffffff;
   }
+  .btn-photobooth .btn-sub {
+    color: #4a0000;
+  }
+
   .btn-ai {
     background: var(--maroon);
-    color: #fff4d9;
+    color: #fff6e2;
   }
-  .btn-ai:hover {
-    background: #7a203e;
+  .btn-ai .btn-icon {
+    background: #2a0b16;
+  }
+  .btn-ai .btn-sub {
+    color: #ffd66b;
   }
 
   /* ============ FOOTER ============ */
   .footer {
     text-align: center;
-    padding: 8px 12px;
     color: rgba(255,255,255,0.7);
     font-size: 11.5px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
+    margin-top: 4px;
   }
   .footer b { color: #ffd66b; }
   .footer .brand-mark {
@@ -313,100 +218,39 @@
 <div class="container">
   <!-- HERO HEADER -->
   <header class="hero">
-    <div class="hero-tag">✨ Booth Sains Data & AI • UKM EXPO</div>
+    <div class="hero-tag">✨ Booth Sains Data • UKM EXPO</div>
     <h1>UKM EXPO UHN</h1>
-    <div class="hero-subtitle">Interactive Booth Experience</div>
-    <p class="hero-desc">
-      Selamat datang maba & pengunjung! Pilih pengalaman interaktif seru di bawah: cetak foto strip polaroid aesthetic atau mainkan AI Face Scanner cerdas.
-    </p>
+    <div class="hero-subtitle">Pilih Menu Interaktif</div>
   </header>
 
-  <!-- 2 MAIN FEATURE CARDS -->
-  <div class="menu-grid">
+  <!-- 2 BIG PUNCHY BUTTONS -->
+  <div class="button-group">
     
-    <!-- CARD 1: PHOTOBOOTH -->
-    <a href="/photobooth" class="menu-card">
-      <div class="card-top">
-        <span class="card-badge badge-hot">🔥 PALING FAVORIT</span>
-        <span class="card-num">1</span>
+    <!-- BUTTON 1: PHOTOBOOTH -->
+    <a href="/photobooth" class="main-btn btn-photobooth">
+      <div class="btn-icon">📸</div>
+      <div class="btn-text">
+        <div class="btn-title">HARKAT PHOTOBOOTH</div>
+        <div class="btn-sub">Cetak Strip Polaroid 8-Grid</div>
       </div>
-      <div class="card-header-main">
-        <div class="card-icon">📸</div>
-        <div class="card-title-wrap">
-          <div class="card-title">HARKAT PHOTOBOOTH</div>
-          <div class="card-tagline">Polaroid 8-Grid & Live Emotion Sync</div>
-        </div>
-      </div>
-      
-      <!-- List Penjelasan Fitur -->
-      <div class="feature-list">
-        <div class="feature-item">
-          <span class="feature-bullet">🎞️</span>
-          <div><b>8-Grid Strip Polaroid:</b> Ambil & susun 8 pose foto aesthetic dalam 1 frame strip klasik retro.</div>
-        </div>
-        <div class="feature-item">
-          <span class="feature-bullet">😄</span>
-          <div><b>Live Emotion Sync:</b> AI mendeteksi ekspresi (senyum, kedip, melet, kaget) lengkap dengan skor persen & emoji.</div>
-        </div>
-        <div class="feature-item">
-          <span class="feature-bullet">🎨</span>
-          <div><b>Scrapbook & Stiker:</b> Bebas geser urutan foto, ganti emoji per slot, & tempel stiker hiasan custom.</div>
-        </div>
-        <div class="feature-item">
-          <span class="feature-bullet">📱</span>
-          <div><b>Instant QR & Direct PNG:</b> Sekali tap langsung scan barcode untuk download file PNG HD tanpa watermark.</div>
-        </div>
-      </div>
-
-      <div class="card-btn btn-photobooth">
-        <span>Mulai Photobooth Polaroid</span> <span>➔</span>
-      </div>
+      <div class="btn-arrow">➔</div>
     </a>
 
-    <!-- CARD 2: AI FACE FUN SCANNER -->
-    <a href="/ai" class="menu-card">
-      <div class="card-top">
-        <span class="card-badge badge-ai">🤖 COMPUTER VISION</span>
-        <span class="card-num">2</span>
+    <!-- BUTTON 2: AI FACE SCANNER -->
+    <a href="/ai" class="main-btn btn-ai">
+      <div class="btn-icon">🤖</div>
+      <div class="btn-text">
+        <div class="btn-title">AI FACE SCANNER</div>
+        <div class="btn-sub">Tebak Umur & Rating Wajah</div>
       </div>
-      <div class="card-header-main">
-        <div class="card-icon">🔮</div>
-        <div class="card-title-wrap">
-          <div class="card-title">AI FACE FUN SCANNER</div>
-          <div class="card-tagline">Visualisasi AI, Tebak Umur & Rating Wajah</div>
-        </div>
-      </div>
-
-      <!-- List Penjelasan Fitur -->
-      <div class="feature-list">
-        <div class="feature-item">
-          <span class="feature-bullet">🎂</span>
-          <div><b>Tebak Umur & Generasi:</b> Prediksi usia wajah real-time & cari tahu kamu Gen-Z, Millennial, atau Gen-Alpha.</div>
-        </div>
-        <div class="feature-item">
-          <span class="feature-bullet">✨</span>
-          <div><b>Rating Aura & Pesona (0-100%):</b> Analisis tingkat ketampanan / kecantikan & skor aura positif kamu.</div>
-        </div>
-        <div class="feature-item">
-          <span class="feature-bullet">🎭</span>
-          <div><b>Kembaran Tokoh & Alumni:</b> Cocokkan kemiripan wajahmu dengan figur terkenal / alumni inspiratif kampus.</div>
-        </div>
-        <div class="feature-item">
-          <span class="feature-bullet">👑</span>
-          <div><b>AR Props & Beauty Filters:</b> Pasang mahkota, kacamata, bando kelinci, & filter tone estetik langsung di kamera.</div>
-        </div>
-      </div>
-
-      <div class="card-btn btn-ai">
-        <span>Coba AI Face Scanner</span> <span>➔</span>
-      </div>
+      <div class="btn-arrow">➔</div>
     </a>
 
   </div>
 
   <!-- FOOTER -->
   <footer class="footer">
-    <div>UKM EXPO UHN • <b>SAINS DATA</b> • HARKAT PHOTOBOOTH</div>
+    <div>UKM EXPO UHN • <b>SAINS DATA</b></div>
     <div class="brand-mark">Dovey ✦ Sains Data Experience</div>
   </footer>
 </div>
