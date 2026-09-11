@@ -754,41 +754,56 @@ function drawMeshContours(ctx, lm, w, h, isMirror) {
   ctx.restore();
 }
 
-// Draw AR Props
+// Draw AR Props with full 360-degree head-rotation invariance
 function drawArProp(ctx, lm, w, h, isMirror, prop) {
-  const topHead = lm[10];
-  const nose = lm[1];
-  const leftEye = lm[33];
-  const rightEye = lm[263];
+  const getPt = (pt) => {
+    if (!pt) return { x: 0, y: 0 };
+    const px = isMirror ? (1 - pt.x) * w : pt.x * w;
+    const py = pt.y * h;
+    return { x: px, y: py };
+  };
 
-  let hx = topHead.x * w, hy = topHead.y * h;
-  let ex = (leftEye.x + rightEye.x) / 2 * w, ey = (leftEye.y + rightEye.y) / 2 * h;
-  if (isMirror) {
-    hx = w - hx;
-    ex = w - ex;
-  }
-  const eyeSpan = Math.hypot((rightEye.x - leftEye.x) * w, (rightEye.y - leftEye.y) * h);
+  const visualLeftEye = isMirror ? getPt(lm[263]) : getPt(lm[33]);
+  const visualRightEye = isMirror ? getPt(lm[33]) : getPt(lm[263]);
+  const forehead = getPt(lm[10]);
+
+  const edx = visualRightEye.x - visualLeftEye.x;
+  const edy = visualRightEye.y - visualLeftEye.y;
+  const eyeSpan = Math.hypot(edx, edy) || 1;
+  const angle = Math.atan2(edy, edx);
 
   ctx.save();
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
   if (prop === 'crown') {
-    ctx.font = `${Math.round(eyeSpan * 1.6)}px system-ui`;
-    ctx.fillText('👑', hx, hy - eyeSpan * 0.6);
+    ctx.translate(forehead.x, forehead.y);
+    ctx.rotate(angle);
+    ctx.font = `${Math.round(eyeSpan * 1.5)}px system-ui`;
+    ctx.fillText('👑', 0, -eyeSpan * 0.55);
   } else if (prop === 'bunny') {
-    ctx.font = `${Math.round(eyeSpan * 1.8)}px system-ui`;
-    ctx.fillText('🐰', hx, hy - eyeSpan * 0.7);
+    ctx.translate(forehead.x, forehead.y);
+    ctx.rotate(angle);
+    ctx.font = `${Math.round(eyeSpan * 1.6)}px system-ui`;
+    ctx.fillText('🐰', 0, -eyeSpan * 0.55);
   } else if (prop === 'shades') {
-    ctx.font = `${Math.round(eyeSpan * 1.3)}px system-ui`;
-    ctx.fillText('😎', ex, ey);
+    const mx = (visualLeftEye.x + visualRightEye.x) / 2;
+    const my = (visualLeftEye.y + visualRightEye.y) / 2;
+    ctx.translate(mx, my);
+    ctx.rotate(angle);
+    ctx.font = `${Math.round(eyeSpan * 1.35)}px system-ui`;
+    ctx.fillText('😎', 0, 0);
   } else if (prop === 'grad') {
+    ctx.translate(forehead.x, forehead.y);
+    ctx.rotate(angle);
     ctx.font = `${Math.round(eyeSpan * 1.7)}px system-ui`;
-    ctx.fillText('🎓', hx, hy - eyeSpan * 0.6);
+    ctx.fillText('🎓', 0, -eyeSpan * 0.55);
   } else if (prop === 'sparkle') {
-    ctx.font = `${Math.round(eyeSpan * 0.9)}px system-ui`;
-    ctx.fillText('✨', hx + eyeSpan * 0.8, hy);
-    ctx.fillText('⭐', hx - eyeSpan * 0.8, hy + eyeSpan * 0.3);
+    ctx.translate(forehead.x, forehead.y);
+    ctx.rotate(angle);
+    ctx.font = `${Math.round(eyeSpan * 0.85)}px system-ui`;
+    ctx.fillText('✨', eyeSpan * 0.55, -eyeSpan * 0.35);
+    ctx.fillText('⭐', -eyeSpan * 0.55, -eyeSpan * 0.25);
   }
   ctx.restore();
 }

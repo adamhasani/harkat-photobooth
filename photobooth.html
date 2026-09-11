@@ -800,18 +800,20 @@ function drawArProps(ctx, landmarks, w, h, isMirror, smileWinnerIdx, faceIdx) {
     return { x: px, y: py };
   };
 
-  const pA = getPt(33);
-  const pB = getPt(263);
-  const leftVisualEye = pA.x < pB.x ? pA : pB;
-  const rightVisualEye = pA.x < pB.x ? pB : pA;
+  // Anatomically correct eye assignment:
+  // 33 = subject's right eye (appears on screen right if mirrored, screen left if not)
+  // 263 = subject's left eye (appears on screen left if mirrored, screen right if not)
+  const visualLeftEye = isMirror ? getPt(263) : getPt(33);
+  const visualRightEye = isMirror ? getPt(33) : getPt(263);
 
   const forehead = getPt(10);
-  const leftCheek = getPt(234);
-  const rightCheek = getPt(454);
+  const chin = getPt(152);
+  const leftCheek = isMirror ? getPt(454) : getPt(234);
+  const rightCheek = isMirror ? getPt(234) : getPt(454);
 
-  const edx = rightVisualEye.x - leftVisualEye.x;
-  const edy = rightVisualEye.y - leftVisualEye.y;
-  const eyeDist = Math.hypot(edx, edy);
+  const edx = visualRightEye.x - visualLeftEye.x;
+  const edy = visualRightEye.y - visualLeftEye.y;
+  const eyeDist = Math.hypot(edx, edy) || 1;
   const angle = Math.atan2(edy, edx);
 
   const activeProp = currentProp;
@@ -822,37 +824,33 @@ function drawArProps(ctx, landmarks, w, h, isMirror, smileWinnerIdx, faceIdx) {
   ctx.textBaseline = 'middle';
 
   if (activeProp === '👑') {
-    const cw = eyeDist * 1.5;
-    ctx.translate(forehead.x, forehead.y - cw * 0.45);
+    ctx.translate(forehead.x, forehead.y);
     ctx.rotate(angle);
-    ctx.font = `${Math.round(cw * 0.8)}px system-ui`;
-    ctx.fillText('👑', 0, 0);
+    ctx.font = `${Math.round(eyeDist * 1.5)}px system-ui`;
+    ctx.fillText('👑', 0, -eyeDist * 0.55);
   } else if (activeProp === '🕶️') {
-    const gw = eyeDist * 2.2;
-    const mx = (leftVisualEye.x + rightVisualEye.x) / 2;
-    const my = (leftVisualEye.y + rightVisualEye.y) / 2;
+    const mx = (visualLeftEye.x + visualRightEye.x) / 2;
+    const my = (visualLeftEye.y + visualRightEye.y) / 2;
     ctx.translate(mx, my);
     ctx.rotate(angle);
-    ctx.font = `${Math.round(gw * 0.7)}px system-ui`;
+    ctx.font = `${Math.round(eyeDist * 1.35)}px system-ui`;
     ctx.fillText('🕶️', 0, 0);
   } else if (activeProp === '🎀' || activeProp === '🌸' || activeProp === '⭐') {
-    const propSize = eyeDist * 0.8;
-    ctx.translate(forehead.x + eyeDist * 0.6, forehead.y - propSize * 0.3);
+    ctx.translate(forehead.x, forehead.y);
     ctx.rotate(angle);
-    ctx.font = `${Math.round(propSize)}px system-ui`;
-    ctx.fillText(activeProp, 0, 0);
+    ctx.font = `${Math.round(eyeDist * 0.85)}px system-ui`;
+    ctx.fillText(activeProp, eyeDist * 0.55, -eyeDist * 0.35);
   } else if (activeProp === '🐱' || activeProp === '🐰' || activeProp === '🥳' || activeProp === '🧸') {
-    const cw = eyeDist * 1.6;
-    ctx.translate(forehead.x, forehead.y - cw * 0.4);
+    ctx.translate(forehead.x, forehead.y);
     ctx.rotate(angle);
-    ctx.font = `${Math.round(cw * 0.75)}px system-ui`;
-    ctx.fillText(activeProp, 0, 0);
+    ctx.font = `${Math.round(eyeDist * 1.6)}px system-ui`;
+    ctx.fillText(activeProp, 0, -eyeDist * 0.55);
   } else if (activeProp === '💖' || activeProp === '✨' || activeProp === '🍓') {
-    const bw = eyeDist * 0.45;
     for (let cp of [leftCheek, rightCheek]) {
       ctx.save();
       ctx.translate(cp.x, cp.y);
-      ctx.font = `${Math.round(bw)}px system-ui`;
+      ctx.rotate(angle);
+      ctx.font = `${Math.round(eyeDist * 0.5)}px system-ui`;
       ctx.fillText(activeProp, 0, 0);
       ctx.restore();
     }
