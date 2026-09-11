@@ -237,8 +237,19 @@
     background: #fbf5e6; color: var(--maroon-deep); font-size: 13px; font-family: 'Fredoka', sans-serif; font-weight: 700;
   }
   .btn-scan {
-    background: var(--gold); color: var(--maroon-deep); font-size: 15.5px; flex: 1; max-width: 280px;
+    background: linear-gradient(135deg, #ffd86b, #f5b722);
+    color: var(--maroon-deep);
+    font-size: 16px;
+    font-family: 'Luckiest Guy', cursive;
+    flex: 1; max-width: 320px;
     justify-content: center;
+    border: 3px solid var(--maroon-deep);
+    box-shadow: 0 4px 0 var(--maroon-deep), 0 0 12px rgba(245,183,34,0.6);
+    animation: btnPulse 2s infinite ease-in-out;
+  }
+  @keyframes btnPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 4px 0 var(--maroon-deep), 0 0 10px rgba(245,183,34,0.4); }
+    50% { transform: scale(1.02); box-shadow: 0 4px 0 var(--maroon-deep), 0 0 18px rgba(245,183,34,0.8); }
   }
   .btn-scan:hover { background: var(--gold-glow); }
 
@@ -552,8 +563,46 @@ async function startCamera() {
     video.addEventListener('loadedmetadata', adaptSize, { once: true });
     adaptSize();
     loop();
+    setTimeout(autoAnalyzeLive, 1200);
   } catch (err) {
     console.error('Camera access failed:', err);
+  }
+}
+
+let autoAnalyzed = false;
+async function autoAnalyzeLive() {
+  if (autoAnalyzed || !video.videoWidth || !video.srcObject) return;
+  autoAnalyzed = true;
+  
+  const c = document.createElement('canvas');
+  c.width = Math.min(480, video.videoWidth);
+  c.height = Math.round(c.width * (video.videoHeight / video.videoWidth));
+  const cx = c.getContext('2d');
+  if (facing === 'user') { cx.translate(c.width, 0); cx.scale(-1, 1); }
+  cx.drawImage(video, 0, 0, c.width, c.height);
+  const du = c.toDataURL('image/jpeg', 0.82);
+
+  try {
+    const res = await fetch('/api/ai-analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ photo: du })
+    });
+    const data = await res.json();
+    if (data && data.ok && data.ai) {
+      const a = data.ai;
+      $('hudAvatar').textContent = a.gender.includes('Perempuan') ? '👧' : '👦';
+      $('hudMainText').textContent = `${a.age} Tahun • ${a.gender}`;
+      $('hudSubText').textContent = a.comment || `${a.generation} ✨`;
+      $('stat1Label').textContent = 'Kembaran:';
+      $('stat1').textContent = a.lookalike || '-';
+      $('stat2Label').textContent = 'Pesona:';
+      $('stat2').textContent = `${a.beautyScore}%`;
+      $('hudPanel').style.opacity = '1';
+      if ($('scanHint')) $('scanHint').textContent = `✨ ${a.gender} (${a.age} Thn) Terdeteksi!`;
+    }
+  } catch (e) {
+    autoAnalyzed = false;
   }
 }
 
@@ -1242,12 +1291,14 @@ $('btnScan').onclick = () => {
 $('btnLiveReset').onclick = () => {
   lastFaces = [];
   lastBs = [];
+  autoAnalyzed = false;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if ($('scanHint')) $('scanHint').textContent = '🔍 Cari Wajah...';
   $('hudMainText').textContent = 'Menganalisis Wajah Baru...';
   $('hudSubText').textContent = 'Posisikan wajah di tengah kamera ✨';
   $('stat1').textContent = 'Memindai...';
   $('stat2').textContent = 'Memindai...';
+  setTimeout(autoAnalyzeLive, 800);
 };
 
 $('btnCloseModal').onclick = () => {
@@ -1259,6 +1310,8 @@ $('btnScanAgain').onclick = () => {
   if ($('scanHint')) $('scanHint').textContent = '🔍 Cari Wajah...';
   lastFaces = [];
   lastBs = [];
+  autoAnalyzed = false;
+  setTimeout(autoAnalyzeLive, 800);
 };
 
 // ============ INIT ============
