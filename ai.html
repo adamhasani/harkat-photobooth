@@ -724,31 +724,35 @@ function stopCamera() {
 function drawArProps(ctx, landmarks, w, h, isMirror, smileWinnerIdx, faceIdx) {
   if (!landmarks || !landmarks.length) return;
 
+  // MediaPipe landmarks normalized [0..1]:
+  // pt.x = 0 (kiri video mentah), pt.x = 1 (kanan video mentah)
+  // Pada kamera depan yang di-mirror, kita perlu memetakan koordinat ke posisi visual mirror
   const getPt = (idx) => {
     const pt = landmarks[idx];
     if (!pt) return { x: 0, y: 0 };
-    // Koordinat yang dihitung di sini adalah posisi piksel pada kanvas
     const px = isMirror ? (1 - pt.x) * w : pt.x * w;
     const py = pt.y * h;
     return { x: px, y: py };
   };
 
-  const leftEye = getPt(33);
-  const rightEye = getPt(263);
+  // Landmark 33 = inner corner mata kanan visual (mata kiri anatomi subjek)
+  // Landmark 263 = inner corner mata kiri visual (mata kanan anatomi subjek)
+  // Hitung vektor selalu dari titik visual KIRI ke KANAN agar sudut rotasi selalu UPWARDS & TIDAK PERNAH TERBALIK:
+  const pA = getPt(33);
+  const pB = getPt(263);
+  const leftVisualEye = pA.x < pB.x ? pA : pB;
+  const rightVisualEye = pA.x < pB.x ? pB : pA;
+
   const forehead = getPt(10);
   const leftCheek = getPt(234);
   const rightCheek = getPt(454);
 
-  // Sudut rotasi mata (Head Tilt Angle)
-  const edx = rightEye.x - leftEye.x;
-  const edy = rightEye.y - leftEye.y;
+  // Vektor dari mata kiri visual ke mata kanan visual (selalu mengarah ke kanan layar -> dx > 0)
+  const edx = rightVisualEye.x - leftVisualEye.x;
+  const edy = rightVisualEye.y - leftVisualEye.y;
   const eyeDist = Math.hypot(edx, edy);
-  let angle = Math.atan2(edy, edx);
-
-  // Jika isMirror, mata kiri dan kanan tertukar arah x-nya, jadi koreksi sudut
-  if (isMirror) {
-    angle = -angle;
-  }
+  // Sudut kemiringan kepala (0 = tegak, positif = miring searah jarum jam)
+  const angle = Math.atan2(edy, edx);
 
   const isSmileKing = (smileWinnerIdx === faceIdx);
   const activeProp = isSmileKing ? '👑' : currentProp;
@@ -774,28 +778,25 @@ function drawArProps(ctx, landmarks, w, h, isMirror, smileWinnerIdx, faceIdx) {
     }
   } else if (activeProp === '🕶️') {
     const gw = eyeDist * 2.2;
-    const mx = (leftEye.x + rightEye.x) / 2;
-    const my = (leftEye.y + rightEye.y) / 2;
+    const mx = (leftVisualEye.x + rightVisualEye.x) / 2;
+    const my = (leftVisualEye.y + rightVisualEye.y) / 2;
     ctx.translate(mx, my);
     ctx.rotate(angle);
     ctx.font = `${Math.round(gw * 0.7)}px system-ui`;
     ctx.fillText('🕶️', 0, 0);
   } else if (activeProp === '🎀' || activeProp === '🌸' || activeProp === '⭐') {
-    // Aksesoris di pojok dahi / telinga
     const propSize = eyeDist * 0.8;
     ctx.translate(forehead.x + eyeDist * 0.6, forehead.y - propSize * 0.3);
     ctx.rotate(angle);
     ctx.font = `${Math.round(propSize)}px system-ui`;
     ctx.fillText(activeProp, 0, 0);
   } else if (activeProp === '🐱' || activeProp === '🐰' || activeProp === '🥳' || activeProp === '🧸') {
-    // Bando di atas kepala
     const cw = eyeDist * 1.6;
     ctx.translate(forehead.x, forehead.y - cw * 0.4);
     ctx.rotate(angle);
     ctx.font = `${Math.round(cw * 0.75)}px system-ui`;
     ctx.fillText(activeProp, 0, 0);
   } else if (activeProp === '💖' || activeProp === '✨' || activeProp === '🍓') {
-    // Ornamen di kedua pipi
     const bw = eyeDist * 0.45;
     for (let cp of [leftCheek, rightCheek]) {
       ctx.save();
@@ -1733,7 +1734,7 @@ document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
 });
 
 // ============ INIT ============
-window.__h = { renderHud, emotion, capture, renderSheet, landmarker: () => landmarker, downloadSheet, getProp: () => currentProp, getFilter: () => currentFilter };
+window.__h = { renderHud, emotion, capture, renderSheet, landmarker: () => landmarker, downloadSheet, getProp: () => currentProp, getFilter: () => currentFilter, drawArProps };
 renderLayout();
 setupEmojiPicker();
 setupDragDrop();
