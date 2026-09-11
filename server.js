@@ -138,9 +138,15 @@ function callGroqVision(photo, telemetry) {
     const key = GROQ_KEYS[groqKeyIdx % GROQ_KEYS.length];
     groqKeyIdx++;
 
-    let telemetryText = 'Tugasmu: Tentukan GENDER (Laki-laki 👦 atau Perempuan 👧) dan USIA secara MURNI dari pengamatan visual foto asli (gaya rambut, bentuk mata/bibir, hijab/aksesoris, kontur wajah). JANGAN terpengaruh tebakan awal jika visual foto jelas menunjukkan wanita/pria.';
+    let telemetryText = 'Analisis biometrik wajah ini secara spesifik & akurat untuk booth Sains Data AI:';
     if (telemetry) {
-      telemetryText += `\n(Data Tambahan Sensor 3D: Simetri ${telemetry.symmetryPct || 95}%, Senyum ${telemetry.smilePct || 50}%)`;
+      telemetryText = `Data Pengukuran Sensor Biometrik MediaPipe 3D:
+- Simetri Wajah Terukur: ${telemetry.symmetryPct || 95}%
+- Intensitas Senyuman: ${telemetry.smilePct || 80}%
+- Rasio Rahang Terukur: ${telemetry.jawRatio ? Number(telemetry.jawRatio).toFixed(2) : '0.78'}
+- Deteksi Awal Morfologi: ${telemetry.genderHint || 'Laki-laki/Perempuan'}
+
+Tugasmu: Gabungkan data telemetri sensor 3D ini dengan pengamatan visualmu dari foto:`;
     }
 
     const payload = JSON.stringify({
@@ -200,9 +206,9 @@ function callOmniRouteVision(photo, telemetry) {
     const key = process.env.HERMES_CUSTOM_LOCALHOST_20128_API_KEY || '';
     if (!key) return resolve(null);
 
-    let telemetryText = 'Tugasmu: Tentukan GENDER dan USIA secara MURNI dari pengamatan visual foto asli:';
+    let telemetryText = 'Analisis biometrik wajah ini secara spesifik & akurat:';
     if (telemetry) {
-      telemetryText += `\n(Data Sensor: Simetri ${telemetry.symmetryPct}%, Senyum ${telemetry.smilePct}%)`;
+      telemetryText = `Data Sensor MediaPipe: Simetri ${telemetry.symmetryPct}%, Senyum ${telemetry.smilePct}%, Gender ${telemetry.genderHint}. Gabungkan dengan foto:`;
     }
 
     const payload = JSON.stringify({
