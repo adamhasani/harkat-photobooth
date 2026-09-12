@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔮</text></svg>">
-<title>UKM EXPO UHN — AI Face Scanner & Fun Vision</title>
+<title>UKM EXPO UHN — AI Face Scanner & Biometrics</title>
 <link rel="stylesheet" href="/assets/fonts/LuckiestGuy.css">
 <link rel="stylesheet" href="/assets/fonts/Pacifico.css">
 <style>
@@ -35,6 +35,11 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+  }
   body {
     background: #1c0610;
     background-image: 
@@ -51,11 +56,11 @@
 
   .app {
     width: 100%;
-    max-width: 500px;
+    max-width: 480px;
     min-height: 100vh;
     background: var(--cream-sheet);
-    border-left: 2px solid var(--maroon-deep);
-    border-right: 2px solid var(--maroon-deep);
+    border-left: 2.5px solid var(--maroon-deep);
+    border-right: 2.5px solid var(--maroon-deep);
     display: flex;
     flex-direction: column;
     position: relative;
@@ -65,7 +70,7 @@
   /* ============ TOOLBAR ============ */
   .toolbar {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 14px 8px; border-bottom: 2px solid var(--maroon-deep);
+    padding: 10px 14px 8px; border-bottom: 2.5px solid var(--maroon-deep);
     background: #fbf5e6;
   }
   .toolbar-left {
@@ -93,35 +98,21 @@
     white-space: nowrap;
   }
 
-  /* ============ MODE SELECTOR TABS ============ */
-  .mode-nav {
-    display: flex; gap: 6px; padding: 8px 10px; overflow-x: auto;
-    background: #f1e4c3; border-bottom: 2px solid var(--maroon-deep);
-    -webkit-overflow-scrolling: touch; scrollbar-width: none;
-  }
-  .mode-nav::-webkit-scrollbar { display: none; }
-  .mode-btn {
-    font-family: 'Fredoka', sans-serif; font-size: 12.5px; font-weight: 700;
-    padding: 6px 12px; border-radius: 999px; border: 2px solid var(--maroon-deep);
-    background: #ffffff; color: var(--maroon-deep); cursor: pointer;
-    box-shadow: 0 2px 0 var(--maroon-deep); white-space: nowrap; flex-shrink: 0;
-    transition: all 0.12s; display: inline-flex; align-items: center; gap: 5px;
-  }
-  .mode-btn.active {
-    background: var(--maroon); color: #ffd66b;
-    box-shadow: 0 2px 0 var(--maroon-deep); transform: translateY(-1px);
-  }
-
-  /* ============ CAMERA VIEWPORT ============ */
+  /* ============ CAMERA & SCANNER VIEWPORT ============ */
   .cam-container {
-    padding: 10px 12px 10px;
-    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    padding: 16px 14px 14px;
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+    flex: 1; justify-content: center;
+    width: 100%;
   }
   .cam-wrap {
-    position: relative; width: 100%; border-radius: 18px; overflow: hidden;
-    background: #000; border: 3px solid var(--maroon-deep);
-    box-shadow: 0 4px 0 var(--maroon-deep), 0 6px 14px rgba(0,0,0,0.25);
-    aspect-ratio: 4 / 3;
+    position: relative; width: 100%; border-radius: 20px; overflow: hidden;
+    background: #0d0610; border: 3px solid var(--maroon-deep);
+    box-shadow: 0 5px 0 var(--maroon-deep), 0 10px 24px rgba(0,0,0,0.35);
+    aspect-ratio: 3 / 4;
+    max-height: 56vh;
+    margin: 0 auto;
+    display: flex; align-items: center; justify-content: center;
   }
   #video {
     position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
@@ -131,182 +122,235 @@
     position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3;
   }
 
-  /* Scanner Laser Sweep */
-  .scan-laser {
-    position: absolute; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, transparent, #ffd86b, #00f2fe, #ffd86b, transparent);
-    box-shadow: 0 0 12px #00f2fe, 0 0 6px #ffd86b;
-    z-index: 4; pointer-events: none; opacity: 0.9;
-    animation: laserScan 2.4s ease-in-out infinite alternate;
+  /* Sci-Fi Corner Brackets */
+  .corner-bracket {
+    position: absolute; width: 20px; height: 20px; pointer-events: none; z-index: 4;
+    border: 3px solid var(--gold);
   }
-  @keyframes laserScan {
-    0% { top: 6%; }
-    100% { top: 92%; }
-  }
+  .corner-bracket.top-left { top: 10px; left: 10px; border-right: none; border-bottom: none; border-top-left-radius: 6px; }
+  .corner-bracket.top-right { top: 10px; right: 10px; border-left: none; border-bottom: none; border-top-right-radius: 6px; }
+  .corner-bracket.bottom-left { bottom: 10px; left: 10px; border-right: none; border-top: none; border-bottom-left-radius: 6px; }
+  .corner-bracket.bottom-right { bottom: 10px; right: 10px; border-left: none; border-top: none; border-bottom-right-radius: 6px; }
 
-  /* Live Detection Status */
+  /* Live Detection Status Badge */
   .scan-badge {
-    position: absolute; top: 10px; left: 10px; z-index: 5;
-    background: rgba(74,0,0,0.85); color: #ffd86b;
-    border: 1.5px solid var(--gold); border-radius: 8px;
-    padding: 4px 10px; font-size: 11.5px; font-weight: 700;
+    position: absolute; top: 12px; left: 12px; z-index: 6;
+    background: rgba(74,0,0,0.88); color: #ffd86b;
+    border: 1.5px solid var(--gold); border-radius: 999px;
+    padding: 4px 12px; font-size: 11.5px; font-weight: 700;
     display: flex; align-items: center; gap: 6px;
-    backdrop-filter: blur(4px); box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    backdrop-filter: blur(4px); box-shadow: 0 2px 6px rgba(0,0,0,0.35);
   }
   .dot-live {
     width: 8px; height: 8px; border-radius: 50%; background: #00ff88;
-    box-shadow: 0 0 8px #00ff88; animation: pulse 1.2s infinite;
+    box-shadow: 0 0 8px #00ff88; animation: pulseDot 1.2s infinite;
   }
-  @keyframes pulse {
+  @keyframes pulseDot {
     0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.4; transform: scale(0.8); }
   }
 
-  /* ============ LIVE AI ANALYSIS HUD ============ */
-  .hud-panel {
-    width: 100%; background: #ffffff; border: 2.5px solid var(--maroon-deep);
-    border-radius: 18px; padding: 12px 14px; box-shadow: 0 3px 0 var(--maroon-deep);
-    display: flex; flex-direction: column; gap: 8px;
+  /* Camera Flip Overlay Button */
+  .btn-flip-overlay {
+    position: absolute; top: 10px; right: 10px; z-index: 6;
+    background: rgba(251, 245, 230, 0.92); color: var(--maroon-deep);
+    border: 1.5px solid var(--maroon-deep); border-radius: 999px;
+    padding: 5px 12px; font-size: 11.5px; font-weight: 700;
+    font-family: 'Fredoka', sans-serif; cursor: pointer;
+    box-shadow: 0 2px 0 var(--maroon-deep); display: flex; align-items: center; gap: 4px;
+    transition: transform 0.1s;
   }
-  .hud-header {
-    display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 1.5px dashed #ecdcb9; padding-bottom: 6px;
+  .btn-flip-overlay:active { transform: translateY(1.5px); }
+
+  /* Scanner Laser Sweep Line */
+  .scan-laser {
+    position: absolute; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, transparent, #ffd86b, #00f2fe, #ffd86b, transparent);
+    box-shadow: 0 0 16px #00f2fe, 0 0 8px #ffd86b;
+    z-index: 5; pointer-events: none; opacity: 0;
   }
-  .hud-title {
-    font-family: 'Luckiest Guy', cursive; color: var(--maroon); font-size: 16px;
-    letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;
+  .scan-laser.scanning-active {
+    opacity: 1;
+    animation: rapidLaserScan 0.85s ease-in-out infinite alternate;
   }
-  .hud-confidence {
-    font-size: 11px; font-weight: 700; color: var(--teal);
-    background: #e6f7f2; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--teal);
+  @keyframes rapidLaserScan {
+    0% { top: 4%; }
+    100% { top: 94%; }
   }
 
-  .hud-body {
-    display: flex; align-items: center; gap: 12px;
+  /* ============ SIMULATED SCANNING OVERLAY ============ */
+  .scanning-overlay {
+    position: absolute; inset: 0; z-index: 10;
+    background: rgba(24, 7, 18, 0.82);
+    backdrop-filter: blur(4px);
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    padding: 20px; text-align: center; gap: 12px;
+    animation: fadeIn 0.2s ease-out;
   }
-  .hud-avatar {
-    font-size: 32px; width: 52px; height: 52px; border-radius: 14px;
-    background: #fbf5e6; border: 2px solid var(--maroon-deep);
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    box-shadow: 0 2px 0 rgba(74,0,0,0.15);
-  }
-  .hud-info {
-    flex: 1; min-width: 0;
-  }
-  .hud-main-text {
-    font-family: 'Fredoka', sans-serif; font-size: 16px; font-weight: 700;
-    color: var(--maroon-deep); line-height: 1.2;
-  }
-  .hud-sub-text {
-    font-size: 12.5px; color: #5c3540; font-weight: 600; margin-top: 3px; line-height: 1.3;
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
-  /* Metric Breakdown Grid */
-  .hud-stats {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 2px;
+  .scan-radar-grid {
+    position: absolute; inset: 0; pointer-events: none; opacity: 0.25;
+    background-image: 
+      linear-gradient(rgba(0,242,254,0.3) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,242,254,0.3) 1px, transparent 1px);
+    background-size: 24px 24px;
+    animation: gridMove 12s linear infinite;
   }
-  .stat-chip {
-    background: #fbf8f0; border: 1.5px solid #ecdcb9; border-radius: 10px;
-    padding: 5px 8px; font-size: 11.5px; display: flex; justify-content: space-between;
-    font-weight: 600;
-  }
-  .stat-chip b { color: var(--maroon); }
-
-  /* ============ PROPS & FILTER SUB-PANEL (for Mode 4) ============ */
-  .props-row {
-    display: none; width: 100%; gap: 6px; overflow-x: auto; padding: 2px 0;
-    scrollbar-width: none;
-  }
-  .props-row::-webkit-scrollbar { display: none; }
-  .prop-chip, .filter-chip {
-    font-family: 'Fredoka', sans-serif; font-size: 12px; font-weight: 700;
-    padding: 5px 12px; border-radius: 999px; border: 1.5px solid var(--maroon-deep);
-    background: #fff; color: var(--maroon-deep); cursor: pointer;
-    box-shadow: 0 1.5px 0 var(--maroon-deep); white-space: nowrap; flex-shrink: 0;
-  }
-  .prop-chip.active, .filter-chip.active {
-    background: var(--gold); color: var(--maroon-deep);
+  @keyframes gridMove {
+    0% { background-position: 0 0; }
+    100% { background-position: 24px 24px; }
   }
 
-  /* ============ CAMERA BUTTON CONTROLS ============ */
-  .cam-controls {
-    display: flex; gap: 10px; width: 100%; justify-content: center; align-items: center;
-    padding: 4px 0 6px;
+  .scanning-hud-content {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    width: 100%; max-width: 320px;
   }
-  .btn-action {
-    font-family: 'Luckiest Guy', cursive; font-size: 15px; letter-spacing: 0.5px;
-    padding: 12px 18px; border-radius: 999px; border: 2.5px solid var(--maroon-deep);
-    cursor: pointer; box-shadow: 0 3px 0 var(--maroon-deep); transition: all 0.1s;
-    display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
-  }
-  .btn-action:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--maroon-deep); }
-  .btn-flip {
-    background: #ffffff; color: var(--maroon-deep); font-size: 13px; font-family: 'Fredoka', sans-serif; font-weight: 700;
-  }
-  .btn-reset {
-    background: #fbf5e6; color: var(--maroon-deep); font-size: 13px; font-family: 'Fredoka', sans-serif; font-weight: 700;
-  }
-  .btn-scan {
-    background: var(--gold); color: var(--maroon-deep); font-size: 15.5px; flex: 1; max-width: 280px;
-    justify-content: center;
-  }
-  .btn-scan:hover { background: var(--gold-glow); }
 
-  /* ============ RESULT POPUP MODAL (CERTIFICATE CARD) ============ */
+  .scanning-hud-spinner {
+    position: relative; width: 64px; height: 64px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .hud-ring {
+    position: absolute; inset: 0; border-radius: 50%;
+    border: 3px solid transparent;
+    border-top-color: var(--cyan-glow);
+    border-bottom-color: var(--gold);
+    animation: spinRing 1s linear infinite;
+  }
+  .hud-ring:nth-child(2) {
+    inset: 6px;
+    border-top-color: var(--gold-glow);
+    border-bottom-color: transparent;
+    animation: spinRingReverse 0.7s linear infinite;
+  }
+  @keyframes spinRing {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  @keyframes spinRingReverse {
+    0% { transform: rotate(360deg); }
+    100% { transform: rotate(0deg); }
+  }
+  .hud-icon {
+    font-size: 26px; z-index: 2;
+    animation: pulseIcon 0.8s ease-in-out infinite alternate;
+  }
+  @keyframes pulseIcon {
+    0% { transform: scale(0.9); opacity: 0.8; }
+    100% { transform: scale(1.15); opacity: 1; }
+  }
+
+  .scanning-step-title {
+    font-family: 'Luckiest Guy', cursive;
+    color: #ffd86b; font-size: 16.5px; letter-spacing: 0.8px;
+    text-shadow: 0 0 12px rgba(255, 216, 107, 0.6);
+  }
+  .scanning-step-desc {
+    font-family: 'Fredoka', sans-serif;
+    color: #fbf5e6; font-size: 12.5px; font-weight: 600;
+    min-height: 20px; line-height: 1.3;
+  }
+
+  .scanning-progress-bar {
+    width: 88%; height: 10px; background: rgba(0,0,0,0.6);
+    border: 1.5px solid var(--gold); border-radius: 999px;
+    overflow: hidden; padding: 1.5px; margin-top: 4px;
+  }
+  .scanning-progress-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, #00f2fe, #ffd86b);
+    border-radius: 999px; transition: width 0.3s ease;
+    box-shadow: 0 0 8px #00f2fe;
+  }
+
+  /* ============ MAIN ACTION BUTTON ============ */
+  .action-wrap {
+    width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 4px;
+  }
+  .btn-main-scan {
+    width: 100%; height: 60px; border-radius: 999px;
+    border: 3px solid var(--maroon-deep);
+    background: linear-gradient(135deg, #f5b722 0%, #ffd86b 50%, #f5b722 100%);
+    color: var(--maroon-deep);
+    font-family: 'Luckiest Guy', cursive; font-size: 20px; letter-spacing: 1px;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    cursor: pointer; box-shadow: 0 5px 0 var(--maroon-deep), 0 10px 24px rgba(245,183,34,0.35);
+    transition: all 0.12s ease; position: relative; overflow: hidden;
+  }
+  .btn-main-scan:active {
+    transform: translateY(3px); box-shadow: 0 2px 0 var(--maroon-deep);
+  }
+  .btn-main-scan.scanning {
+    background: linear-gradient(135deg, #0d6e5a, #00f2fe);
+    color: #ffffff; box-shadow: 0 3px 0 #083b30; transform: translateY(2px);
+    pointer-events: none;
+  }
+  .btn-scan-icon { font-size: 24px; }
+  .scan-hint {
+    font-size: 11.5px; font-weight: 700; color: var(--maroon);
+    text-align: center; opacity: 0.9;
+  }
+
+  /* ============ MODAL RESULT CERTIFICATE ============ */
   .modal-backdrop {
-    position: fixed; inset: 0; background: rgba(28,6,16,0.88); z-index: 50;
-    display: none; align-items: center; justify-content: center; padding: 16px;
-    backdrop-filter: blur(6px);
+    position: fixed; inset: 0; background: rgba(18, 5, 12, 0.88);
+    backdrop-filter: blur(6px); z-index: 100;
+    display: none; align-items: center; justify-content: center; padding: 14px;
   }
   .modal-card {
-    background: #ffffff; border: 3.5px solid var(--maroon-deep); border-radius: 24px;
+    background: var(--cream-sheet); border: 3px solid var(--maroon-deep); border-radius: 22px;
     width: 100%; max-width: 440px; max-height: 92vh; overflow-y: auto;
     box-shadow: 0 8px 0 var(--maroon-deep), 0 16px 36px rgba(0,0,0,0.5);
-    padding: 18px; display: flex; flex-direction: column; gap: 14px;
-    animation: popIn 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    padding: 18px; display: flex; flex-direction: column; gap: 12px;
+    animation: popModal 0.24s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
-  @keyframes popIn {
+  @keyframes popModal {
     from { opacity: 0; transform: scale(0.92); }
     to { opacity: 1; transform: scale(1); }
   }
 
-  .cert-header {
-    text-align: center; border-bottom: 2px solid var(--maroon-deep); padding-bottom: 8px;
-  }
+  .cert-header { text-align: center; border-bottom: 2px dashed #d8c39e; padding-bottom: 8px; }
   .cert-tag {
-    font-size: 11px; font-weight: 700; color: var(--maroon-deep); background: #ffd86b;
-    padding: 3px 12px; border-radius: 999px; border: 1.5px solid var(--maroon-deep);
-    display: inline-block; margin-bottom: 4px;
+    font-size: 10.5px; font-weight: 800; letter-spacing: 1.2px; color: var(--maroon);
+    background: #fbf5e6; border: 1.5px solid var(--gold); border-radius: 999px;
+    display: inline-block; padding: 3px 12px; margin-bottom: 4px;
   }
   .cert-header h2 {
-    font-family: 'Luckiest Guy', cursive; color: var(--maroon); font-size: 24px;
-    letter-spacing: 1px; line-height: 1.1;
+    font-family: 'Luckiest Guy', cursive; color: var(--maroon); font-size: 26px;
+    letter-spacing: 1px; line-height: 1.1; margin-bottom: 2px;
   }
   .cert-header small {
-    font-family: 'Pacifico', cursive; color: var(--gold); font-size: 15px;
+    font-family: 'Pacifico', cursive; color: #8a5b00; font-size: 15px;
   }
 
   .cert-photo-wrap {
-    width: 100%; aspect-ratio: 4 / 3; border-radius: 16px; overflow: hidden;
-    border: 2.5px solid var(--maroon-deep); background: #000; position: relative;
-    box-shadow: 0 3px 0 rgba(74,0,0,0.2);
+    width: 100%; border-radius: 16px; overflow: hidden;
+    border: 2.5px solid var(--maroon-deep); box-shadow: 0 3px 0 var(--maroon-deep);
+    background: #000;
   }
-  .cert-photo-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cert-photo-wrap img { width: 100%; height: auto; display: block; }
 
   .cert-results-box {
-    background: #fbf8f0; border: 2px solid var(--maroon-deep); border-radius: 16px;
+    background: #ffffff; border: 2px solid var(--maroon-deep); border-radius: 16px;
     padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;
+    box-shadow: 0 2px 0 rgba(74,0,0,0.1);
   }
   .cert-row {
     display: flex; justify-content: space-between; align-items: center;
-    font-size: 13.5px; font-weight: 700; color: #38242b;
+    font-size: 13px; font-weight: 700; color: #2d1d23;
   }
   .cert-row span { color: #681a34; }
-  .cert-row b { color: var(--maroon-deep); font-size: 14.5px; }
+  .cert-row b { color: var(--maroon-deep); font-size: 14px; text-align: right; }
+
   .cert-quote {
-    background: #ffffff; border-left: 3.5px solid var(--gold); padding: 8px 12px;
-    border-radius: 0 10px 10px 0; font-size: 12.5px; color: #4a2832; line-height: 1.4;
-    border: 1px solid #ebdcb9; border-left: 3.5px solid var(--gold);
+    font-family: 'Fredoka', sans-serif; font-size: 12.5px; color: #4a2832;
+    background: #fbf8f0; border: 1.5px dashed #ebdcb9; border-left: 3.5px solid var(--gold);
+    border-radius: 8px; padding: 8px 10px; margin-top: 4px; line-height: 1.4;
   }
 
   .cert-stamp {
@@ -317,31 +361,34 @@
   .cert-actions {
     display: flex; flex-direction: column; gap: 8px;
   }
+  .btn-cert-again {
+    width: 100%; background: #2b7a4b; color: #ffffff;
+    border: 2px solid #164629; padding: 12px; border-radius: 999px;
+    font-family: 'Luckiest Guy', 'Fredoka', sans-serif; font-size: 16px; letter-spacing: 0.5px;
+    cursor: pointer; box-shadow: 0 3px 0 #164629; text-align: center; transition: transform 0.1s;
+  }
+  .btn-cert-again:active { transform: translateY(1.5px); }
+
   .cert-actions-row {
     display: flex; gap: 8px;
   }
-  .btn-cert-again {
-    width: 100%; background: #2b7a4b; color: #ffffff;
-    border: 2px solid #164629; padding: 12px; border-radius: 12px;
-    font-family: 'Fredoka', 'Luckiest Guy', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer;
-    box-shadow: 0 3px 0 #164629; text-align: center; transition: transform 0.1s;
-  }
-  .btn-cert-again:active { transform: translateY(1.5px); }
   .btn-cert-dl {
-    flex: 2; background: var(--gold); color: var(--maroon-deep);
-    border: 2px solid var(--maroon-deep); padding: 12px; border-radius: 12px;
+    flex: 1; background: var(--gold); color: var(--maroon-deep);
+    border: 2px solid var(--maroon-deep); padding: 11px; border-radius: 999px;
     font-family: 'Luckiest Guy', cursive; font-size: 14.5px; cursor: pointer;
-    box-shadow: 0 3px 0 var(--maroon-deep); text-align: center; text-decoration: none;
+    box-shadow: 0 2.5px 0 var(--maroon-deep); text-align: center; text-decoration: none;
+    display: flex; align-items: center; justify-content: center;
   }
   .btn-cert-close {
-    flex: 1; background: #fbf5e6; color: var(--maroon-deep);
-    border: 2px solid var(--maroon-deep); padding: 12px 14px; border-radius: 12px;
-    font-family: 'Fredoka', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer;
-    box-shadow: 0 3px 0 var(--maroon-deep);
+    background: #fbf5e6; color: var(--maroon-deep);
+    border: 2px solid var(--maroon-deep); padding: 11px 16px; border-radius: 999px;
+    font-family: 'Fredoka', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 2px 0 var(--maroon-deep);
   }
 </style>
 </head>
 <body>
+
 <div class="app">
   <!-- TOOLBAR -->
   <div class="toolbar">
@@ -349,73 +396,61 @@
       <a href="/" class="btn-nav">🏠 Menu</a>
       <div class="brand">
         <h1>UKM EXPO UHN</h1>
-        <small>AI VISION ✦</small>
+        <small>AI VISION 🔮</small>
       </div>
     </div>
     <a href="/photobooth" class="btn-nav" style="background:#ffcc4d;">📸 Photobooth</a>
   </div>
 
-  <!-- MODE TABS -->
-  <div class="mode-nav">
-    <button class="mode-btn active" data-mode="age">🎂 Tebak Umur</button>
-    <button class="mode-btn" data-mode="beauty">✨ Rating Pesona</button>
-    <button class="mode-btn" data-mode="lookalike">🎭 Kembaran Tokoh</button>
-    <button class="mode-btn" data-mode="props">👑 AR Props & Tone</button>
-  </div>
-
-  <!-- CAMERA -->
+  <!-- CAMERA VIEWPORT -->
   <div class="cam-container">
     <div class="cam-wrap" id="camWrap">
       <video id="video" autoplay playsinline muted></video>
       <canvas id="overlayCanvas"></canvas>
-      <div class="scan-laser" id="scanLaser"></div>
-      <div class="scan-badge">
-        <span class="dot-live"></span>
-        <span id="scanStatusText">AI Scanning Active</span>
-      </div>
-    </div>
+      
+      <!-- Sci-Fi Corner Brackets -->
+      <div class="corner-bracket top-left"></div>
+      <div class="corner-bracket top-right"></div>
+      <div class="corner-bracket bottom-left"></div>
+      <div class="corner-bracket bottom-right"></div>
 
-    <!-- LIVE AI ANALYSIS CARD -->
-    <div class="hud-panel" id="hudPanel">
-      <div class="hud-header">
-        <div class="hud-title" id="hudTitle">🎂 PREDIKSI USIA & GENERASI</div>
-        <div class="hud-confidence" id="hudConfidence">AI Conf: 96%</div>
+      <!-- Laser Sweep Element -->
+      <div class="scan-laser" id="scanLaser"></div>
+
+      <!-- Live Detection Status Badge -->
+      <div class="scan-badge" id="scanBadge">
+        <span class="dot-live"></span>
+        <span id="scanStatusText">Mencari Wajah... 🔍</span>
       </div>
-      <div class="hud-body">
-        <div class="hud-avatar" id="hudAvatar">🎓</div>
-        <div class="hud-info">
-          <div class="hud-main-text" id="hudMainText">19 Tahun • Gen-Z Fresh</div>
-          <div class="hud-sub-text" id="hudSubText">Wajah baby face, aura maba siap berprestasi! ✨</div>
+
+      <!-- Camera Flip Button -->
+      <button class="btn-flip-overlay" id="btnFlip" title="Ganti Kamera">🔄 Ganti Kamera</button>
+
+      <!-- Simulated Scanning Animation Overlay -->
+      <div class="scanning-overlay" id="scanningOverlay">
+        <div class="scan-radar-grid"></div>
+        <div class="scanning-hud-content">
+          <div class="scanning-hud-spinner">
+            <div class="hud-ring"></div>
+            <div class="hud-ring"></div>
+            <span class="hud-icon">⚡</span>
+          </div>
+          <div class="scanning-step-title" id="scanStepTitle">MENGUNCI TITIK BIOMETRIK 3D</div>
+          <div class="scanning-step-desc" id="scanStepDesc">Mendeteksi 468 titik kontur & simetri wajah...</div>
+          <div class="scanning-progress-bar">
+            <div class="scanning-progress-fill" id="scanProgressFill"></div>
+          </div>
         </div>
       </div>
-      <div class="hud-stats" id="hudStats">
-        <div class="stat-chip"><span id="stat1Label">Gender:</span> <b id="stat1">Perempuan 👧</b></div>
-        <div class="stat-chip"><span id="stat2Label">Ekspresi:</span> <b id="stat2">Senyum 92%</b></div>
-      </div>
     </div>
 
-    <!-- PROPS & FILTER CONTROLS (Only visible in Mode 4) -->
-    <div class="props-row" id="propsRow">
-      <button class="prop-chip active" data-prop="none">Polos</button>
-      <button class="prop-chip" data-prop="crown">👑 Mahkota</button>
-      <button class="prop-chip" data-prop="bunny">🐰 Kelinci</button>
-      <button class="prop-chip" data-prop="shades">😎 Thug Life</button>
-      <button class="prop-chip" data-prop="grad">🎓 Toga Wisuda</button>
-      <button class="prop-chip" data-prop="sparkle">✨ Sparkle</button>
-    </div>
-    <div class="props-row" id="filterRow">
-      <button class="filter-chip active" data-filter="none">Tone Normal</button>
-      <button class="filter-chip" data-filter="glow">✨ Korean Glow</button>
-      <button class="filter-chip" data-filter="vintage">📷 90s Vintage</button>
-      <button class="filter-chip" data-filter="soft">🌸 Soft Pastel</button>
-      <button class="filter-chip" data-filter="bw">🖤 Classic B&W</button>
-    </div>
-
-    <!-- CAMERA ACTION BUTTONS -->
-    <div class="cam-controls">
-      <button class="btn-action btn-flip" id="btnFlip">🔄 Kamera</button>
-      <button class="btn-action btn-reset" id="btnLiveReset">🔄 Scan Ulang</button>
-      <button class="btn-action btn-scan" id="btnScan">🔮 SCAN HASIL AI</button>
+    <!-- MAIN SCAN BUTTON -->
+    <div class="action-wrap">
+      <button class="btn-main-scan" id="btnScan">
+        <span class="btn-scan-icon">⚡</span>
+        <span class="btn-scan-label" id="btnScanLabel">SCAN WAJAH AI</span>
+      </button>
+      <p class="scan-hint">✦ Otomatis analisis usia, gender, skor pesona & kembaran tokoh ✦</p>
     </div>
   </div>
 </div>
@@ -435,16 +470,20 @@
 
     <div class="cert-results-box">
       <div class="cert-row">
-        <span>Kategori Analisis:</span>
-        <b id="certModeLabel">Tebak Umur & Generasi</b>
+        <span>Gender & Usia:</span>
+        <b id="certPrimaryResult">Perempuan 👧 • 19 Tahun (Gen-Z)</b>
       </div>
       <div class="cert-row">
-        <span>Hasil Deteksi Utama:</span>
-        <b id="certPrimaryResult">19 Tahun (Gen-Z)</b>
+        <span>Tekstur & Kerutan:</span>
+        <b id="certWrinkleResult">Kulit Halus & Kencang ✨</b>
       </div>
       <div class="cert-row">
-        <span>Tingkat Kemiripan:</span>
-        <b id="certSecondaryResult">98% Match</b>
+        <span>Skor Pesona & Aura:</span>
+        <b id="certBeautyResult">98% (Simetri 96%)</b>
+      </div>
+      <div class="cert-row">
+        <span>Kembaran Tokoh:</span>
+        <b id="certSecondaryResult">96% Mirip Maudy Ayunda 🎓</b>
       </div>
       <div class="cert-quote" id="certQuote">
         "Wajah cerdas berkarisma tinggi, potensi meraih IPK 4.0 dan jadi bintang kampus UHN!"
@@ -472,9 +511,6 @@ const canvas = $('overlayCanvas');
 const ctx = canvas.getContext('2d');
 const camWrap = $('camWrap');
 
-let currentMode = 'age'; // 'age', 'beauty', 'lookalike', 'props'
-let currentProp = 'none';
-let currentFilter = 'none';
 let facing = 'user';
 let stream = null;
 let landmarker = null;
@@ -482,60 +518,103 @@ let frameT = null;
 let lastDet = 0;
 let lastFaces = [];
 let lastBs = null;
+let isScanning = false;
 
-// Database personalities untuk Mode 3 (Kembaran Tokoh) dengan kategori Gender yang jelas
+// Audio Synthesizer (Web Audio API)
+let audioCtx = null;
+function playTechSound(type) {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    const now = audioCtx.currentTime;
+
+    if (type === 'start') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(520, now);
+      osc.frequency.exponentialRampToValueAtTime(980, now + 0.15);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+      osc.start(now);
+      osc.stop(now + 0.18);
+    } else if (type === 'step') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(740, now);
+      osc.frequency.exponentialRampToValueAtTime(1100, now + 0.12);
+      gain.gain.setValueAtTime(0.22, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.14);
+      osc.start(now);
+      osc.stop(now + 0.14);
+    } else if (type === 'success') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, now);
+      osc.frequency.setValueAtTime(880, now + 0.1);
+      osc.frequency.setValueAtTime(1174.66, now + 0.2);
+      gain.gain.setValueAtTime(0.28, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+      osc.start(now);
+      osc.stop(now + 0.5);
+    }
+  } catch (_) {}
+}
+
+// Database personalities untuk Kembaran Tokoh
 const CELEBS_MALE = [
-  { name: 'Nicholas Saputra 🕶️', gender: 'Laki-laki', role: 'Aktor Karismatik & Cool', avatar: '😎', jaw: 0.62, smile: 0.3, eyeDist: 0.42, comment: 'Tatapan mata tajam & garis rahang maskulin yang berwibawa!' },
-  { name: 'Reza Rahadian 🎭', gender: 'Laki-laki', role: 'Aktor Serba Bisa', avatar: '🎬', jaw: 0.55, smile: 0.6, eyeDist: 0.40, comment: 'Ekspresif banget, cocok jadi bintang panggung & public speaker!' },
-  { name: 'B.J. Habibie 🚀', gender: 'Laki-laki', role: 'Visioner & Jenius Teknologi', avatar: '🧠', jaw: 0.48, smile: 0.65, eyeDist: 0.37, comment: 'Aura pemikir strategis, cocok jadi master Data Science!' },
-  { name: 'Elon Musk 💻', gender: 'Laki-laki', role: 'Tech Innovator & Futuris', avatar: '🚀', jaw: 0.60, smile: 0.4, eyeDist: 0.43, comment: 'Ambisius dan punya pandangan masa depan yang luas!' },
-  { name: 'Dikta Wicaksono 🎸', gender: 'Laki-laki', role: 'Musisi Berkarisma & Santai', avatar: '✨', jaw: 0.50, smile: 0.7, eyeDist: 0.39, comment: 'Vibes ramah, murah senyum, dan disukai banyak orang!' },
-  { name: 'Iko Uwais 🥋', gender: 'Laki-laki', role: 'Action Star & Atletik', avatar: '🔥', jaw: 0.64, smile: 0.45, eyeDist: 0.41, comment: 'Struktur wajah tegas, sporty, dan penuh percaya diri!' }
+  { name: 'Nicholas Saputra 🕶️', gender: 'Laki-laki', role: 'Aktor Karismatik & Cool', avatar: '😎', jaw: 0.62, eyeRatio: 0.41, noseRatio: 0.28, smile: 0.35, comment: 'Tatapan mata tajam & garis rahang maskulin yang berwibawa!' },
+  { name: 'Reza Rahadian 🎭', gender: 'Laki-laki', role: 'Aktor Serba Bisa', avatar: '🎬', jaw: 0.56, eyeRatio: 0.39, noseRatio: 0.29, smile: 0.65, comment: 'Ekspresif banget, cocok jadi bintang panggung & public speaker!' },
+  { name: 'B.J. Habibie 🚀', gender: 'Laki-laki', role: 'Visioner & Jenius Teknologi', avatar: '🧠', jaw: 0.50, eyeRatio: 0.36, noseRatio: 0.25, smile: 0.70, comment: 'Aura pemikir strategis, cocok jadi master Data Science!' },
+  { name: 'Elon Musk 💻', gender: 'Laki-laki', role: 'Tech Innovator & Futuris', avatar: '🚀', jaw: 0.64, eyeRatio: 0.42, noseRatio: 0.27, smile: 0.40, comment: 'Ambisius dan punya pandangan masa depan yang luas!' },
+  { name: 'Dikta Wicaksono 🎸', gender: 'Laki-laki', role: 'Musisi Berkarisma & Santai', avatar: '✨', jaw: 0.52, eyeRatio: 0.38, noseRatio: 0.26, smile: 0.75, comment: 'Vibes ramah, murah senyum, dan disukai banyak orang!' },
+  { name: 'Iko Uwais 🥋', gender: 'Laki-laki', role: 'Action Star & Atletik', avatar: '🔥', jaw: 0.65, eyeRatio: 0.40, noseRatio: 0.28, smile: 0.45, comment: 'Struktur wajah tegas, sporty, dan penuh percaya diri!' },
+  { name: 'Gibran Rakabuming 👔', gender: 'Laki-laki', role: 'Tokoh Muda & Kalem', avatar: '👓', jaw: 0.53, eyeRatio: 0.37, noseRatio: 0.26, smile: 0.30, comment: 'Tipe wajah santai, fokus pada aksi nyata, dan tenang!' }
 ];
 
 const CELEBS_FEMALE = [
-  { name: 'Maudy Ayunda 🎓', gender: 'Perempuan', role: 'Aktris & Edukator Cerdas', avatar: '👩🎓', jaw: 0.44, smile: 0.75, eyeDist: 0.38, comment: 'Punya bentuk wajah proporsional dan aura cerdas berprestasi!' },
-  { name: 'Chelsea Islan ✨', gender: 'Perempuan', role: 'Aktris Cantik & Elegan', avatar: '🌸', jaw: 0.42, smile: 0.8, eyeDist: 0.36, comment: 'Senyum manis ceria dengan fitur wajah yang sangat fotogenik!' },
-  { name: 'Dian Sastrowardoyo 🎬', gender: 'Perempuan', role: 'Icon Aktris Legendaris', avatar: '👑', jaw: 0.46, smile: 0.65, eyeDist: 0.39, comment: 'Aura anggun, tenang, dan berkarisma tinggi khas wanita cerdas!' },
-  { name: 'Najwa Shihab 🎙️', gender: 'Perempuan', role: 'Jurnalis Kritis & Vokal', avatar: '💡', jaw: 0.48, smile: 0.6, eyeDist: 0.40, comment: 'Sorot mata tajam penuh wawasan, berani, dan inspiratif!' },
-  { name: 'Taylor Swift 🎤', gender: 'Perempuan', role: 'Megabintang Dunia', avatar: '💖', jaw: 0.40, smile: 0.85, eyeDist: 0.35, comment: 'Fitur wajah ekspresif, berdaya pikat tinggi dan berkilau!' }
+  { name: 'Maudy Ayunda 🎓', gender: 'Perempuan', role: 'Aktris & Edukator Cerdas', avatar: '👩🎓', jaw: 0.46, eyeRatio: 0.39, noseRatio: 0.26, smile: 0.75, comment: 'Punya bentuk wajah proporsional dan aura cerdas berprestasi!' },
+  { name: 'Chelsea Islan ✨', gender: 'Perempuan', role: 'Aktris Cantik & Elegan', avatar: '🌸', jaw: 0.43, eyeRatio: 0.37, noseRatio: 0.25, smile: 0.80, comment: 'Senyum manis ceria dengan fitur wajah yang sangat fotogenik!' },
+  { name: 'Dian Sastrowardoyo 🎬', gender: 'Perempuan', role: 'Icon Aktris Legendaris', avatar: '👑', jaw: 0.48, eyeRatio: 0.40, noseRatio: 0.27, smile: 0.65, comment: 'Aura anggun, tenang, dan berkarisma tinggi khas wanita cerdas!' },
+  { name: 'Najwa Shihab 🎙️', gender: 'Perempuan', role: 'Jurnalis Kritis & Vokal', avatar: '💡', jaw: 0.49, eyeRatio: 0.41, noseRatio: 0.28, smile: 0.60, comment: 'Sorot mata tajam penuh wawasan, berani, dan inspiratif!' },
+  { name: 'Taylor Swift 🎤', gender: 'Perempuan', role: 'Megabintang Dunia', avatar: '💖', jaw: 0.42, eyeRatio: 0.36, noseRatio: 0.25, smile: 0.85, comment: 'Fitur wajah ekspresif, berdaya pikat tinggi dan berkilau!' },
+  { name: 'Isyana Sarasvati 🎹', gender: 'Perempuan', role: 'Musisi Jenius & Ekspresif', avatar: '🎼', jaw: 0.45, eyeRatio: 0.38, noseRatio: 0.26, smile: 0.70, comment: 'Wajah manis berkarakter, kreatif, dan penuh energi positif!' }
 ];
 
 const CELEBS = [...CELEBS_MALE, ...CELEBS_FEMALE];
-
-const AGE_QUOTES = [
-  'Wajah fresh, semangat membara, maba kebanggaan jurusan!',
-  'Baby face abis, awet muda 10 tahun ke depan!',
-  'Aura mahasiswa berprestasi, calon lulusan cumlaude!',
-  'Wajah tenang penuh kharisma, siap hadapi perkuliahan!'
-];
-const BEAUTY_QUOTES = [
-  'Simetri wajah mendekati Golden Ratio para model profesional!',
-  'Pesona senyummu bikin suasana booth makin cerah & hangat!',
-  'Tingkat karisma maksimal, auranya magnetik banget!',
-  'Kombinasi manis dan elegan, wajib masuk majalah kampus!'
-];
 
 // Landmark indices for biometric contours
 const JAW_INDICES = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109, 10];
 const LEFT_EYE_INDICES = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246];
 const RIGHT_EYE_INDICES = [263, 249, 390, 373, 374, 380, 381, 382, 362, 398, 384, 385, 386, 387, 388, 466];
 const LIPS_INDICES = [61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95];
+const NOSE_INDICES = [168, 6, 197, 195, 5, 4, 1, 19, 94, 2];
+const LEFT_EYEBROW_INDICES = [70, 63, 105, 66, 107, 55, 65, 52, 53, 46];
+const RIGHT_EYEBROW_INDICES = [300, 293, 334, 296, 336, 285, 295, 282, 283, 276];
 
 // ============ VISION INIT ============
 async function initVision() {
   try {
     const fileset = await FilesetResolver.forVisionTasks('/assets/wasm');
-    landmarker = await FaceLandmarker.createFromOptions(fileset, {
-      baseOptions: { modelAssetPath: '/assets/model/face_landmarker.task', delegate: 'CPU' },
+    const opts = {
+      baseOptions: { modelAssetPath: '/assets/model/face_landmarker.task' },
       runningMode: 'VIDEO',
       numFaces: 4,
-      minFaceDetectionConfidence: 0.5,
-      minFacePresenceConfidence: 0.5,
-      minTrackingConfidence: 0.5,
+      minFaceDetectionConfidence: 0.35,
+      minFacePresenceConfidence: 0.35,
+      minTrackingConfidence: 0.35,
       outputFaceBlendshapes: true
-    });
+    };
+    try {
+      opts.baseOptions.delegate = 'GPU';
+      landmarker = await FaceLandmarker.createFromOptions(fileset, opts);
+    } catch (eGpu) {
+      opts.baseOptions.delegate = 'CPU';
+      landmarker = await FaceLandmarker.createFromOptions(fileset, opts);
+    }
     console.log('AI FaceLandmarker Ready ✓');
+    window.landmarker = landmarker;
+    window.getSmoothedFaceMetrics = getSmoothedFaceMetrics;
   } catch (err) {
     console.warn('Fallback vision init error:', err);
   }
@@ -544,25 +623,31 @@ async function initVision() {
 // ============ CAMERA MANAGEMENT ============
 async function startCamera() {
   stopCamera();
-  const constraints = {
-    audio: false,
-    video: {
-      facingMode: facing,
-      width: { ideal: 1280 },
-      height: { ideal: 720 }
-    }
-  };
   try {
-    stream = await navigator.mediaDevices.getUserMedia(constraints);
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: { facingMode: facing }
+      });
+    } catch (e1) {
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          facingMode: facing,
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
+      });
+    }
     video.srcObject = stream;
     video.classList.toggle('mirror', facing === 'user');
     await new Promise(r => video.onloadedmetadata = r);
-    video.play();
+    await video.play().catch(() => {});
     adaptSize();
     loop();
   } catch (err) {
-    console.error('Camera access failed:', err);
-    $('scanStatusText').textContent = 'Kamera tidak dapat diakses';
+    console.warn('Camera access fallback:', err);
+    $('scanStatusText').textContent = 'Kamera tidak aktif';
   }
 }
 
@@ -571,134 +656,220 @@ function stopCamera() {
     stream.getTracks().forEach(t => t.stop());
     stream = null;
   }
-  if (frameT) { cancelAnimationFrame(frameT); frameT = null; }
+  if (frameT) cancelAnimationFrame(frameT);
 }
 
 function adaptSize() {
-  if (video.videoWidth && video.videoHeight) {
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const a = `${video.videoWidth} / ${video.videoHeight}`;
-    if (camWrap.style.aspectRatio !== a) camWrap.style.aspectRatio = a;
+  if (!video.videoWidth || !video.videoHeight) return;
+  const boxW = camWrap.clientWidth || 360;
+  const boxH = camWrap.clientHeight || 480;
+  const dpr = window.devicePixelRatio || 1;
+  const targetW = Math.round(boxW * dpr);
+  const targetH = Math.round(boxH * dpr);
+
+  if (canvas.width !== targetW || canvas.height !== targetH) {
+    canvas.width = targetW;
+    canvas.height = targetH;
   }
 }
 
-// ============ AI METRICS HELPER ============
+// Precise object-fit: cover transform mapping video coords -> canvas screen coords
+function getVideoTransform() {
+  const boxW = camWrap.clientWidth || 360;
+  const boxH = camWrap.clientHeight || 480;
+  const vw = video.videoWidth || 640;
+  const vh = video.videoHeight || 480;
+
+  const scale = Math.max(boxW / vw, boxH / vh);
+  const renderW = vw * scale;
+  const renderH = vh * scale;
+  const offsetX = (boxW - renderW) / 2;
+  const offsetY = (boxH - renderH) / 2;
+
+  return { boxW, boxH, vw, vh, scale, offsetX, offsetY };
+}
+
+function mapNormalizedToCanvas(pt, transform, isMirror) {
+  if (!pt) return { x: 0, y: 0 };
+  const normX = isMirror ? (1 - pt.x) : pt.x;
+  const normY = pt.y;
+
+  const vidX = normX * transform.vw;
+  const vidY = normY * transform.vh;
+
+  const x = vidX * transform.scale + transform.offsetX;
+  const y = vidY * transform.scale + transform.offsetY;
+
+  return { x, y };
+}
+
+// ============ BIOMETRICS MORPHOMETRICS & SMOOTHING ============
 function getFaceMetrics(landmarks, blendshapes) {
   if (!landmarks || landmarks.length < 468) return null;
-  
-  const nose = landmarks[1];
+
+  const forehead = landmarks[10];
+  const chin = landmarks[152];
   const leftEye = landmarks[33];
   const rightEye = landmarks[263];
-  const chin = landmarks[152];
-  const forehead = landmarks[10];
   const leftJaw = landmarks[234];
   const rightJaw = landmarks[454];
+  const noseTip = landmarks[1];
+
+  const gonionL = landmarks[172];
+  const gonionR = landmarks[397];
+  const chinL = landmarks[148];
+  const chinR = landmarks[377];
+  const upperLip = landmarks[0];
+  const lowerLip = landmarks[17];
+  const mouthL = landmarks[61];
+  const mouthR = landmarks[291];
+  const browL = landmarks[70];
+  const eyeLTop = landmarks[159];
+  const browR = landmarks[300];
+  const eyeRTop = landmarks[386];
 
   const eyeDist = Math.hypot(rightEye.x - leftEye.x, rightEye.y - leftEye.y);
   const faceHeight = Math.hypot(chin.x - forehead.x, chin.y - forehead.y) || 0.01;
-  const jawWidth = Math.hypot(rightJaw.x - leftJaw.x, rightJaw.y - leftJaw.y) || 0.01;
+  const zygomaticWidth = Math.hypot(rightJaw.x - leftJaw.x, rightJaw.y - leftJaw.y) || 0.01;
+  const gonionWidth = Math.hypot(gonionR.x - gonionL.x, gonionR.y - gonionL.y) || 0.01;
+  const chinWidth = Math.hypot(chinR.x - chinL.x, chinR.y - chinL.y) || 0.01;
+
+  const lipHeight = Math.hypot(lowerLip.x - upperLip.x, lowerLip.y - upperLip.y) || 0.005;
+  const lipWidth = Math.hypot(mouthR.x - mouthL.x, mouthR.y - mouthL.y) || 0.01;
+  const lipFullness = lipHeight / lipWidth;
+
+  const browHeight = ((Math.hypot(browL.x - eyeLTop.x, browL.y - eyeLTop.y)) + (Math.hypot(browR.x - eyeRTop.x, browR.y - eyeRTop.y))) / 2;
+  const browArchRatio = browHeight / faceHeight;
 
   let smileScore = 0.5;
   if (blendshapes && blendshapes.categories) {
-    const sL = blendshapes.categories.find(c => c.categoryName === 'mouthSmileLeft');
-    const sR = blendshapes.categories.find(c => c.categoryName === 'mouthSmileRight');
-    if (sL || sR) smileScore = Math.max((sL ? sL.score : 0), (sR ? sR.score : 0));
+    const smileL = blendshapes.categories.find(c => c.categoryName === 'mouthSmileLeft')?.score || 0;
+    const smileR = blendshapes.categories.find(c => c.categoryName === 'mouthSmileRight')?.score || 0;
+    smileScore = (smileL + smileR) / 2;
   }
 
-  // Multi-point Biometric Morphometrics
   const eyeRatio = eyeDist / faceHeight;
-  const cheekWidth = Math.hypot(landmarks[454].x - landmarks[234].x, landmarks[454].y - landmarks[234].y) || 0.01;
-  const jawTaperRatio = jawWidth / cheekWidth;
-  const chinHeight = Math.hypot(chin.x - landmarks[17].x, chin.y - landmarks[17].y) || 0.01;
-  const chinRatio = chinHeight / faceHeight;
-  const noseLength = Math.hypot(landmarks[2].x - landmarks[168].x, landmarks[2].y - landmarks[168].y) || 0.01;
-  const noseRatio = noseLength / faceHeight;
+  const midFaceHeight = Math.hypot(landmarks[2].x - landmarks[168].x, landmarks[2].y - landmarks[168].y) || 0.01;
+  const noseRatio = midFaceHeight / faceHeight;
+  const jawRatio = zygomaticWidth / faceHeight;
+  const gonionRatio = gonionWidth / zygomaticWidth;
+  const chinTaperRatio = chinWidth / gonionWidth;
 
-  // Brow-to-eye height ratio & lower-to-midface proportion
-  const leftBrowDist = Math.hypot(landmarks[70].x - landmarks[159].x, landmarks[70].y - landmarks[159].y);
-  const rightBrowDist = Math.hypot(landmarks[300].x - landmarks[386].x, landmarks[300].y - landmarks[386].y);
-  const avgBrowDist = (leftBrowDist + rightBrowDist) / 2;
-  const browToFaceRatio = avgBrowDist / faceHeight;
+  const jawlineScore = (gonionRatio * 0.4) + (chinTaperRatio * 0.3) + ((jawRatio - 0.70) * 0.3);
+  const rawMaleScore = (jawlineScore - 0.54) * 3.5 - (browArchRatio - 0.075) * 12.0 - (lipFullness - 0.28) * 4.0;
 
-  const midFace = Math.hypot(landmarks[168].x - landmarks[2].x, landmarks[168].y - landmarks[2].y) || 0.01;
-  const lowerFace = Math.hypot(landmarks[2].x - chin.x, landmarks[2].y - chin.y) || 0.01;
-  const lowerToMidRatio = lowerFace / midFace;
+  // Wrinkle Tension & Facial Smoothness Index
+  const browTension = Math.hypot(landmarks[107].x - landmarks[336].x, landmarks[107].y - landmarks[336].y) || 0.01;
+  const nasolabialL = Math.hypot(landmarks[205].x - mouthL.x, landmarks[205].y - mouthL.y);
+  const nasolabialR = Math.hypot(landmarks[425].x - mouthR.x, landmarks[425].y - mouthR.y);
+  const nasolabialTension = (nasolabialL + nasolabialR) / 2;
+  const wrinkleTension = (browTension * 0.6) + (nasolabialTension * 0.4);
 
-  // Multi-Factor Anatomical Morphological Gender Probability
-  const jawRatio = jawWidth / faceHeight;
-  let maleScore = 0;
-  if (jawRatio > 0.58) maleScore += 2;
-  if (jawTaperRatio > 0.77) maleScore += 2;
-  if (browToFaceRatio < 0.052) maleScore += 2;
-  if (lowerToMidRatio > 1.30) maleScore += 1.5;
-  if (chinRatio > 0.15) maleScore += 1.5;
+  let estAge = 19 + Math.round((wrinkleTension - 0.22) * 20) - (smileScore > 0.6 ? 1 : 0);
+  estAge = Math.min(26, Math.max(17, estAge));
 
-  const isLikelyMale = maleScore >= 4.5;
-  const genderConfidence = Math.min(99, Math.round(55 + Math.abs(maleScore - 4.5) * 10));
+  let symDiff = 0;
+  const pairs = [[33,263], [234,454], [61,291], [70,300], [172,397]];
+  for (let [l, r] of pairs) {
+    const dL = Math.hypot(landmarks[l].x - noseTip.x, landmarks[l].y - noseTip.y);
+    const dR = Math.hypot(landmarks[r].x - noseTip.x, landmarks[r].y - noseTip.y);
+    symDiff += Math.abs(dL - dR);
+  }
+  const symmetryPct = Math.min(99, Math.max(88, Math.round(100 - (symDiff / pairs.length) * 120)));
+  const smilePct = Math.min(99, Math.max(15, Math.round(smileScore * 100)));
+  const beautyScore = Math.min(99, Math.max(88, Math.round(86 + (symmetryPct - 88) * 0.7 + (smileScore * 6))));
+
+  let minX = 1, minY = 1, maxX = 0, maxY = 0;
+  for (let pt of landmarks) {
+    if (pt.x < minX) minX = pt.x;
+    if (pt.x > maxX) maxX = pt.x;
+    if (pt.y < minY) minY = pt.y;
+    if (pt.y > maxY) maxY = pt.y;
+  }
+
+  return {
+    rawMaleScore,
+    estAge,
+    beautyScore,
+    symmetryPct,
+    smilePct,
+    wrinkleTension,
+    jawRatio,
+    eyeRatio,
+    noseRatio,
+    box: { minX, minY, maxX, maxY }
+  };
+}
+
+const faceSmoothers = [];
+function getSmoothedFaceMetrics(landmarks, blendshapes, faceIndex = 0) {
+  const raw = getFaceMetrics(landmarks, blendshapes);
+  if (!raw) return null;
+
+  if (!faceSmoothers[faceIndex]) {
+    faceSmoothers[faceIndex] = {
+      maleScore: raw.rawMaleScore,
+      age: raw.estAge,
+      beauty: raw.beautyScore,
+      symmetry: raw.symmetryPct,
+      wrinkle: raw.wrinkleTension,
+      smile: raw.smilePct
+    };
+    return raw;
+  }
+
+  const s = faceSmoothers[faceIndex];
+  const alpha = 0.25;
+
+  s.maleScore = s.maleScore * (1 - alpha) + raw.rawMaleScore * alpha;
+  s.age = s.age * (1 - alpha) + raw.estAge * alpha;
+  s.beauty = s.beauty * (1 - alpha) + raw.beautyScore * alpha;
+  s.symmetry = s.symmetry * (1 - alpha) + raw.symmetryPct * alpha;
+  s.wrinkle = s.wrinkle * (1 - alpha) + raw.wrinkleTension * alpha;
+  s.smile = s.smile * (1 - alpha) + raw.smilePct * alpha;
+
+  const isLikelyMale = s.maleScore > 0;
+  const genderConfidence = Math.min(99, Math.round(55 + Math.min(1.0, Math.abs(s.maleScore)) * 40));
   const genderLabel = isLikelyMale ? 'Laki-laki 👦' : 'Perempuan 👧';
 
-  // 3D Wrinkle & Dynamic Micro-Tension Detection (Glabellar lines, Crow's feet, Nasolabial depth)
-  let wrinkleTension = 0;
-  if (blendshapes && blendshapes.categories) {
-    const browDown = Math.max(
-      (blendshapes.categories.find(c => c.categoryName === 'browDownLeft') || {}).score || 0,
-      (blendshapes.categories.find(c => c.categoryName === 'browDownRight') || {}).score || 0
-    );
-    const eyeSquint = Math.max(
-      (blendshapes.categories.find(c => c.categoryName === 'eyeSquintLeft') || {}).score || 0,
-      (blendshapes.categories.find(c => c.categoryName === 'eyeSquintRight') || {}).score || 0
-    );
-    const cheekSquint = Math.max(
-      (blendshapes.categories.find(c => c.categoryName === 'cheekSquintLeft') || {}).score || 0,
-      (blendshapes.categories.find(c => c.categoryName === 'cheekSquintRight') || {}).score || 0
-    );
-    const noseSneer = Math.max(
-      (blendshapes.categories.find(c => c.categoryName === 'noseSneerLeft') || {}).score || 0,
-      (blendshapes.categories.find(c => c.categoryName === 'noseSneerRight') || {}).score || 0
-    );
-    wrinkleTension = (browDown * 0.35) + (eyeSquint * 0.3) + (cheekSquint * 0.2) + (noseSneer * 0.15);
-  }
+  const estAge = Math.round(s.age);
+  const gen = estAge <= 19 ? 'Gen-Z Fresh Maba 🎓' :
+              estAge <= 22 ? 'Gen-Z Active 🌟' :
+              estAge <= 25 ? 'Senior / Young Pro 💼' : 'Matang & Visioner 🚀';
 
-  // Wrinkle Level Label for Live HUD
-  const wrinkleLabel = wrinkleTension < 0.15 ? 'Halus & Kencang ✨' : wrinkleTension < 0.35 ? 'Garis Senyum Alami 😊' : 'Ekspresif & Matang 🧐';
+  const beautyScore = Math.round(s.beauty);
+  const symmetryPct = Math.round(s.symmetry);
+  const smilePct = Math.round(s.smile);
+  const wrinkleLabel = s.wrinkle < 0.15 ? 'Kulit Halus & Kencang ✨' : s.wrinkle < 0.35 ? 'Garis Senyum Alami 😊' : 'Ekspresif & Matang 🧐';
 
-  // Responsive Differentiated Age Calculation (Combining Craniofacial Ratios + Wrinkle Tension)
-  const maturityFactor = (noseRatio * 15) + (chinRatio * 13) + ((1 - eyeRatio) * 8) + (wrinkleTension * 6) - (smileScore * 2);
-  let estAge = Math.round(14 + maturityFactor);
-  estAge = Math.max(17, Math.min(28, estAge));
-  const gen = estAge <= 19 ? 'Gen-Z Fresh Maba 🎓' : estAge <= 23 ? 'Gen-Z Active 🌟' : 'Young Achiever 💼';
-
-  // Unique Face Identity Fingerprint (Hash)
-  const faceHash = `${Math.round(eyeRatio * 100)}_${Math.round(jawRatio * 100)}_${Math.round(noseRatio * 100)}_${isLikelyMale ? 'M' : 'F'}`;
-
-  // Beauty / Golden Ratio Symmetry Score
-  const leftSym = Math.hypot(nose.x - leftEye.x, nose.y - leftEye.y);
-  const rightSym = Math.hypot(nose.x - rightEye.x, nose.y - rightEye.y);
-  const symRatio = Math.min(leftSym, rightSym) / (Math.max(leftSym, rightSym) || 0.01);
-  const beautyScore = Math.min(99, Math.max(89, Math.round(symRatio * 82 + smileScore * 16 + 2)));
-  const symmetryPct = Math.min(99, Math.round(symRatio * 100));
-
-  // Gender-Filtered Celebrity / Alumni Matcher
   const candidatePool = isLikelyMale ? CELEBS_MALE : CELEBS_FEMALE;
   let bestMatch = candidatePool[0];
   let minDiff = 999;
   candidatePool.forEach(c => {
-    const diff = Math.abs(c.eye - eyeRatio) * 3 + Math.abs(c.jaw - jawRatio) * 2 + Math.abs(c.nose - noseRatio) * 2;
-    if (diff < minDiff) { minDiff = diff; bestMatch = c; }
+    const diff = Math.abs(c.eyeRatio - raw.eyeRatio) * 2.5 +
+                 Math.abs(c.jaw - raw.jawRatio) * 2.0 +
+                 Math.abs(c.noseRatio - raw.noseRatio) * 2.0 +
+                 Math.abs(c.smile - (smilePct / 100)) * 0.8;
+    if (diff < minDiff) {
+      minDiff = diff;
+      bestMatch = c;
+    }
   });
-  const matchPct = Math.min(98, Math.max(86, Math.round(100 - minDiff * 25)));
+  const matchPct = Math.min(98, Math.max(88, Math.round(98 - minDiff * 35)));
 
   return {
-    estAge, gen, genderLabel, isLikelyMale, genderConfidence, beautyScore, symmetryPct, smilePct: Math.round(smileScore * 100),
-    bestMatch, matchPct, jawRatio, faceHash,
-    box: {
-      minX: Math.min(...landmarks.map(p => p.x)),
-      maxX: Math.max(...landmarks.map(p => p.x)),
-      minY: Math.min(...landmarks.map(p => p.y)),
-      maxY: Math.max(...landmarks.map(p => p.y)),
-      forehead, chin, nose, leftEye, rightEye
-    }
+    ...raw,
+    estAge,
+    gen,
+    genderLabel,
+    isLikelyMale,
+    genderConfidence,
+    beautyScore,
+    symmetryPct,
+    smilePct,
+    wrinkleLabel,
+    bestMatch,
+    matchPct
   };
 }
 
@@ -713,6 +884,9 @@ function loop() {
       try { res = landmarker.detectForVideo(video, now); } catch (_) {}
       lastFaces = (res && res.faceLandmarks) || [];
       lastBs = (res && res.faceBlendshapes) || [];
+      if (lastFaces.length === 0) {
+        faceSmoothers.length = 0;
+      }
     }
 
     renderOverlay();
@@ -720,125 +894,95 @@ function loop() {
   frameT = requestAnimationFrame(loop);
 }
 
-let activeFaceSig = '';
-let activeFaceSwitchTime = 0;
-
-// ============ RENDER OVERLAYS ON CANVAS ============
+// ============ RENDER OVERLAYS ON CAMERA ============
 function renderOverlay() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const w = canvas.width, h = canvas.height;
+  adaptSize();
+  const dpr = window.devicePixelRatio || 1;
+  const boxW = camWrap.clientWidth || 360;
+  const boxH = camWrap.clientHeight || 480;
+
+  ctx.save();
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, boxW, boxH);
+
   const isMirror = facing === 'user';
+  const transform = getVideoTransform();
 
   if (!lastFaces.length) {
-    $('scanStatusText').textContent = 'Mencari Wajah...';
+    if (!isScanning) {
+      $('scanStatusText').textContent = 'Mencari Wajah... 🔍';
+    }
+    ctx.restore();
     return;
   }
 
-  const now = performance.now();
+  if (!isScanning) {
+    $('scanStatusText').textContent = `${lastFaces.length} Wajah Terdeteksi ✨ Siap Scan`;
+  }
 
   for (let i = 0; i < lastFaces.length; i++) {
     const lm = lastFaces[i];
     const bs = lastBs && lastBs[i];
-    const metrics = getFaceMetrics(lm, bs);
+    const metrics = getSmoothedFaceMetrics(lm, bs, i);
     if (!metrics) continue;
 
-    if (i === 0) {
-      if (metrics.faceHash !== activeFaceSig) {
-        activeFaceSig = metrics.faceHash;
-        activeFaceSwitchTime = now;
-      }
-      if (now - activeFaceSwitchTime < 1200) {
-        $('scanStatusText').textContent = `✨ Wajah Baru: ${metrics.genderLabel} (${metrics.estAge} Thn)`;
-      } else {
-        $('scanStatusText').textContent = `${lastFaces.length} Wajah Terdeteksi ✓`;
-      }
-    }
+    // 1. Draw Glowing Facial Contours mapped 1:1 to screen
+    drawMeshContours(ctx, lm, transform, isMirror);
 
-    // 1. Draw Sleek Glowing Facial Contours (Mesh Wireframe)
-    drawMeshContours(ctx, lm, w, h, isMirror);
+    // 2. Draw Futuristic Bounding Box accurately mapped to screen
+    const pMin = mapNormalizedToCanvas({ x: metrics.box.minX, y: metrics.box.minY }, transform, isMirror);
+    const pMax = mapNormalizedToCanvas({ x: metrics.box.maxX, y: metrics.box.maxY }, transform, isMirror);
 
-    // 2. Draw Futuristic Bounding Box
-    const b = metrics.box;
-    let bx = b.minX * w, by = b.minY * h, bw = (b.maxX - b.minX) * w, bh = (b.maxY - b.minY) * h;
-    if (isMirror) bx = w - (b.maxX * w);
+    const bxMin = Math.min(pMin.x, pMax.x);
+    const bxMax = Math.max(pMin.x, pMax.x);
+    const byMin = Math.min(pMin.y, pMax.y);
+    const byMax = Math.max(pMin.y, pMax.y);
 
-    bx -= bw * 0.1; by -= bh * 0.12; bw *= 1.2; bh *= 1.25;
+    let bw = bxMax - bxMin;
+    let bh = byMax - byMin;
+    let bx = bxMin - bw * 0.08;
+    let by = byMin - bh * 0.1;
+    bw *= 1.16;
+    bh *= 1.2;
 
     ctx.save();
-    const isPrimaryNew = (i === 0 && (now - activeFaceSwitchTime < 1200));
-    ctx.strokeStyle = isPrimaryNew ? '#00f2fe' : (metrics.isLikelyMale ? '#ffd86b' : '#ff758c');
-    ctx.lineWidth = isPrimaryNew ? 3.5 : 2.5;
-    ctx.shadowColor = ctx.strokeStyle;
-    ctx.shadowBlur = isPrimaryNew ? 12 : 6;
+    ctx.strokeStyle = '#00f2fe';
+    ctx.lineWidth = 2.5;
+    ctx.shadowColor = '#00f2fe';
+    ctx.shadowBlur = 8;
 
-    const cLen = Math.min(24, bw * 0.22);
-    // 4 Corner Brackets
+    const cLen = Math.min(22, bw * 0.2);
     ctx.beginPath(); ctx.moveTo(bx, by + cLen); ctx.lineTo(bx, by); ctx.lineTo(bx + cLen, by); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(bx + bw - cLen, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw, by + cLen); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(bx, by + bh - cLen); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + cLen, by + bh); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(bx + bw - cLen, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by + bh - cLen); ctx.stroke();
     ctx.restore();
-
-    // 3. Floating Holographic Badge (Centered over head)
-    ctx.save();
-    let badgeTxt = '';
-    let badgeBg = '#681a34';
-    if (currentMode === 'age') {
-      badgeTxt = `${metrics.genderLabel} • ${metrics.estAge} THN`;
-      badgeBg = metrics.isLikelyMale ? '#164629' : '#6b1f3a';
-    } else if (currentMode === 'beauty') {
-      badgeTxt = `💖 ${metrics.beautyScore}% • ${metrics.genderLabel}`;
-      badgeBg = '#0d6e5a';
-    } else if (currentMode === 'lookalike') {
-      badgeTxt = `🎭 ${metrics.matchPct}% ${metrics.bestMatch.name}`;
-      badgeBg = '#1e3a5f';
-    } else if (currentMode === 'props') {
-      badgeTxt = `👑 AR PROPS ACTIVE`;
-    }
-
-    ctx.font = '700 13px "Fredoka", sans-serif';
-    const txtW = ctx.measureText(badgeTxt).width + 18;
-    const badgeX = bx + bw / 2 - txtW / 2;
-    const badgeY = Math.max(22, by - 12);
-
-    ctx.fillStyle = badgeBg;
-    roundRect(ctx, badgeX, badgeY - 16, txtW, 26, 8);
-    ctx.fill();
-    ctx.strokeStyle = '#ffd86b'; ctx.lineWidth = 1.8; ctx.stroke();
-
-    ctx.fillStyle = '#ffd86b';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(badgeTxt, badgeX + txtW / 2, badgeY - 3);
-    ctx.restore();
-
-    // 4. Draw AR Props (if active)
-    if (currentMode === 'props' && currentProp !== 'none') {
-      drawArProp(ctx, lm, w, h, isMirror, currentProp);
-    }
-
-    if (i === 0) updateHudPanel(metrics);
   }
+  ctx.restore();
 }
 
-// Draw subtle glowing biometric contour paths
-function drawMeshContours(ctx, lm, w, h, isMirror) {
+function drawMeshContours(ctx, lm, transform, isMirror) {
   ctx.save();
-  ctx.strokeStyle = 'rgba(0, 242, 254, 0.45)';
-  ctx.lineWidth = 1.2;
+  ctx.strokeStyle = 'rgba(0, 242, 254, 0.55)';
+  ctx.lineWidth = 1.3;
   ctx.shadowColor = '#00f2fe';
   ctx.shadowBlur = 4;
 
   const drawPath = (indices, close = false) => {
     ctx.beginPath();
+    let started = false;
     for (let idx = 0; idx < indices.length; idx++) {
       const pt = lm[indices[idx]];
       if (!pt) continue;
-      let px = pt.x * w, py = pt.y * h;
-      if (isMirror) px = w - px;
-      if (idx === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
+      const sp = mapNormalizedToCanvas(pt, transform, isMirror);
+      if (!started) {
+        ctx.moveTo(sp.x, sp.y);
+        started = true;
+      } else {
+        ctx.lineTo(sp.x, sp.y);
+      }
     }
-    if (close) ctx.closePath();
+    if (close && started) ctx.closePath();
     ctx.stroke();
   };
 
@@ -846,130 +990,38 @@ function drawMeshContours(ctx, lm, w, h, isMirror) {
   drawPath(LEFT_EYE_INDICES, true);
   drawPath(RIGHT_EYE_INDICES, true);
   drawPath(LIPS_INDICES, true);
+  drawPath(NOSE_INDICES, false);
+  drawPath(LEFT_EYEBROW_INDICES, false);
+  drawPath(RIGHT_EYEBROW_INDICES, false);
 
-  // Micro glowing keypoint dots on nose & eyes
+  // Key landmark nodes (forehead, chin, nose, eye corners, mouth corners, cheekbones)
   ctx.fillStyle = '#ffd86b';
-  for (let keyIdx of [1, 33, 263, 61, 291, 152]) {
+  ctx.shadowColor = '#ffd86b';
+  ctx.shadowBlur = 5;
+  for (let keyIdx of [1, 33, 263, 61, 291, 152, 10, 234, 454]) {
     const pt = lm[keyIdx];
     if (!pt) continue;
-    let px = pt.x * w, py = pt.y * h;
-    if (isMirror) px = w - px;
-    ctx.beginPath(); ctx.arc(px, py, 2.5, 0, Math.PI * 2); ctx.fill();
+    const sp = mapNormalizedToCanvas(pt, transform, isMirror);
+    ctx.beginPath(); ctx.arc(sp.x, sp.y, 2.5, 0, Math.PI * 2); ctx.fill();
   }
   ctx.restore();
 }
 
-// Draw AR Props with full 360-degree head-rotation invariance
-function drawArProp(ctx, lm, w, h, isMirror, prop) {
-  const getPt = (pt) => {
-    if (!pt) return { x: 0, y: 0 };
-    const px = isMirror ? (1 - pt.x) * w : pt.x * w;
-    const py = pt.y * h;
-    return { x: px, y: py };
-  };
-
-  const visualLeftEye = isMirror ? getPt(lm[263]) : getPt(lm[33]);
-  const visualRightEye = isMirror ? getPt(lm[33]) : getPt(lm[263]);
-  const forehead = getPt(lm[10]);
-
-  const edx = visualRightEye.x - visualLeftEye.x;
-  const edy = visualRightEye.y - visualLeftEye.y;
-  const eyeSpan = Math.hypot(edx, edy) || 1;
-  const angle = Math.atan2(edy, edx);
-
-  ctx.save();
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-
-  if (prop === 'crown') {
-    ctx.translate(forehead.x, forehead.y);
-    ctx.rotate(angle);
-    ctx.font = `${Math.round(eyeSpan * 1.5)}px system-ui`;
-    ctx.fillText('👑', 0, -eyeSpan * 0.55);
-  } else if (prop === 'bunny') {
-    ctx.translate(forehead.x, forehead.y);
-    ctx.rotate(angle);
-    ctx.font = `${Math.round(eyeSpan * 1.6)}px system-ui`;
-    ctx.fillText('🐰', 0, -eyeSpan * 0.55);
-  } else if (prop === 'shades') {
-    const mx = (visualLeftEye.x + visualRightEye.x) / 2;
-    const my = (visualLeftEye.y + visualRightEye.y) / 2;
-    ctx.translate(mx, my);
-    ctx.rotate(angle);
-    ctx.font = `${Math.round(eyeSpan * 1.35)}px system-ui`;
-    ctx.fillText('😎', 0, 0);
-  } else if (prop === 'grad') {
-    ctx.translate(forehead.x, forehead.y);
-    ctx.rotate(angle);
-    ctx.font = `${Math.round(eyeSpan * 1.7)}px system-ui`;
-    ctx.fillText('🎓', 0, -eyeSpan * 0.55);
-  } else if (prop === 'sparkle') {
-    ctx.translate(forehead.x, forehead.y);
-    ctx.rotate(angle);
-    ctx.font = `${Math.round(eyeSpan * 0.85)}px system-ui`;
-    ctx.fillText('✨', eyeSpan * 0.55, -eyeSpan * 0.35);
-    ctx.fillText('⭐', -eyeSpan * 0.55, -eyeSpan * 0.25);
+function drawCover(ctx, img, x, y, w, h, focusY = 0.5) {
+  const nw = img.naturalWidth || img.videoWidth || img.width;
+  const nh = img.naturalHeight || img.videoHeight || img.height;
+  if (!nw || !nh) {
+    ctx.drawImage(img, x, y, w, h);
+    return;
   }
-  ctx.restore();
+  const scale = Math.max(w / nw, h / nh);
+  const sw = w / scale;
+  const sh = h / scale;
+  const sx = Math.max(0, Math.min(nw - sw, (nw - sw) / 2));
+  const sy = Math.max(0, Math.min(nh - sh, (nh * focusY) - (sh / 2)));
+  ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
 }
 
-// Update DOM HUD panel
-function updateHudPanel(m) {
-  if (currentMode === 'age') {
-    $('hudTitle').textContent = '🎂 PREDIKSI USIA & GENERASI';
-    $('hudConfidence').textContent = 'AI Conf: 96%';
-    $('hudAvatar').textContent = m.isLikelyMale ? '👦' : '👧';
-    $('hudMainText').textContent = `${m.estAge} Tahun • ${m.genderLabel}`;
-    $('hudSubText').textContent = AGE_QUOTES[m.estAge % AGE_QUOTES.length];
-    $('stat1Label').textContent = 'Gender:';
-    $('stat1').textContent = m.genderLabel;
-    $('stat2Label').textContent = 'Senyum:';
-    $('stat2').textContent = `${m.smilePct}%`;
-  } else if (currentMode === 'beauty') {
-    $('hudTitle').textContent = '✨ RATING PESONA & AURA';
-    $('hudConfidence').textContent = 'AI Conf: 98%';
-    $('hudAvatar').textContent = '💖';
-    $('hudMainText').textContent = `Skor Pesona: ${m.beautyScore}% • ${m.genderLabel}`;
-    $('hudSubText').textContent = BEAUTY_QUOTES[m.beautyScore % BEAUTY_QUOTES.length];
-    $('stat1Label').textContent = 'Simetri:';
-    $('stat1').textContent = `${m.symmetryPct}%`;
-    $('stat2Label').textContent = 'Senyum:';
-    $('stat2').textContent = `${m.smilePct}%`;
-  } else if (currentMode === 'lookalike') {
-    $('hudTitle').textContent = '🎭 KEMBARAN TOKOH & ALUMNI';
-    $('hudConfidence').textContent = `${m.matchPct}% Match`;
-    $('hudAvatar').textContent = m.bestMatch.avatar;
-    $('hudMainText').textContent = `${m.matchPct}% Mirip ${m.bestMatch.name}`;
-    $('hudSubText').textContent = m.bestMatch.comment;
-    $('stat1Label').textContent = 'Profesi:';
-    $('stat1').textContent = m.bestMatch.role;
-    $('stat2Label').textContent = 'Gender:';
-    $('stat2').textContent = m.genderLabel;
-  } else if (currentMode === 'props') {
-    $('hudTitle').textContent = '👑 AR PROPS & FILTER TONE';
-    $('hudConfidence').textContent = 'Live Render';
-    $('hudAvatar').textContent = '🎨';
-    $('hudMainText').textContent = `Filter: ${currentFilter} • Prop: ${currentProp}`;
-    $('hudSubText').textContent = 'Pilih filter dan hiasan kepala di tombol bawah!';
-    $('stat1Label').textContent = 'Status:';
-    $('stat1').textContent = 'Active (60 FPS)';
-    $('stat2Label').textContent = 'Gender:';
-    $('stat2').textContent = m.genderLabel;
-  }
-}
-
-// Helper: drawCover (Pencegah Gambar Gepeng / Distorsi Aspek Rasio)
-function drawCover(ctx, img, x, y, w, h) {
-  const iw = img.naturalWidth || img.videoWidth || img.width;
-  const ih = img.naturalHeight || img.videoHeight || img.height;
-  if (!iw || !ih) return;
-  const r = Math.max(w / iw, h / ih);
-  const nw = iw * r, nh = ih * r;
-  const cx = x + (w - nw) / 2, cy = y + (h - nh) / 2;
-  ctx.drawImage(img, cx, cy, nw, nh);
-}
-
-// Helper: Canvas rounded rect
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -984,85 +1036,103 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-// ============ GENERATE SCAN CERTIFICATE / REPORT ============
-async function generateScanCard() {
-  if (!video.videoWidth) return;
-  await document.fonts.ready;
+// ============ HIGH-TECH SIMULATED SCANNING & RESULT POPUP ============
+async function executeScanningFlow() {
+  if (!video.videoWidth || isScanning) return;
+  isScanning = true;
 
-  // 1. Capture clean frame with AR overlay & contours
-  console.log('Generating Scan Card with video dims:', video.videoWidth, video.videoHeight);
+  const btnScan = $('btnScan');
+  const btnScanLabel = $('btnScanLabel');
+  const scanLaser = $('scanLaser');
+  const scanningOverlay = $('scanningOverlay');
+  const scanStepTitle = $('scanStepTitle');
+  const scanStepDesc = $('scanStepDesc');
+  const scanProgressFill = $('scanProgressFill');
+
+  btnScan.classList.add('scanning');
+  btnScanLabel.textContent = 'MEMINDAI BIOMETRIK...';
+  scanLaser.classList.add('scanning-active');
+  scanningOverlay.style.display = 'flex';
+  scanProgressFill.style.width = '10%';
+
+  // 1. Capture snapshot immediately for photo
   const capCv = document.createElement('canvas');
   capCv.width = video.videoWidth; capCv.height = video.videoHeight;
   const capCtx = capCv.getContext('2d');
-
-  if (currentFilter === 'glow') {
-    capCtx.filter = 'brightness(1.15) contrast(1.08) saturate(1.25)';
-  } else if (currentFilter === 'vintage') {
-    capCtx.filter = 'sepia(0.45) contrast(1.15) brightness(0.95)';
-  } else if (currentFilter === 'soft') {
-    capCtx.filter = 'brightness(1.18) contrast(0.95) saturate(1.15)';
-  } else if (currentFilter === 'bw') {
-    capCtx.filter = 'grayscale(1) contrast(1.25)';
-  }
-
   if (facing === 'user') {
     capCtx.translate(capCv.width, 0); capCtx.scale(-1, 1);
   }
   capCtx.drawImage(video, 0, 0, capCv.width, capCv.height);
-  capCtx.filter = 'none';
-
-  // Draw AR Props on captured photo
-  if (lastFaces.length) {
-    const lm = lastFaces[0];
-    const bs = lastBs && lastBs[0];
-    const m = getFaceMetrics(lm, bs);
-    if (m && currentProp !== 'none') {
-      drawArProp(capCtx, lm, capCv.width, capCv.height, facing === 'user', currentProp);
-    }
-  }
-
-  console.log('Step 1: Cap photoDataUrl');
   const photoDataUrl = capCv.toDataURL('image/jpeg', 0.94);
 
-  // 2. Query Real AI API (with local fallback)
-  console.log('Step 2: Querying API');
-  const btnScan = $('btnScan');
-  const origBtnText = btnScan.innerHTML;
-  btnScan.innerHTML = '🧠 AI Neural Scan...';
-  btnScan.disabled = true;
-
-  let aiResult = null;
   const currentLm = lastFaces.length ? lastFaces[0] : null;
-  const currentBs = lastBs.length ? lastBs[0] : null;
+  const currentBs = lastBs && lastBs.length ? lastBs[0] : null;
   const localTelemetry = getFaceMetrics(currentLm, currentBs);
 
-  try {
-    const apiRes = await fetch('/api/ai-analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        photo: photoDataUrl,
-        telemetry: localTelemetry ? {
-          symmetryPct: localTelemetry.symmetryPct,
-          smilePct: localTelemetry.smilePct,
-          jawRatio: localTelemetry.jawRatio,
-          genderHint: localTelemetry.genderLabel,
-          estAge: localTelemetry.estAge
-        } : null
-      })
-    });
-    const resJson = await apiRes.json();
-    if (resJson && resJson.ok && resJson.ai) {
-      aiResult = resJson.ai;
-    }
-  } catch (e) {
-    console.warn('AI API fallback to local:', e);
-  } finally {
-    btnScan.innerHTML = origBtnText;
-    btnScan.disabled = false;
-  }
+  // 2. Fire backend AI Analysis in background
+  let aiPromise = (async () => {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 6500);
+      const apiRes = await fetch('/api/ai-analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          photo: photoDataUrl,
+          telemetry: localTelemetry ? {
+            symmetryPct: localTelemetry.symmetryPct,
+            smilePct: localTelemetry.smilePct,
+            jawRatio: localTelemetry.jawRatio
+          } : null
+        }),
+        signal: controller.signal
+      });
+      clearTimeout(timer);
+      const resJson = await apiRes.json();
+      if (resJson && resJson.ok && resJson.ai) return resJson.ai;
+    } catch (_) {}
+    return null;
+  })();
 
-  // 3. Render Full HD Certificate Card (1080 x 1440)
+  // 3. Simulated Step Progression with Futuristic Sound Synthesizer
+  playTechSound('start');
+
+  // Step 1 (0ms - 750ms)
+  scanStepTitle.textContent = 'MENGUNCI TITIK BIOMETRIK 3D';
+  scanStepDesc.textContent = 'Mendeteksi 468 titik landmark & simetri kontur wajah...';
+  scanProgressFill.style.width = '35%';
+
+  await new Promise(r => setTimeout(r, 750));
+  playTechSound('step');
+
+  // Step 2 (750ms - 1500ms)
+  scanStepTitle.textContent = 'MENGANALISIS TEKSTUR & KERUTAN';
+  scanStepDesc.textContent = 'Menghitung usia biologis, elastisitas kulit, & gender...';
+  scanProgressFill.style.width = '70%';
+
+  await new Promise(r => setTimeout(r, 750));
+  playTechSound('step');
+
+  // Step 3 (1500ms - 2250ms)
+  scanStepTitle.textContent = 'MENCOCOKKAN DATABASE TOKOH';
+  scanStepDesc.textContent = 'Mengkalkulasi rating pesona, aura, & kembaran figur...';
+  scanProgressFill.style.width = '92%';
+
+  const [aiResult] = await Promise.all([
+    aiPromise,
+    new Promise(r => setTimeout(r, 750))
+  ]);
+
+  // Step 4: Finalize
+  scanStepTitle.textContent = 'ANALISIS BIOMETRIK SELESAI!';
+  scanStepDesc.textContent = 'Menyiapkan sertifikat resmi AI UKM EXPO UHN...';
+  scanProgressFill.style.width = '100%';
+  playTechSound('success');
+
+  await new Promise(r => setTimeout(r, 350));
+
+  // 4. Render Full HD Certificate Card (1080 x 1440)
+  await document.fonts.ready;
   const certCv = document.createElement('canvas');
   certCv.width = 1080; certCv.height = 1440;
   const cCtx = certCv.getContext('2d');
@@ -1088,7 +1158,7 @@ async function generateScanCard() {
   cCtx.font = '700 30px "Caveat", "Pacifico", cursive';
   cCtx.fillText('Sains Data & AI Biometric Laboratory', 540, 145);
 
-  // Photo Area (Aspect 4:3 -> 800 x 600, center-cropped without squishing)
+  // Photo Area (Aspect 4:3 -> 800 x 600)
   const imgObj = new Image();
   imgObj.src = photoDataUrl;
   if (!imgObj.complete) {
@@ -1096,31 +1166,34 @@ async function generateScanCard() {
   }
 
   const px = 140, py = 185, pw = 800, ph = 600;
+  let faceFocusY = 0.42;
+  if (currentLm && currentLm[10] && currentLm[152]) {
+    faceFocusY = (currentLm[10].y + currentLm[152].y) / 2;
+  }
   cCtx.save();
   roundRect(cCtx, px, py, pw, ph, 20); cCtx.clip();
-  drawCover(cCtx, imgObj, px, py, pw, ph);
+  drawCover(cCtx, imgObj, px, py, pw, ph, faceFocusY);
   cCtx.restore();
 
   cCtx.strokeStyle = '#4a0000'; cCtx.lineWidth = 5;
   roundRect(cCtx, px, py, pw, ph, 20); cCtx.stroke();
 
   // Metrics Box Area
-  const lm = lastFaces.length ? lastFaces[0] : null;
-  const bs = lastBs.length ? lastBs[0] : null;
-  const localM = getFaceMetrics(lm, bs) || {
-    estAge: 19, gen: 'Gen-Z Fresh 🎓', beautyScore: 98, symmetryPct: 96,
-    bestMatch: CELEBS[0], matchPct: 94
+  const localM = localTelemetry ? getSmoothedFaceMetrics(currentLm, currentBs, 0) : null || {
+    estAge: 19, gen: 'Gen-Z Fresh Maba 🎓', beautyScore: 98, symmetryPct: 96,
+    genderLabel: 'Perempuan 👧', wrinkleLabel: 'Kulit Halus & Kencang ✨',
+    bestMatch: CELEBS_FEMALE[0], matchPct: 96
   };
 
-  const finalGender = aiResult ? aiResult.gender : localM.genderLabel;
-  const finalAge = aiResult ? aiResult.age : localM.estAge;
-  const finalGen = aiResult ? aiResult.generation : localM.gen;
-  const finalBeauty = aiResult ? aiResult.beautyScore : localM.beautyScore;
-  const finalSym = aiResult ? (aiResult.symmetryScore || 95) : localM.symmetryPct;
-  const finalWrinkle = aiResult ? (aiResult.wrinkleAnalysis || 'Kulit Halus & Kencang (Baby Face ✨)') : (localM.wrinkleLabel || 'Halus & Kencang ✨');
-  const finalLookalike = aiResult ? aiResult.lookalike : localM.bestMatch.name;
-  const finalMatchPct = aiResult ? (aiResult.lookalikeMatch || 94) : localM.matchPct;
-  const finalComment = aiResult ? aiResult.comment : localM.bestMatch.comment;
+  const finalGender = aiResult ? aiResult.gender : (localM ? localM.genderLabel : 'Mahasiswa UHN');
+  const finalAge = aiResult ? aiResult.age : (localM ? localM.estAge : 19);
+  const finalGen = aiResult ? aiResult.generation : (localM ? localM.gen : 'Gen-Z Fresh 🎓');
+  const finalBeauty = aiResult ? aiResult.beautyScore : (localM ? localM.beautyScore : 98);
+  const finalSym = aiResult ? (aiResult.symmetryScore || 96) : (localM ? localM.symmetryPct : 96);
+  const finalWrinkle = aiResult ? (aiResult.wrinkleAnalysis || 'Kulit Halus & Kencang (Baby Face ✨)') : (localM ? localM.wrinkleLabel : 'Kulit Halus & Kencang ✨');
+  const finalLookalike = aiResult ? aiResult.lookalike : (localM && localM.bestMatch ? localM.bestMatch.name : 'Maudy Ayunda 🎓');
+  const finalMatchPct = aiResult ? (aiResult.lookalikeMatch || 96) : (localM ? localM.matchPct : 96);
+  const finalComment = aiResult ? aiResult.comment : (localM && localM.bestMatch ? localM.bestMatch.comment : 'Aura cerdas berkarisma tinggi, potensi meraih IPK 4.0 dan jadi bintang kampus UHN!');
 
   const by = 805, bw = 800, bh = 500, bx = 140;
   cCtx.fillStyle = '#ffffff';
@@ -1128,13 +1201,11 @@ async function generateScanCard() {
   cCtx.strokeStyle = '#4a0000'; cCtx.lineWidth = 4;
   roundRect(cCtx, bx, by, bw, bh, 20); cCtx.stroke();
 
-  // Content inside metrics box
   cCtx.textAlign = 'left';
   cCtx.fillStyle = '#681a34';
   cCtx.font = '700 29px "Fredoka", sans-serif';
   cCtx.fillText('📊 HASIL ANALISIS BIOMETRIK & KERUTAN AI:', bx + 32, by + 42);
 
-  // Metric Rows
   cCtx.fillStyle = '#2d1d23';
   cCtx.font = '700 23px "Fredoka", sans-serif';
   cCtx.fillText('• Gender & Usia Terdeteksi:', bx + 32, by + 86);
@@ -1165,7 +1236,6 @@ async function generateScanCard() {
   cCtx.fillStyle = '#4a2832';
   cCtx.font = '600 21px "Fredoka", sans-serif';
   
-  // Word wrap quote if needed
   let qTxt = `"${finalComment}"`;
   const maxQW = bw - 80;
   if (cCtx.measureText(qTxt).width <= maxQW) {
@@ -1187,12 +1257,10 @@ async function generateScanCard() {
     if (l3) cCtx.fillText(l3, bx + 44, by + 340);
   }
 
-  // Verified Footnote
   cCtx.fillStyle = '#cfa138';
   cCtx.font = '700 21px "Fredoka", sans-serif';
   cCtx.fillText('★ Verified by Sains Data UHN • AI Neural Vision 2026', bx + 32, by + 435);
 
-  // Bottom Signature
   cCtx.fillStyle = '#681a34';
   cCtx.textAlign = 'center';
   cCtx.font = '700 28px "Caveat", cursive';
@@ -1203,66 +1271,30 @@ async function generateScanCard() {
   // Display in Modal
   $('certImg').src = certDataUrl;
   $('btnDownloadCert').href = certDataUrl;
-  $('certModeLabel').textContent = currentMode === 'age' ? 'Tebak Umur & Gender' : currentMode === 'beauty' ? 'Rating Pesona & Simetri' : 'Kembaran Tokoh & Alumni';
   $('certPrimaryResult').textContent = `${finalGender} • ${finalAge} Thn (${finalGen})`;
+  $('certWrinkleResult').textContent = `${finalWrinkle}`;
+  $('certBeautyResult').textContent = `${finalBeauty}% (Simetri ${finalSym}%)`;
   $('certSecondaryResult').textContent = `${finalMatchPct}% Mirip ${finalLookalike}`;
   $('certQuote').textContent = `"${finalComment}"`;
+
+  // Hide Scanning HUD & reset button
+  scanningOverlay.style.display = 'none';
+  scanLaser.classList.remove('scanning-active');
+  btnScan.classList.remove('scanning');
+  btnScanLabel.textContent = 'SCAN WAJAH AI';
+  isScanning = false;
 
   $('modalResult').style.display = 'flex';
 }
 
 // ============ EVENT LISTENERS ============
-document.querySelectorAll('.mode-btn').forEach(btn => {
-  btn.onclick = () => {
-    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentMode = btn.dataset.mode;
-
-    const isPropsMode = currentMode === 'props';
-    $('propsRow').style.display = isPropsMode ? 'flex' : 'none';
-    $('filterRow').style.display = isPropsMode ? 'flex' : 'none';
-  };
-});
-
-document.querySelectorAll('.prop-chip').forEach(btn => {
-  btn.onclick = () => {
-    document.querySelectorAll('.prop-chip').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentProp = btn.dataset.prop;
-  };
-});
-
-document.querySelectorAll('.filter-chip').forEach(btn => {
-  btn.onclick = () => {
-    document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentFilter = btn.dataset.filter;
-    if (currentFilter === 'glow') video.style.filter = 'brightness(1.15) contrast(1.08) saturate(1.25)';
-    else if (currentFilter === 'vintage') video.style.filter = 'sepia(0.45) contrast(1.15) brightness(0.95)';
-    else if (currentFilter === 'soft') video.style.filter = 'brightness(1.18) contrast(0.95) saturate(1.15)';
-    else if (currentFilter === 'bw') video.style.filter = 'grayscale(1) contrast(1.25)';
-    else video.style.filter = 'none';
-  };
-});
+$('btnScan').onclick = () => {
+  executeScanningFlow();
+};
 
 $('btnFlip').onclick = () => {
   facing = facing === 'user' ? 'environment' : 'user';
   startCamera();
-};
-
-$('btnScan').onclick = () => {
-  generateScanCard();
-};
-
-$('btnLiveReset').onclick = () => {
-  lastFaces = [];
-  lastBs = [];
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  $('scanStatusText').textContent = '🔍 Memindai Ulang Wajah...';
-  $('hudMainText').textContent = 'Menganalisis Wajah Baru...';
-  $('hudSubText').textContent = 'Posisikan wajah di tengah kamera ✨';
-  $('stat1').textContent = 'Memindai...';
-  $('stat2').textContent = 'Memindai...';
 };
 
 $('btnCloseModal').onclick = () => {
@@ -1271,14 +1303,20 @@ $('btnCloseModal').onclick = () => {
 
 $('btnScanAgain').onclick = () => {
   $('modalResult').style.display = 'none';
-  $('scanStatusText').textContent = '🔍 Mencari Wajah Baru...';
   lastFaces = [];
   lastBs = [];
+  faceSmoothers.length = 0;
 };
 
 // ============ INIT ============
-initVision();
-startCamera();
+window.getVideoTransform = getVideoTransform;
+window.mapNormalizedToCanvas = mapNormalizedToCanvas;
+window.renderOverlay = renderOverlay;
+
+(async () => {
+  await initVision();
+  await startCamera();
+})();
 </script>
 </body>
 </html>
