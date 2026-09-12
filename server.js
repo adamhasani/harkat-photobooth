@@ -135,131 +135,79 @@ Kembalikan HANYA format JSON murni tanpa markdown:
   "facialTraits": "<3 ciri fisik terdeteksi, pisahkan koma>"
 }`;
 
-function callGroqVision(photo, telemetry) {
-  return new Promise((resolve) => {
-    const key = GROQ_KEYS[groqKeyIdx % GROQ_KEYS.length];
-    groqKeyIdx++;
-
-    let telemetryText = 'Analisis biometrik wajah ini secara spesifik & akurat untuk booth Sains Data AI UKM EXPO UHN:';
-    if (telemetry) {
-      telemetryText = `Data Pengukuran Sensor Biometrik MediaPipe 3D:
+async function callGroqVision(photo, telemetry) {
+  let telemetryText = 'Analisis biometrik wajah ini secara spesifik & akurat untuk booth Sains Data AI UKM EXPO UHN:';
+  if (telemetry) {
+    telemetryText = `Data Pengukuran Sensor Biometrik MediaPipe 3D:
 - Simetri Wajah Terukur: ${telemetry.symmetryPct || 95}%
 - Intensitas Senyuman: ${telemetry.smilePct || 80}%
 
 Tugasmu: Tentukan gender pengunjung secara independen dari pengamatan visual nyata foto (rambut, pakaian, wajah, riasan) dan gabungkan dengan data sensor 3D ini:`;
-    }
+  }
 
-    const payload = JSON.stringify({
-      model: 'qwen/qwen3.8-27b',
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        {
-          role: 'user',
-          content: [
-            { type: 'text', text: telemetryText },
-            { type: 'image_url', image_url: { url: photo } }
-          ]
-        }
-      ],
-      max_completion_tokens: 350,
-      temperature: 0.2
-    });
-
-    const https = require('https');
-    const req = https.request({
-      hostname: 'api.groq.com',
-      path: '/openai/v1/chat/completions',
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + key,
-        'Content-Type': 'application/json',
-        'User-Agent': 'Mozilla/5.0',
-        'Content-Length': Buffer.byteLength(payload)
-      },
-      timeout: 5000
-    }, (res) => {
-      let raw = '';
-      res.on('data', d => raw += d);
-      res.on('end', () => {
-        try {
-          const parsed = JSON.parse(raw);
-          const content = parsed.choices && parsed.choices[0] && parsed.choices[0].message && parsed.choices[0].message.content;
-          if (!content) return resolve(null);
-          const m = /\{[\s\S]*\}/.exec(content);
-          if (m) return resolve(JSON.parse(m[0]));
-          resolve(null);
-        } catch (e) {
-          resolve(null);
-        }
-      });
-    });
-
-    req.on('error', () => resolve(null));
-    req.on('timeout', () => { req.destroy(); resolve(null); });
-    req.write(payload);
-    req.end();
+  const payload = JSON.stringify({
+    model: 'qwen/qwen3.8-27b',
+    messages: [
+      { role: 'system', content: SYSTEM_PROMPT },
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: telemetryText },
+          { type: 'image_url', image_url: { url: photo } }
+        ]
+      }
+    ],
+    max_completion_tokens: 350,
+    temperature: 0.2
   });
-}
 
-function callOmniRouteVision(photo, telemetry) {
-  return new Promise((resolve) => {
-    const key = process.env.HERMES_CUSTOM_LOCALHOST_20128_API_KEY || '';
-    if (!key) return resolve(null);
+  const https = require('https');
+  const totalKeys = GROQ_KEYS.length;
 
-    let telemetryText = 'Analisis biometrik wajah ini secara spesifik & akurat untuk booth Sains Data AI UKM EXPO UHN:';
-    if (telemetry) {
-      telemetryText = `Data Sensor MediaPipe: Simetri ${telemetry.symmetryPct || 95}%, Senyum ${telemetry.smilePct || 80}%. Tentukan gender & usia secara mandiri dari foto:`;
-    }
-
-    const payload = JSON.stringify({
-      model: 'antigravity/gemini-3.5-flash-lite',
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        {
-          role: 'user',
-          content: [
-            { type: 'text', text: telemetryText },
-            { type: 'image_url', image_url: { url: photo } }
-          ]
-        }
-      ],
-      max_tokens: 350,
-      temperature: 0.3
-    });
-
-    const req = http.request({
-      hostname: '127.0.0.1',
-      port: 20128,
-      path: '/v1/chat/completions',
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + key,
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(payload)
-      },
-      timeout: 7000
-    }, (res) => {
-      let raw = '';
-      res.on('data', d => raw += d);
-      res.on('end', () => {
-        try {
-          const parsed = JSON.parse(raw);
-          const content = parsed.choices && parsed.choices[0] && parsed.choices[0].message && parsed.choices[0].message.content;
-          if (!content) return resolve(null);
-          const m = /\{[\s\S]*\}/.exec(content);
-          if (m) return resolve(JSON.parse(m[0]));
+  for (let i = 0; i < totalKeys; i++) {
+    const key = GROQ_KEYS[(groqKeyIdx + i) % totalKeys];
+    const res = await new Promise((resolve) => {
+      const req = https.request({
+        hostname: 'api.groq.com',
+        path: '/openai/v1/chat/completions',
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + key,
+          'Content-Type': 'application/json',
+          'User-Agent': 'Mozilla/5.0',
+          'Content-Length': Buffer.byteLength(payload)
+        },
+        timeout: 6000
+      }, (resp) => {
+        let raw = '';
+        resp.on('data', d => raw += d);
+        resp.on('end', () => {
+          if (resp.statusCode === 200) {
+            try {
+              const parsed = JSON.parse(raw);
+              const content = parsed.choices && parsed.choices[0] && parsed.choices[0].message && parsed.choices[0].message.content;
+              if (content) {
+                const m = /\{[\s\S]*\}/.exec(content);
+                if (m) {
+                  groqKeyIdx = (groqKeyIdx + i + 1) % totalKeys;
+                  return resolve(JSON.parse(m[0]));
+                }
+              }
+            } catch (e) {}
+          }
           resolve(null);
-        } catch (e) {
-          resolve(null);
-        }
+        });
       });
+
+      req.on('error', () => resolve(null));
+      req.on('timeout', () => { req.destroy(); resolve(null); });
+      req.write(payload);
+      req.end();
     });
 
-    req.on('error', () => resolve(null));
-    req.on('timeout', () => { req.destroy(); resolve(null); });
-    req.write(payload);
-    req.end();
-  });
+    if (res) return res;
+  }
+  return null;
 }
 
 async function analyzeFaceWithAi(req, res) {
@@ -274,18 +222,9 @@ async function analyzeFaceWithAi(req, res) {
       return json(res, 400, { error: 'photo dataURL required' });
     }
 
-    // 1. Try OmniRoute Vision first (antigravity/gemini-3.5-flash-lite - verified & ultra accurate)
-    let aiData = await callOmniRouteVision(photo, telemetry);
-    let provider = 'omniroute';
-
-    // 2. Fallback to Groq if OmniRoute is unavailable
-    if (!aiData) {
-      aiData = await callGroqVision(photo, telemetry);
-      provider = 'groq';
-    }
-
+    const aiData = await callGroqVision(photo, telemetry);
     if (aiData) {
-      return json(res, 200, { ok: true, provider, ai: aiData, data: aiData });
+      return json(res, 200, { ok: true, provider: 'groq', ai: aiData, data: aiData });
     }
     return json(res, 200, { fallback: true });
   });
