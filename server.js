@@ -100,22 +100,24 @@ const GROQ_KEYS = [
 ];
 let groqKeyIdx = 0;
 
-const SYSTEM_PROMPT = `Kamu adalah sistem AI Computer Vision & Biometric Analyzer cerdas untuk booth Sains Data & AI UKM EXPO UHN.
-Tugasmu: Analisis foto wajah pengunjung dengan SANGAT SPESIFIK, AKURAT, dan REALISTIS berdasarkan kerutan wajah (garis dahi, kerutan sudut mata/crow feet, garis senyum/nasolabial folds, kantung mata, elastisitas kulit) untuk menentukan usia yang presisi.
+const SYSTEM_PROMPT = `Kamu adalah sistem AI Computer Vision & Biometric Analyzer presisi tinggi untuk booth Sains Data & AI UKM EXPO UHN.
+Tugasmu: Analisis foto wajah pengunjung dengan SANGAT TELITI, OBJEKTIF, dan AKURAT untuk mendeteksi GENDER (Laki-laki vs Perempuan), USIA, CIRI FISIK NYATA, dan KEMBARAN TOKOH.
 
-PANDUAN ESTIMASI UMUR BERDASARKAN KERUTAN & TEKSTUR KULIT:
-- Kulit sangat halus, kencang, tanpa garis halus dahi/mata -> Rentang Maba Muda (17 - 19 tahun).
-- Ada sedikit garis senyum dinamis, kulit elastis & segar -> Mahasiswa Aktif (20 - 22 tahun).
-- Terdapat garis ekspresi halus di sudut mata (crow's feet) atau dahi tipis -> Mahasiswa Senior / Alumni Muda (23 - 26 tahun).
-- Terdapat lipatan nasolabial lebih dalam atau garis dahi jelas -> Dewasa Matang (27 - 30+ tahun).
+PANDUAN KLASIFIKASI GENDER (SANGAT KRUSIAL - JANGAN SALAH):
+1. Periksa ciri maskulin vs feminin secara seksama:
+   - Ciri Laki-laki: Struktur alis alami/tebal tanpa pensil alis, tidak menggunakan riasan wajah/lipstik/eyeliner/mascara, proporsi garis rahang/dagu pria, garis leher/jakun/bahu pria, postur pria. Meskipun berwajah bersih/tanpa jenggot/kulit mulus/babyface dan rambut pendek, jika tidak memakai makeup wanita dan berpakaian kemeja/kaos pria, itu adalah LAKI-LAKI.
+   - Ciri Perempuan: Riasan wajah (eyeshadow, pensil alis, lipstick/gloss), bentuk bibir feminin dengan riasan, perhiasan anting wanita, pakaian/kerah wanita, gaya rambut wanita.
+   - JANGAN mengira pria muda berkulit bersih/rambut pendek sebagai perempuan!
 
-PENTING:
-- Gender wajib dideteksi dengan benar ("Laki-laki 👦" atau "Perempuan 👧").
-- Tokoh mirip (lookalike) HARUS SESUAI GENDER:
-  * Jika Laki-laki: pilih figur pria yang benar-benar mirip (misal: Nicholas Saputra, Reza Rahadian, Iko Uwais, B.J. Habibie, Elon Musk, Keanu Reeves, Raditya Dika, Tulus, Dikta, Bobby Nasution, Gibran, dll).
-  * Jika Perempuan: pilih figur wanita yang benar-benar mirip (misal: Maudy Ayunda, Chelsea Islan, Dian Sastro, Isyana Sarasvati, Taylor Swift, Najwa Shihab, Sri Mulyani, Lisa Blackpink, Jennie, dll).
-- Estimasi umur harus realistis sesuai analisis kerutan di foto (rentang 17-30 tahun).
-- Komentar harus menyebut kondisi fisik nyata dan kerutan/kulit di foto.
+2. Tokoh mirip (lookalike) WAJIB 100% SESUAI GENDER:
+   - Jika Laki-laki: Tokoh pria yang berkarisma & relevan (misal: Nicholas Saputra, Reza Rahadian, Iqbaal Ramadhan, B.J. Habibie, Keanu Reeves, Elon Musk, Dikta, Jerome Polin, Raditya Dika, Tulus, dll).
+   - Jika Perempuan: Tokoh wanita yang berprestasi (misal: Maudy Ayunda, Chelsea Islan, Dian Sastro, Isyana Sarasvati, Taylor Swift, Najwa Shihab, Sri Mulyani, Lisa Blackpink, dll).
+
+3. Panduan Estimasi Umur (17-30 tahun):
+   - Maba / Young (18-19): Kulit kencang, babyface, tanpa garis halus dahi/mata.
+   - Mahasiswa Aktif (20-22): Garis senyum dinamis, kulit elastis & segar.
+   - Senior / Alumni Muda (23-26): Sedikit garis ekspresi halus di sudut mata/dahi.
+   - Dewasa Matang (27-30+): Lipatan nasolabial lebih dalam atau garis dahi jelas.
 
 Kembalikan HANYA format JSON murni tanpa markdown:
 {
@@ -124,13 +126,13 @@ Kembalikan HANYA format JSON murni tanpa markdown:
   "generation": "<Gen-Z Fresh 🎓 / Gen-Z Tech Wizard 💻 / Creative Soul 🎨 / Young Achiever 🌟>",
   "beautyScore": <skor pesona 88-99 integer>,
   "symmetryScore": <skor simetri 88-99 integer>,
-  "wrinkleAnalysis": "<Analisis tekstur kulit & kerutan, misal: Kulit Halus Bebas Kerutan (Baby Face ✨) / Garis Senyum Alami & Segar / Tekstur Matang Berkarisma>",
+  "wrinkleAnalysis": "<Analisis tekstur kulit & kerutan>",
   "lookalike": "<Nama Tokoh sesuai gender>",
   "lookalikeRole": "<Profesi/julukan tokoh>",
   "lookalikeMatch": <persen 86-98 integer>,
   "majorVibe": "<misal: Sains Data & AI / Sistem Informasi / Teknik Informatika / Bisnis Digital>",
-  "comment": "<1-2 kalimat analisis unik menyebut ciri fisik & tekstur kulit nyata di foto>",
-  "facialTraits": "<3 ciri fisik terdeteksi, pisahkan koma, misal: Kulit Kencang, Kacamata Retro, Senyum Ramah>"
+  "comment": "<1-2 kalimat analisis unik menyebut ciri fisik nyata & pakaian di foto>",
+  "facialTraits": "<3 ciri fisik terdeteksi, pisahkan koma>"
 }`;
 
 function callGroqVision(photo, telemetry) {
@@ -138,15 +140,13 @@ function callGroqVision(photo, telemetry) {
     const key = GROQ_KEYS[groqKeyIdx % GROQ_KEYS.length];
     groqKeyIdx++;
 
-    let telemetryText = 'Analisis biometrik wajah ini secara spesifik & akurat untuk booth Sains Data AI:';
+    let telemetryText = 'Analisis biometrik wajah ini secara spesifik & akurat untuk booth Sains Data AI UKM EXPO UHN:';
     if (telemetry) {
       telemetryText = `Data Pengukuran Sensor Biometrik MediaPipe 3D:
 - Simetri Wajah Terukur: ${telemetry.symmetryPct || 95}%
 - Intensitas Senyuman: ${telemetry.smilePct || 80}%
-- Rasio Rahang Terukur: ${telemetry.jawRatio ? Number(telemetry.jawRatio).toFixed(2) : '0.78'}
-- Deteksi Awal Morfologi: ${telemetry.genderHint || 'Laki-laki/Perempuan'}
 
-Tugasmu: Gabungkan data telemetri sensor 3D ini dengan pengamatan visualmu dari foto:`;
+Tugasmu: Tentukan gender pengunjung secara independen dari pengamatan visual nyata foto (rambut, pakaian, wajah, riasan) dan gabungkan dengan data sensor 3D ini:`;
     }
 
     const payload = JSON.stringify({
@@ -162,7 +162,7 @@ Tugasmu: Gabungkan data telemetri sensor 3D ini dengan pengamatan visualmu dari 
         }
       ],
       max_completion_tokens: 350,
-      temperature: 0.3
+      temperature: 0.2
     });
 
     const https = require('https');
@@ -206,13 +206,13 @@ function callOmniRouteVision(photo, telemetry) {
     const key = process.env.HERMES_CUSTOM_LOCALHOST_20128_API_KEY || '';
     if (!key) return resolve(null);
 
-    let telemetryText = 'Analisis biometrik wajah ini secara spesifik & akurat:';
+    let telemetryText = 'Analisis biometrik wajah ini secara spesifik & akurat untuk booth Sains Data AI UKM EXPO UHN:';
     if (telemetry) {
-      telemetryText = `Data Sensor MediaPipe: Simetri ${telemetry.symmetryPct}%, Senyum ${telemetry.smilePct}%, Gender ${telemetry.genderHint}. Gabungkan dengan foto:`;
+      telemetryText = `Data Sensor MediaPipe: Simetri ${telemetry.symmetryPct || 95}%, Senyum ${telemetry.smilePct || 80}%. Tentukan gender & usia secara mandiri dari foto:`;
     }
 
     const payload = JSON.stringify({
-      model: 'agy/gemini-3.5-flash-lite',
+      model: 'antigravity/gemini-3.5-flash-lite',
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         {
@@ -224,7 +224,7 @@ function callOmniRouteVision(photo, telemetry) {
         }
       ],
       max_tokens: 350,
-      temperature: 0.4
+      temperature: 0.3
     });
 
     const req = http.request({
@@ -274,18 +274,18 @@ async function analyzeFaceWithAi(req, res) {
       return json(res, 400, { error: 'photo dataURL required' });
     }
 
-    // 1. Try Groq Vision first with Hybrid Telemetry (Ultra Fast ~0.8s)
-    let aiData = await callGroqVision(photo, telemetry);
-    let provider = 'groq';
+    // 1. Try OmniRoute Vision first (antigravity/gemini-3.5-flash-lite - verified & ultra accurate)
+    let aiData = await callOmniRouteVision(photo, telemetry);
+    let provider = 'omniroute';
 
-    // 2. Fallback to Gemini / OmniRoute if Groq is unavailable
+    // 2. Fallback to Groq if OmniRoute is unavailable
     if (!aiData) {
-      aiData = await callOmniRouteVision(photo, telemetry);
-      provider = 'omniroute';
+      aiData = await callGroqVision(photo, telemetry);
+      provider = 'groq';
     }
 
     if (aiData) {
-      return json(res, 200, { ok: true, provider, ai: aiData });
+      return json(res, 200, { ok: true, provider, ai: aiData, data: aiData });
     }
     return json(res, 200, { fallback: true });
   });

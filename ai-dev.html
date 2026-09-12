@@ -100,9 +100,8 @@
 
   /* ============ CAMERA & SCANNER VIEWPORT ============ */
   .cam-container {
-    padding: 16px 14px 14px;
-    display: flex; flex-direction: column; align-items: center; gap: 14px;
-    flex: 1; justify-content: center;
+    padding: 14px 14px 20px;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
     width: 100%;
   }
   .cam-wrap {
@@ -110,7 +109,7 @@
     background: #0d0610; border: 3px solid var(--maroon-deep);
     box-shadow: 0 5px 0 var(--maroon-deep), 0 10px 24px rgba(0,0,0,0.35);
     aspect-ratio: 3 / 4;
-    max-height: 56vh;
+    max-height: 48vh;
     margin: 0 auto;
     display: flex; align-items: center; justify-content: center;
   }
@@ -118,6 +117,7 @@
     position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
   }
   #video.mirror { transform: scaleX(-1); }
+
   #overlayCanvas {
     position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3;
   }
@@ -268,12 +268,12 @@
     box-shadow: 0 0 8px #00f2fe;
   }
 
-  /* ============ MAIN ACTION BUTTON ============ */
+  /* ============ MAIN ACTION BUTTON (BEFORE SCAN) ============ */
   .action-wrap {
-    width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 4px;
+    width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 2px;
   }
   .btn-main-scan {
-    width: 100%; height: 60px; border-radius: 999px;
+    width: 100%; height: 58px; border-radius: 999px;
     border: 3px solid var(--maroon-deep);
     background: linear-gradient(135deg, #f5b722 0%, #ffd86b 50%, #f5b722 100%);
     color: var(--maroon-deep);
@@ -294,6 +294,212 @@
   .scan-hint {
     font-size: 11.5px; font-weight: 700; color: var(--maroon);
     text-align: center; opacity: 0.9;
+  }
+
+  /* ============ LIVE RESULT HUD PANEL (UNDER CAMERA) ============ */
+  .live-result-panel {
+    width: 100%;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    animation: slideUpFade 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes slideUpFade {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .live-result-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 4px;
+  }
+  .live-badge-chip {
+    background: #681a34; color: #ffd86b;
+    border: 1.5px solid #4a0000; border-radius: 999px;
+    padding: 4px 12px; font-size: 11px; font-weight: 800;
+    letter-spacing: 0.8px; display: inline-flex; align-items: center; gap: 6px;
+    box-shadow: 0 1.5px 0 #4a0000;
+  }
+  .live-time-badge {
+    font-size: 11.5px; font-weight: 700; color: #8a5b00;
+  }
+
+  .live-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+  .live-card {
+    background: #ffffff;
+    border: 2px solid var(--maroon-deep);
+    border-radius: 14px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    box-shadow: 0 2.5px 0 var(--maroon-deep);
+  }
+  .live-card-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #681a34;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .live-card-val {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: var(--maroon-deep);
+    line-height: 1.25;
+  }
+  .live-card-sub {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #8a5b00;
+    line-height: 1.2;
+  }
+
+  .live-quote-card {
+    background: #ffffff;
+    border: 2px solid var(--maroon-deep);
+    border-radius: 14px;
+    padding: 10px 12px;
+    box-shadow: 0 2.5px 0 var(--maroon-deep);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .live-quote-header {
+    font-size: 11px;
+    font-weight: 800;
+    color: #0d6e5a;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .live-quote-content {
+    font-size: 12px;
+    font-weight: 600;
+    color: #34221e;
+    line-height: 1.35;
+    background: #fbf8f0;
+    border-left: 3px solid var(--gold);
+    padding: 6px 8px;
+    border-radius: 6px;
+  }
+
+  .live-btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 2px;
+    width: 100%;
+  }
+  .btn-live-dl {
+    width: 100%;
+    height: 50px;
+    background: linear-gradient(135deg, #f5b722 0%, #ffd86b 50%, #f5b722 100%);
+    color: var(--maroon-deep);
+    border: 2.5px solid var(--maroon-deep);
+    border-radius: 999px;
+    font-family: 'Luckiest Guy', cursive;
+    font-size: 16.5px;
+    letter-spacing: 0.8px;
+    cursor: pointer;
+    box-shadow: 0 4px 0 var(--maroon-deep), 0 8px 18px rgba(245,183,34,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: transform 0.1s, box-shadow 0.1s;
+    text-decoration: none;
+  }
+  .btn-live-dl:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 var(--maroon-deep);
+  }
+
+  .live-btn-row {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+  .btn-live-preview {
+    flex: 1;
+    height: 42px;
+    background: #fbf5e6;
+    color: var(--maroon-deep);
+    border: 2px solid var(--maroon-deep);
+    border-radius: 999px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2.5px 0 var(--maroon-deep);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: transform 0.1s;
+  }
+  .btn-live-preview:active {
+    transform: translateY(1.5px);
+    box-shadow: 0 1px 0 var(--maroon-deep);
+  }
+
+  .btn-live-rescan {
+    flex: 1.2;
+    height: 42px;
+    background: #2b7a4b;
+    color: #ffffff;
+    border: 2px solid #164629;
+    border-radius: 999px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2.5px 0 #164629;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: transform 0.1s;
+  }
+  .btn-live-rescan:active {
+    transform: translateY(1.5px);
+    box-shadow: 0 1px 0 #164629;
+  }
+
+  /* ============ TOAST NOTIFICATION ============ */
+  .download-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #164629;
+    color: #ffffff;
+    border: 2px solid #00ff88;
+    border-radius: 999px;
+    padding: 10px 20px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    z-index: 200;
+    pointer-events: none;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+    opacity: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  .download-toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
   }
 
   /* ============ MODAL RESULT CERTIFICATE ============ */
@@ -444,16 +650,84 @@
       </div>
     </div>
 
-    <!-- MAIN SCAN BUTTON -->
-    <div class="action-wrap">
+    <!-- MAIN SCAN BUTTON (INITIAL STATE) -->
+    <div class="action-wrap" id="actionWrap">
       <button class="btn-main-scan" id="btnScan">
         <span class="btn-scan-icon">⚡</span>
         <span class="btn-scan-label" id="btnScanLabel">SCAN WAJAH AI</span>
       </button>
       <p class="scan-hint">✦ Otomatis analisis usia, gender, skor pesona & kembaran tokoh ✦</p>
     </div>
+
+    <!-- LIVE SCANNED RESULT PANEL (UNDER CAMERA) -->
+    <div class="live-result-panel" id="liveResultPanel">
+      <div class="live-result-header">
+        <div class="live-badge-chip">
+          <span class="dot-live"></span>
+          <span>HASIL SCAN BIOMETRIK AI</span>
+        </div>
+        <span class="live-time-badge" id="liveScanTime">TERVERIFIKASI ✓</span>
+      </div>
+
+      <!-- Live Metric Grid -->
+      <div class="live-grid">
+        <!-- 1. Gender & Usia -->
+        <div class="live-card">
+          <div class="live-card-label">👤 Gender & Usia</div>
+          <div class="live-card-val" id="liveGenderAge">Perempuan 👧 • 19 Thn</div>
+          <div class="live-card-sub" id="liveGen">Gen-Z Fresh Maba 🎓</div>
+        </div>
+
+        <!-- 2. Tekstur & Kerutan -->
+        <div class="live-card">
+          <div class="live-card-label">✨ Kondisi Kulit & Kerutan</div>
+          <div class="live-card-val" id="liveWrinkle">Kulit Halus ✨</div>
+          <div class="live-card-sub">Elastisitas Alami (Baby Face)</div>
+        </div>
+
+        <!-- 3. Pesona & Simetri -->
+        <div class="live-card">
+          <div class="live-card-label">💖 Skor Pesona & Aura</div>
+          <div class="live-card-val" id="liveBeauty">98%</div>
+          <div class="live-card-sub" id="liveSymmetry">Simetri Wajah 96%</div>
+        </div>
+
+        <!-- 4. Kembaran Tokoh -->
+        <div class="live-card">
+          <div class="live-card-label">🌟 Kembaran Tokoh</div>
+          <div class="live-card-val" id="liveLookalike">96% Maudy Ayunda</div>
+          <div class="live-card-sub" id="liveLookalikeRole">Aktris & Edukator Cerdas</div>
+        </div>
+      </div>
+
+      <!-- AI Verdict / Quote Card -->
+      <div class="live-quote-card">
+        <div class="live-quote-header">💡 ANALISIS BIOMETRIK AI</div>
+        <div class="live-quote-content" id="liveComment">
+          "Wajah cerdas berkarisma tinggi, potensi meraih IPK 4.0 dan jadi bintang kampus UHN!"
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="live-btn-group">
+        <button class="btn-live-dl" id="btnLiveDownload">
+          <span>⬇️ Unduh Kartu Sertifikat (PNG)</span>
+        </button>
+        <div class="live-btn-row">
+          <button class="btn-live-preview" id="btnLivePreview">
+            <span>🖼️ Pratinjau Kartu</span>
+          </button>
+          <button class="btn-live-rescan" id="btnLiveRescan">
+            <span>🔄 Scan Lagi</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
+
+<!-- TOAST NOTIFICATION -->
+<div class="download-toast" id="downloadToast">📥 Kartu AI Berhasil Diunduh!</div>
 
 <!-- MODAL RESULT CERTIFICATE -->
 <div class="modal-backdrop" id="modalResult">
@@ -519,6 +793,8 @@ let lastDet = 0;
 let lastFaces = [];
 let lastBs = null;
 let isScanning = false;
+let currentCertDataUrl = null;
+let toastTimer = null;
 
 // Audio Synthesizer (Web Audio API)
 let audioCtx = null;
@@ -561,15 +837,25 @@ function playTechSound(type) {
   } catch (_) {}
 }
 
+function showToast(msg) {
+  const toast = $('downloadToast');
+  if (!toast) return;
+  toast.textContent = msg;
+  toast.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.classList.remove('show');
+  }, 2500);
+}
+
 // Database personalities untuk Kembaran Tokoh
 const CELEBS_MALE = [
-  { name: 'Nicholas Saputra 🕶️', gender: 'Laki-laki', role: 'Aktor Karismatik & Cool', avatar: '😎', jaw: 0.62, eyeRatio: 0.41, noseRatio: 0.28, smile: 0.35, comment: 'Tatapan mata tajam & garis rahang maskulin yang berwibawa!' },
-  { name: 'Reza Rahadian 🎭', gender: 'Laki-laki', role: 'Aktor Serba Bisa', avatar: '🎬', jaw: 0.56, eyeRatio: 0.39, noseRatio: 0.29, smile: 0.65, comment: 'Ekspresif banget, cocok jadi bintang panggung & public speaker!' },
-  { name: 'B.J. Habibie 🚀', gender: 'Laki-laki', role: 'Visioner & Jenius Teknologi', avatar: '🧠', jaw: 0.50, eyeRatio: 0.36, noseRatio: 0.25, smile: 0.70, comment: 'Aura pemikir strategis, cocok jadi master Data Science!' },
-  { name: 'Elon Musk 💻', gender: 'Laki-laki', role: 'Tech Innovator & Futuris', avatar: '🚀', jaw: 0.64, eyeRatio: 0.42, noseRatio: 0.27, smile: 0.40, comment: 'Ambisius dan punya pandangan masa depan yang luas!' },
-  { name: 'Dikta Wicaksono 🎸', gender: 'Laki-laki', role: 'Musisi Berkarisma & Santai', avatar: '✨', jaw: 0.52, eyeRatio: 0.38, noseRatio: 0.26, smile: 0.75, comment: 'Vibes ramah, murah senyum, dan disukai banyak orang!' },
-  { name: 'Iko Uwais 🥋', gender: 'Laki-laki', role: 'Action Star & Atletik', avatar: '🔥', jaw: 0.65, eyeRatio: 0.40, noseRatio: 0.28, smile: 0.45, comment: 'Struktur wajah tegas, sporty, dan penuh percaya diri!' },
-  { name: 'Gibran Rakabuming 👔', gender: 'Laki-laki', role: 'Tokoh Muda & Kalem', avatar: '👓', jaw: 0.53, eyeRatio: 0.37, noseRatio: 0.26, smile: 0.30, comment: 'Tipe wajah santai, fokus pada aksi nyata, dan tenang!' }
+  { name: 'Iqbaal Ramadhan 🎸', gender: 'Laki-laki', role: 'Aktor & Musisi Muda Cerdas', avatar: '😎', jaw: 0.60, eyeRatio: 0.39, noseRatio: 0.27, smile: 0.60, comment: 'Tatapan ramah, berkarisma muda, dan punya daya pikat tinggi!' },
+  { name: 'Nicholas Saputra 🕶️', gender: 'Laki-laki', role: 'Aktor Karismatik & Cool', avatar: '😎', jaw: 0.65, eyeRatio: 0.41, noseRatio: 0.28, smile: 0.35, comment: 'Tatapan mata tajam & garis rahang maskulin yang berwibawa!' },
+  { name: 'Reza Rahadian 🎭', gender: 'Laki-laki', role: 'Aktor Serba Bisa', avatar: '🎬', jaw: 0.58, eyeRatio: 0.39, noseRatio: 0.29, smile: 0.65, comment: 'Ekspresif banget, cocok jadi bintang panggung & public speaker!' },
+  { name: 'B.J. Habibie 🚀', gender: 'Laki-laki', role: 'Visioner & Jenius Teknologi', avatar: '🧠', jaw: 0.52, eyeRatio: 0.36, noseRatio: 0.25, smile: 0.70, comment: 'Aura pemikir strategis, cocok jadi master Data Science!' },
+  { name: 'Dikta Wicaksono ✨', gender: 'Laki-laki', role: 'Musisi Berkarisma & Santai', avatar: '✨', jaw: 0.54, eyeRatio: 0.38, noseRatio: 0.26, smile: 0.75, comment: 'Vibes ramah, murah senyum, dan disukai banyak orang!' },
+  { name: 'Raditya Dika 🎙️', gender: 'Laki-laki', role: 'Penulis & Komedian Kreatif', avatar: '💡', jaw: 0.53, eyeRatio: 0.37, noseRatio: 0.26, smile: 0.50, comment: 'Wajah komunikatif, penuh ide kreatif & daya pikat humor!' }
 ];
 
 const CELEBS_FEMALE = [
@@ -756,7 +1042,11 @@ function getFaceMetrics(landmarks, blendshapes) {
   const chinTaperRatio = chinWidth / gonionWidth;
 
   const jawlineScore = (gonionRatio * 0.4) + (chinTaperRatio * 0.3) + ((jawRatio - 0.70) * 0.3);
-  const rawMaleScore = (jawlineScore - 0.54) * 3.5 - (browArchRatio - 0.075) * 12.0 - (lipFullness - 0.28) * 4.0;
+  // Empirical calibrated gender score (-1.0 female to +1.0 male)
+  const jawScore = (jawRatio - 0.62) * 3.0 + (gonionRatio - 0.72) * 2.5;
+  const browScore = (0.105 - browArchRatio) * 4.0;
+  const lipScore = (0.35 - lipFullness) * 2.5;
+  const rawMaleScore = jawScore + browScore + lipScore;
 
   // Wrinkle Tension & Facial Smoothness Index
   const browTension = Math.hypot(landmarks[107].x - landmarks[336].x, landmarks[107].y - landmarks[336].y) || 0.01;
@@ -765,8 +1055,8 @@ function getFaceMetrics(landmarks, blendshapes) {
   const nasolabialTension = (nasolabialL + nasolabialR) / 2;
   const wrinkleTension = (browTension * 0.6) + (nasolabialTension * 0.4);
 
-  let estAge = 19 + Math.round((wrinkleTension - 0.22) * 20) - (smileScore > 0.6 ? 1 : 0);
-  estAge = Math.min(26, Math.max(17, estAge));
+  let estAge = 19 + Math.round((wrinkleTension - 0.20) * 15) - (smileScore > 0.6 ? 1 : 0);
+  estAge = Math.min(26, Math.max(18, estAge));
 
   let symDiff = 0;
   const pairs = [[33,263], [234,454], [61,291], [70,300], [172,397]];
@@ -1036,7 +1326,7 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-// ============ HIGH-TECH SIMULATED SCANNING & RESULT POPUP ============
+// ============ HIGH-TECH SIMULATED SCANNING & LIVE RESULT FLOW ============
 async function executeScanningFlow() {
   if (!video.videoWidth || isScanning) return;
   isScanning = true;
@@ -1073,7 +1363,7 @@ async function executeScanningFlow() {
   let aiPromise = (async () => {
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 6500);
+      const timer = setTimeout(() => controller.abort(), 7000);
       const apiRes = await fetch('/api/ai-analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1088,8 +1378,11 @@ async function executeScanningFlow() {
         signal: controller.signal
       });
       clearTimeout(timer);
-      const resJson = await apiRes.json();
-      if (resJson && resJson.ok && resJson.ai) return resJson.ai;
+      if (apiRes.ok) {
+        const resJson = await apiRes.json();
+        const aiData = (resJson && resJson.ai) ? resJson.ai : (resJson && resJson.data ? resJson.data : null);
+        if (aiData) return aiData;
+      }
     } catch (_) {}
     return null;
   })();
@@ -1097,41 +1390,59 @@ async function executeScanningFlow() {
   // 3. Simulated Step Progression with Futuristic Sound Synthesizer
   playTechSound('start');
 
-  // Step 1 (0ms - 750ms)
+  // Step 1 (0ms - 600ms)
   scanStepTitle.textContent = 'MENGUNCI TITIK BIOMETRIK 3D';
   scanStepDesc.textContent = 'Mendeteksi 468 titik landmark & simetri kontur wajah...';
   scanProgressFill.style.width = '35%';
 
-  await new Promise(r => setTimeout(r, 750));
+  await new Promise(r => setTimeout(r, 600));
   playTechSound('step');
 
-  // Step 2 (750ms - 1500ms)
+  // Step 2 (600ms - 1200ms)
   scanStepTitle.textContent = 'MENGANALISIS TEKSTUR & KERUTAN';
   scanStepDesc.textContent = 'Menghitung usia biologis, elastisitas kulit, & gender...';
   scanProgressFill.style.width = '70%';
 
-  await new Promise(r => setTimeout(r, 750));
+  await new Promise(r => setTimeout(r, 600));
   playTechSound('step');
 
-  // Step 3 (1500ms - 2250ms)
+  // Step 3 (1200ms - wait for AI with max bounded duration)
   scanStepTitle.textContent = 'MENCOCOKKAN DATABASE TOKOH';
   scanStepDesc.textContent = 'Mengkalkulasi rating pesona, aura, & kembaran figur...';
   scanProgressFill.style.width = '92%';
 
-  const [aiResult] = await Promise.all([
+  const aiResult = await Promise.race([
     aiPromise,
-    new Promise(r => setTimeout(r, 750))
+    new Promise(r => setTimeout(r, 4800)).then(() => null)
   ]);
 
   // Step 4: Finalize
   scanStepTitle.textContent = 'ANALISIS BIOMETRIK SELESAI!';
-  scanStepDesc.textContent = 'Menyiapkan sertifikat resmi AI UKM EXPO UHN...';
+  scanStepDesc.textContent = 'Menyiapkan data biometrik AI UKM EXPO UHN...';
   scanProgressFill.style.width = '100%';
   playTechSound('success');
 
-  await new Promise(r => setTimeout(r, 350));
+  await new Promise(r => setTimeout(r, 300));
 
-  // 4. Render Full HD Certificate Card (1080 x 1440)
+  // Compute final values
+  const localM = localTelemetry ? getSmoothedFaceMetrics(currentLm, currentBs, 0) : null || {
+    estAge: 19, gen: 'Gen-Z Fresh 🎓', beautyScore: 94, symmetryPct: 95,
+    genderLabel: 'Laki-laki 👦', wrinkleLabel: 'Kulit Halus & Kencang ✨',
+    bestMatch: CELEBS_MALE[0], matchPct: 94
+  };
+
+  const finalGender = aiResult ? aiResult.gender : (localM ? localM.genderLabel : 'Laki-laki 👦');
+  const finalAge = aiResult ? aiResult.age : (localM ? localM.estAge : 19);
+  const finalGen = aiResult ? aiResult.generation : (localM ? localM.gen : 'Gen-Z Fresh 🎓');
+  const finalBeauty = aiResult ? aiResult.beautyScore : (localM ? localM.beautyScore : 94);
+  const finalSym = aiResult ? (aiResult.symmetryScore || 95) : (localM ? localM.symmetryPct : 95);
+  const finalWrinkle = aiResult ? (aiResult.wrinkleAnalysis || 'Kulit Halus Bebas Kerutan ✨') : (localM ? localM.wrinkleLabel : 'Kulit Halus & Kencang ✨');
+  const finalLookalike = aiResult ? aiResult.lookalike : (localM && localM.bestMatch ? localM.bestMatch.name : 'Iqbaal Ramadhan 🎸');
+  const finalLookalikeRole = (aiResult && aiResult.lookalikeRole) || (localM && localM.bestMatch ? localM.bestMatch.role : 'Aktor & Musisi Muda Cerdas');
+  const finalMatchPct = aiResult ? (aiResult.lookalikeMatch || 94) : (localM ? localM.matchPct : 94);
+  const finalComment = aiResult ? aiResult.comment : (localM && localM.bestMatch ? localM.bestMatch.comment : 'Struktur wajah simetris dengan ekspresi positif & berkarisma muda!');
+
+  // 4. Render Full HD Certificate Card in background (1080 x 1440)
   await document.fonts.ready;
   const certCv = document.createElement('canvas');
   certCv.width = 1080; certCv.height = 1440;
@@ -1179,22 +1490,6 @@ async function executeScanningFlow() {
   roundRect(cCtx, px, py, pw, ph, 20); cCtx.stroke();
 
   // Metrics Box Area
-  const localM = localTelemetry ? getSmoothedFaceMetrics(currentLm, currentBs, 0) : null || {
-    estAge: 19, gen: 'Gen-Z Fresh Maba 🎓', beautyScore: 98, symmetryPct: 96,
-    genderLabel: 'Perempuan 👧', wrinkleLabel: 'Kulit Halus & Kencang ✨',
-    bestMatch: CELEBS_FEMALE[0], matchPct: 96
-  };
-
-  const finalGender = aiResult ? aiResult.gender : (localM ? localM.genderLabel : 'Mahasiswa UHN');
-  const finalAge = aiResult ? aiResult.age : (localM ? localM.estAge : 19);
-  const finalGen = aiResult ? aiResult.generation : (localM ? localM.gen : 'Gen-Z Fresh 🎓');
-  const finalBeauty = aiResult ? aiResult.beautyScore : (localM ? localM.beautyScore : 98);
-  const finalSym = aiResult ? (aiResult.symmetryScore || 96) : (localM ? localM.symmetryPct : 96);
-  const finalWrinkle = aiResult ? (aiResult.wrinkleAnalysis || 'Kulit Halus & Kencang (Baby Face ✨)') : (localM ? localM.wrinkleLabel : 'Kulit Halus & Kencang ✨');
-  const finalLookalike = aiResult ? aiResult.lookalike : (localM && localM.bestMatch ? localM.bestMatch.name : 'Maudy Ayunda 🎓');
-  const finalMatchPct = aiResult ? (aiResult.lookalikeMatch || 96) : (localM ? localM.matchPct : 96);
-  const finalComment = aiResult ? aiResult.comment : (localM && localM.bestMatch ? localM.bestMatch.comment : 'Aura cerdas berkarisma tinggi, potensi meraih IPK 4.0 dan jadi bintang kampus UHN!');
-
   const by = 805, bw = 800, bh = 500, bx = 140;
   cCtx.fillStyle = '#ffffff';
   roundRect(cCtx, bx, by, bw, bh, 20); cCtx.fill();
@@ -1266,25 +1561,63 @@ async function executeScanningFlow() {
   cCtx.font = '700 28px "Caveat", cursive';
   cCtx.fillText('Dovey ✦ Sains Data Experience', 540, 1375);
 
-  const certDataUrl = certCv.toDataURL('image/png');
+  currentCertDataUrl = certCv.toDataURL('image/png');
 
-  // Display in Modal
-  $('certImg').src = certDataUrl;
-  $('btnDownloadCert').href = certDataUrl;
-  $('certPrimaryResult').textContent = `${finalGender} • ${finalAge} Thn (${finalGen})`;
+  // 5. Populate Live Results under Camera
+  $('liveGenderAge').textContent = `${finalGender} • ${finalAge} Thn`;
+  $('liveGen').textContent = finalGen;
+  $('liveWrinkle').textContent = finalWrinkle;
+  $('liveBeauty').textContent = `${finalBeauty}%`;
+  $('liveSymmetry').textContent = `Simetri Wajah ${finalSym}%`;
+  $('liveLookalike').textContent = `${finalMatchPct}% ${finalLookalike}`;
+  $('liveLookalikeRole').textContent = finalLookalikeRole;
+  $('liveComment').textContent = `"${finalComment}"`;
+
+  // Pre-populate Modal elements
+  $('certImg').src = currentCertDataUrl;
+  $('btnDownloadCert').href = currentCertDataUrl;
+  $('certPrimaryResult').textContent = `${finalGender} • ${finalAge} Tahun (${finalGen})`;
   $('certWrinkleResult').textContent = `${finalWrinkle}`;
   $('certBeautyResult').textContent = `${finalBeauty}% (Simetri ${finalSym}%)`;
   $('certSecondaryResult').textContent = `${finalMatchPct}% Mirip ${finalLookalike}`;
   $('certQuote').textContent = `"${finalComment}"`;
 
-  // Hide Scanning HUD & reset button
+  // Hide Scanning HUD on camera
   scanningOverlay.style.display = 'none';
   scanLaser.classList.remove('scanning-active');
   btnScan.classList.remove('scanning');
   btnScanLabel.textContent = 'SCAN WAJAH AI';
   isScanning = false;
 
-  $('modalResult').style.display = 'flex';
+  // Swap Main Action Button with Live Result Panel under Camera
+  $('actionWrap').style.display = 'none';
+  $('liveResultPanel').style.display = 'flex';
+
+  // Smooth scroll so the live result data is clearly in view
+  try {
+    $('liveResultPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch (_) {}
+}
+
+function resetToScanMode() {
+  $('liveResultPanel').style.display = 'none';
+  $('actionWrap').style.display = 'flex';
+  $('modalResult').style.display = 'none';
+  lastFaces = [];
+  lastBs = [];
+  faceSmoothers.length = 0;
+  $('scanStatusText').textContent = 'Mencari Wajah... 🔍';
+}
+
+function downloadCertificateFile() {
+  if (!currentCertDataUrl) return;
+  const a = document.createElement('a');
+  a.href = currentCertDataUrl;
+  a.download = `ai-face-report-uhn-${Date.now().toString().slice(-6)}.png`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  showToast('📥 Kartu AI Berhasil Diunduh!');
 }
 
 // ============ EVENT LISTENERS ============
@@ -1297,15 +1630,24 @@ $('btnFlip').onclick = () => {
   startCamera();
 };
 
-$('btnCloseModal').onclick = () => {
-  $('modalResult').style.display = 'none';
+$('btnLiveDownload').onclick = () => {
+  downloadCertificateFile();
+};
+
+$('btnLivePreview').onclick = () => {
+  $('modalResult').style.display = 'flex';
+};
+
+$('btnLiveRescan').onclick = () => {
+  resetToScanMode();
 };
 
 $('btnScanAgain').onclick = () => {
+  resetToScanMode();
+};
+
+$('btnCloseModal').onclick = () => {
   $('modalResult').style.display = 'none';
-  lastFaces = [];
-  lastBs = [];
-  faceSmoothers.length = 0;
 };
 
 // ============ INIT ============
