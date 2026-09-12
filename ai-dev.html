@@ -473,6 +473,73 @@
     box-shadow: 0 1px 0 #164629;
   }
 
+  /* ============ INTERACTIVE STYLE SELECTOR TABS ============ */
+  .cert-style-selector {
+    background: #ffffff;
+    border: 2px solid var(--maroon-deep);
+    border-radius: 14px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    box-shadow: 0 2.5px 0 var(--maroon-deep);
+    width: 100%;
+  }
+  .style-selector-title {
+    font-size: 11px;
+    font-weight: 800;
+    color: #681a34;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    letter-spacing: 0.3px;
+  }
+  .style-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    width: 100%;
+  }
+  .style-tab {
+    background: #fdfaf2;
+    color: #681a34;
+    border: 2px solid #ebdcb9;
+    border-radius: 10px;
+    padding: 7px 4px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    transition: all 0.15s ease;
+    box-shadow: 0 2px 0 #ebdcb9;
+  }
+  .style-tab:hover {
+    background: #fbf5e6;
+    border-color: #cfa138;
+  }
+  .style-tab.active {
+    background: #681a34;
+    color: #ffd86b;
+    border-color: #4a0000;
+    box-shadow: 0 2.5px 0 #4a0000, 0 0 10px rgba(104, 26, 52, 0.35);
+    transform: translateY(-1px);
+  }
+  .style-tab .tab-icon {
+    font-size: 16px;
+    line-height: 1;
+  }
+  .style-tab .tab-label {
+    white-space: nowrap;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
   /* ============ TOAST NOTIFICATION ============ */
   .download-toast {
     position: fixed;
@@ -708,6 +775,25 @@
         </div>
       </div>
 
+      <!-- Interactive Certificate Style Selector -->
+      <div class="cert-style-selector">
+        <div class="style-selector-title">🎨 Pilih Desain Sertifikat AI:</div>
+        <div class="style-tabs">
+          <button class="style-tab active" data-mode="duo" title="Kembaran Biometrik (Side-by-Side)">
+            <span class="tab-icon">👥</span>
+            <span class="tab-label">Kembaran</span>
+          </button>
+          <button class="style-tab" data-mode="swap" title="Head Swap Persona Tokoh">
+            <span class="tab-icon">🎭</span>
+            <span class="tab-label">Head Swap</span>
+          </button>
+          <button class="style-tab" data-mode="single" title="Foto Klasik AI">
+            <span class="tab-icon">📄</span>
+            <span class="tab-label">Klasik</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Action Buttons -->
       <div class="live-btn-group">
         <button class="btn-live-dl" id="btnLiveDownload">
@@ -736,6 +822,25 @@
       <div class="cert-tag">✨ OFFICIAL AI BIOMETRIC REPORT</div>
       <h2>UKM EXPO UHN</h2>
       <small>Sains Data & Artificial Intelligence Lab</small>
+    </div>
+
+    <!-- Interactive Style Selector inside Modal -->
+    <div class="cert-style-selector">
+      <div class="style-selector-title">🎨 Ganti Desain Sertifikat:</div>
+      <div class="style-tabs">
+        <button class="style-tab active" data-mode="duo" title="Kembaran Biometrik (Side-by-Side)">
+          <span class="tab-icon">👥</span>
+          <span class="tab-label">Kembaran</span>
+        </button>
+        <button class="style-tab" data-mode="swap" title="Head Swap Persona Tokoh">
+          <span class="tab-icon">🎭</span>
+          <span class="tab-label">Head Swap</span>
+        </button>
+        <button class="style-tab" data-mode="single" title="Foto Klasik AI">
+          <span class="tab-icon">📄</span>
+          <span class="tab-label">Klasik</span>
+        </button>
+      </div>
     </div>
 
     <div class="cert-photo-wrap">
@@ -794,6 +899,8 @@ let lastDet = 0;
 let lastFaces = [];
 let lastBs = null;
 let isScanning = false;
+let currentCertMode = 'duo';
+let currentScanContext = null;
 let currentCertDataUrl = null;
 let toastTimer = null;
 
@@ -1056,8 +1163,17 @@ function getFaceMetrics(landmarks, blendshapes) {
   const nasolabialTension = (nasolabialL + nasolabialR) / 2;
   const wrinkleTension = (browTension * 0.6) + (nasolabialTension * 0.4);
 
-  let estAge = 19 + Math.round((wrinkleTension - 0.20) * 15) - (smileScore > 0.6 ? 1 : 0);
-  estAge = Math.min(26, Math.max(18, estAge));
+  // Dynamic Biometric Age Estimation via Craniofacial Morphometry & Micro-Tensions
+  // Young adults/teens have shorter midface ratio (~0.25-0.27), smooth forehead, higher cheek fullness
+  // Mature adults (30s-40s) have elongated midface (~0.28-0.31), deeper nasolabial tension, narrower periorbital ratio
+  // Seniors (50s-70s+) have increased facial laxity, prominent nasolabial furrow depth, lower chin-to-jaw ratio
+  const baseAge = 23;
+  const midFaceDelta = (noseRatio - 0.27) * 55;
+  const wrinkleDelta = (wrinkleTension - 0.18) * 60;
+  const eyeAspectDelta = (0.39 - eyeRatio) * 35;
+  let estAge = Math.round(baseAge + midFaceDelta + wrinkleDelta + eyeAspectDelta);
+  if (smileScore > 0.6) estAge -= 1;
+  estAge = Math.max(16, Math.min(78, estAge));
 
   let symDiff = 0;
   const pairs = [[33,263], [234,454], [61,291], [70,300], [172,397]];
@@ -1154,8 +1270,10 @@ function getSmoothedFaceMetrics(landmarks, blendshapes, faceIndex = 0) {
   const beautyScore = Math.round(s.beauty);
   const symmetryPct = Math.round(s.symmetry);
   const smilePct = Math.round(s.smile);
-  const wrinkleLabel = estAge > 45 ? (s.wrinkle < 0.2 ? 'Garis Wajah Berkarisma ✨' : 'Garis Waktu Berwibawa 📚') :
-                       (s.wrinkle < 0.15 ? 'Kulit Halus & Kencang ✨' : s.wrinkle < 0.35 ? 'Garis Senyum Alami 😊' : 'Ekspresif & Matang 🧐');
+  const wrinkleLabel = estAge > 55 ? (s.wrinkle < 0.22 ? 'Garis Wajah Berkarisma ✨' : 'Garis Waktu Berwibawa & Penuh Pengalaman 📚') :
+                       estAge > 38 ? 'Garis Ekspresi Tegas & Karisma Matang 🧐' :
+                       estAge > 24 ? 'Tekstur Segar & Garis Senyum Alami 😊' :
+                       'Kulit Halus & Sangat Kencang (Baby Face ✨)';
 
   const userVec = {
     eyeRatio: s.eye,
@@ -1370,6 +1488,442 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
+function extractUserFaceCutout(imgObj, landmarks) {
+  const fc = document.createElement('canvas');
+  fc.width = 400; fc.height = 480;
+  const fCtx = fc.getContext('2d');
+
+  let cx = 0.5, cy = 0.45, rx = 0.22, ry = 0.30;
+  if (landmarks && landmarks[10] && landmarks[152] && landmarks[234] && landmarks[454]) {
+    const topY = landmarks[10].y;
+    const botY = landmarks[152].y;
+    const leftX = Math.min(landmarks[234].x, landmarks[127] ? landmarks[127].x : landmarks[234].x);
+    const rightX = Math.max(landmarks[454].x, landmarks[356] ? landmarks[356].x : landmarks[454].x);
+    cx = (leftX + rightX) / 2;
+    cy = (topY + botY) / 2;
+    rx = Math.max(0.12, (rightX - leftX) * 0.65);
+    ry = Math.max(0.16, (botY - topY) * 0.65);
+  }
+
+  // Smooth Oval Clip
+  fCtx.save();
+  fCtx.beginPath();
+  fCtx.ellipse(200, 240, 180, 220, 0, 0, Math.PI * 2);
+  fCtx.clip();
+
+  const natW = imgObj.naturalWidth || imgObj.videoWidth || imgObj.width || 640;
+  const natH = imgObj.naturalHeight || imgObj.videoHeight || imgObj.height || 480;
+  const srcX = Math.max(0, (cx - rx) * natW);
+  const srcY = Math.max(0, (cy - ry) * natH);
+  const srcW = Math.min(natW - srcX, (rx * 2) * natW);
+  const srcH = Math.min(natH - srcY, (ry * 2) * natH);
+
+  fCtx.drawImage(imgObj, srcX, srcY, srcW, srcH, 0, 0, 400, 480);
+  fCtx.restore();
+
+  // Outer Gold Ring
+  fCtx.strokeStyle = '#f5b722';
+  fCtx.lineWidth = 6;
+  fCtx.beginPath();
+  fCtx.ellipse(200, 240, 180, 220, 0, 0, Math.PI * 2);
+  fCtx.stroke();
+
+  return fc;
+}
+
+function renderCertificateCanvas(mode, sCtx) {
+  if (!sCtx) return null;
+  const {
+    userImgObj,
+    celebImgObj,
+    celebLoaded,
+    currentLm,
+    finalGender,
+    finalAge,
+    finalGen,
+    finalShape,
+    finalBeauty,
+    finalSym,
+    finalWrinkle,
+    finalLookalike,
+    finalLookalikeRole,
+    finalMatchPct,
+    finalComment
+  } = sCtx;
+
+  const certCv = document.createElement('canvas');
+  certCv.width = 1080; certCv.height = 1440;
+  const cCtx = certCv.getContext('2d');
+
+  // Background Vintage Cream with fine border
+  const bgGrad = cCtx.createLinearGradient(0, 0, 0, 1440);
+  bgGrad.addColorStop(0, '#fdfaf2'); bgGrad.addColorStop(1, '#f5ecd2');
+  cCtx.fillStyle = bgGrad; cCtx.fillRect(0, 0, 1080, 1440);
+
+  // Double Decorative Borders
+  cCtx.strokeStyle = '#4a0000'; cCtx.lineWidth = 8;
+  roundRect(cCtx, 24, 24, 1032, 1392, 32); cCtx.stroke();
+  cCtx.strokeStyle = '#f5b722'; cCtx.lineWidth = 3.5;
+  roundRect(cCtx, 36, 36, 1008, 1368, 24); cCtx.stroke();
+
+  // Header Title & Subtitle
+  cCtx.fillStyle = '#681a34';
+  cCtx.font = '700 48px "Fredoka", "Luckiest Guy", sans-serif';
+  cCtx.textAlign = 'center'; cCtx.textBaseline = 'middle';
+  cCtx.fillText('UKM EXPO UHN', 540, 92);
+
+  cCtx.fillStyle = '#cfa138';
+  cCtx.font = '700 30px "Caveat", "Pacifico", cursive';
+  cCtx.fillText('Sains Data & AI Biometric Laboratory', 540, 140);
+
+  // Photo Area Geometry
+  const px = 44, py = 175, pw = 992, ph = 770;
+  let faceFocusY = 0.42;
+  if (currentLm && currentLm[10] && currentLm[152]) {
+    faceFocusY = (currentLm[10].y + currentLm[152].y) / 2;
+  }
+
+  if (mode === 'duo') {
+    // ================= MODE 1: KEMBARAN BIOMETRIK (SIDE-BY-SIDE) =================
+    const subW = Math.floor((pw - 6) / 2); // 493px
+    const rightX = px + subW + 6;
+
+    cCtx.save();
+    roundRect(cCtx, px, py, pw, ph, 20);
+    cCtx.clip();
+
+    // 1. Left Photo: User Original Photo
+    drawCover(cCtx, userImgObj, px, py, subW, ph, faceFocusY);
+
+    // Left Photo Bottom Gradient Vignette
+    const lGrad = cCtx.createLinearGradient(0, py + ph - 130, 0, py + ph);
+    lGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    lGrad.addColorStop(1, 'rgba(18, 5, 12, 0.85)');
+    cCtx.fillStyle = lGrad;
+    cCtx.fillRect(px, py + ph - 130, subW, 130);
+
+    // Left Photo Label
+    cCtx.textAlign = 'left';
+    cCtx.fillStyle = '#ffffff';
+    cCtx.font = '700 24px "Fredoka", sans-serif';
+    cCtx.fillText('👤 Foto Asli Kamu', px + 24, py + ph - 26);
+
+    // 2. Right Photo: Lookalike Celeb Photo
+    if (celebLoaded && celebImgObj && celebImgObj.complete && celebImgObj.naturalWidth > 0) {
+      drawCover(cCtx, celebImgObj, rightX, py, subW, ph, 0.35);
+    } else {
+      cCtx.fillStyle = '#2d1d23';
+      cCtx.fillRect(rightX, py, subW, ph);
+      cCtx.fillStyle = '#f5b722';
+      cCtx.font = '700 72px "Fredoka", sans-serif';
+      cCtx.textAlign = 'center';
+      cCtx.fillText('⭐', rightX + subW / 2, py + ph / 2 - 30);
+    }
+
+    // Right Photo Bottom Gradient Vignette
+    const rGrad = cCtx.createLinearGradient(0, py + ph - 130, 0, py + ph);
+    rGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    rGrad.addColorStop(1, 'rgba(18, 5, 12, 0.85)');
+    cCtx.fillStyle = rGrad;
+    cCtx.fillRect(rightX, py + ph - 130, subW, 130);
+
+    // Right Photo Label
+    cCtx.textAlign = 'left';
+    cCtx.fillStyle = '#ffe082';
+    cCtx.font = '700 24px "Fredoka", sans-serif';
+    let cleanTokohName = finalLookalike;
+    if (cCtx.measureText(`⭐ ${cleanTokohName}`).width > subW - 48) {
+      cleanTokohName = cleanTokohName.split(' ').slice(0, 2).join(' ');
+    }
+    cCtx.fillText(`⭐ ${cleanTokohName}`, rightX + 24, py + ph - 26);
+
+    // Center Gold Divider Line
+    cCtx.fillStyle = '#f5b722';
+    cCtx.fillRect(px + subW, py, 6, ph);
+    cCtx.restore();
+
+    // Photo Frame Border
+    cCtx.strokeStyle = '#4a0000'; cCtx.lineWidth = 5;
+    roundRect(cCtx, px, py, pw, ph, 20); cCtx.stroke();
+
+    // Floating Center Match Badge
+    const badgeW = 440, badgeH = 50, badgeX = 540 - badgeW / 2, badgeY = py + ph - 74;
+    cCtx.save();
+    cCtx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+    cCtx.shadowBlur = 12;
+    cCtx.shadowOffsetY = 4;
+    cCtx.fillStyle = '#681a34';
+    roundRect(cCtx, badgeX, badgeY, badgeW, badgeH, 25);
+    cCtx.fill();
+    cCtx.restore();
+
+    cCtx.strokeStyle = '#f5b722'; cCtx.lineWidth = 3.5;
+    roundRect(cCtx, badgeX, badgeY, badgeW, badgeH, 25); cCtx.stroke();
+
+    cCtx.fillStyle = '#ffffff';
+    cCtx.textAlign = 'center';
+    cCtx.font = '700 22px "Fredoka", sans-serif';
+    cCtx.fillText(`⚡ ${finalMatchPct}% KEMBARAN BIOMETRIK ⚡`, 540, badgeY + 31);
+
+  } else if (mode === 'swap') {
+    // ================= MODE 2: HEAD SWAP PERSONA =================
+    cCtx.save();
+    roundRect(cCtx, px, py, pw, ph, 20);
+    cCtx.clip();
+
+    // Celeb Background
+    if (celebLoaded && celebImgObj && celebImgObj.complete && celebImgObj.naturalWidth > 0) {
+      drawCover(cCtx, celebImgObj, px, py, pw, ph, 0.35);
+    } else {
+      const bgG = cCtx.createLinearGradient(px, py, px + pw, py + ph);
+      bgG.addColorStop(0, '#2d1d23');
+      bgG.addColorStop(1, '#16080e');
+      cCtx.fillStyle = bgG;
+      cCtx.fillRect(px, py, pw, ph);
+    }
+
+    // Soft Dark Veil for contrast
+    cCtx.fillStyle = 'rgba(18, 5, 12, 0.35)';
+    cCtx.fillRect(px, py, pw, ph);
+
+    // Extract User Face Cutout & Overlay
+    const cutoutCanvas = extractUserFaceCutout(userImgObj, currentLm);
+    const cutW = 380, cutH = 456;
+    const cutX = 540 - cutW / 2;
+    const cutY = py + (ph - cutH) / 2 + 10;
+
+    cCtx.save();
+    cCtx.shadowColor = 'rgba(245, 183, 34, 0.85)';
+    cCtx.shadowBlur = 30;
+    cCtx.shadowOffsetX = 0;
+    cCtx.shadowOffsetY = 4;
+    cCtx.drawImage(cutoutCanvas, cutX, cutY, cutW, cutH);
+    cCtx.restore();
+
+    // Draw Crown on top of user head
+    cCtx.font = '54px sans-serif';
+    cCtx.textAlign = 'center';
+    cCtx.textBaseline = 'middle';
+    cCtx.fillText('👑', 540, cutY - 14);
+
+    // Bottom Vignette
+    const bGrad = cCtx.createLinearGradient(0, py + ph - 130, 0, py + ph);
+    bGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    bGrad.addColorStop(1, 'rgba(18, 5, 12, 0.88)');
+    cCtx.fillStyle = bGrad;
+    cCtx.fillRect(px, py + ph - 130, pw, 130);
+
+    // Bottom Label
+    cCtx.textAlign = 'left';
+    cCtx.fillStyle = '#ffe082';
+    cCtx.font = '700 24px "Fredoka", sans-serif';
+    cCtx.fillText(`🎭 PERSONA: ${finalLookalike} x Kamu`, px + 28, py + ph - 26);
+
+    cCtx.restore();
+
+    // Frame Border
+    cCtx.strokeStyle = '#4a0000'; cCtx.lineWidth = 5;
+    roundRect(cCtx, px, py, pw, ph, 20); cCtx.stroke();
+
+    // Top-Left Floating Badge
+    const b1W = 320, b1H = 44, b1X = px + 20, b1Y = py + 20;
+    cCtx.save();
+    cCtx.fillStyle = '#681a34';
+    roundRect(cCtx, b1X, b1Y, b1W, b1H, 22); cCtx.fill();
+    cCtx.strokeStyle = '#f5b722'; cCtx.lineWidth = 2.5;
+    roundRect(cCtx, b1X, b1Y, b1W, b1H, 22); cCtx.stroke();
+    cCtx.fillStyle = '#ffd86b';
+    cCtx.textAlign = 'center';
+    cCtx.font = '700 18px "Fredoka", sans-serif';
+    cCtx.fillText('✨ PERSONA TOKOH EDITION', b1X + b1W / 2, b1Y + 27);
+    cCtx.restore();
+
+    // Floating Center Match Badge
+    const badgeW = 440, badgeH = 50, badgeX = 540 - badgeW / 2, badgeY = py + ph - 74;
+    cCtx.save();
+    cCtx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+    cCtx.shadowBlur = 12;
+    cCtx.shadowOffsetY = 4;
+    cCtx.fillStyle = '#681a34';
+    roundRect(cCtx, badgeX, badgeY, badgeW, badgeH, 25);
+    cCtx.fill();
+    cCtx.restore();
+
+    cCtx.strokeStyle = '#f5b722'; cCtx.lineWidth = 3.5;
+    roundRect(cCtx, badgeX, badgeY, badgeW, badgeH, 25); cCtx.stroke();
+
+    cCtx.fillStyle = '#ffffff';
+    cCtx.textAlign = 'center';
+    cCtx.font = '700 22px "Fredoka", sans-serif';
+    cCtx.fillText(`⚡ ${finalMatchPct}% SYNC COCOK PERSONA ⚡`, 540, badgeY + 31);
+
+  } else {
+    // ================= MODE 3: KLASIK (SINGLE HERO PORTRAIT) =================
+    cCtx.save();
+    roundRect(cCtx, px, py, pw, ph, 20);
+    cCtx.clip();
+
+    // User Photo Full
+    drawCover(cCtx, userImgObj, px, py, pw, ph, faceFocusY);
+
+    // Bottom Vignette
+    const sGrad = cCtx.createLinearGradient(0, py + ph - 130, 0, py + ph);
+    sGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    sGrad.addColorStop(1, 'rgba(18, 5, 12, 0.85)');
+    cCtx.fillStyle = sGrad;
+    cCtx.fillRect(px, py + ph - 130, pw, 130);
+
+    // Bottom Label
+    cCtx.textAlign = 'left';
+    cCtx.fillStyle = '#ffffff';
+    cCtx.font = '700 24px "Fredoka", sans-serif';
+    cCtx.fillText(`👤 ${finalGender} • ${finalAge} Tahun (${finalGen})`, px + 28, py + ph - 26);
+    cCtx.restore();
+
+    // Frame Border
+    cCtx.strokeStyle = '#4a0000'; cCtx.lineWidth = 5;
+    roundRect(cCtx, px, py, pw, ph, 20); cCtx.stroke();
+
+    // Top-Right Floating Badge
+    const b2W = 280, b2H = 44, b2X = px + pw - b2W - 20, b2Y = py + 20;
+    cCtx.save();
+    cCtx.fillStyle = '#681a34';
+    roundRect(cCtx, b2X, b2Y, b2W, b2H, 22); cCtx.fill();
+    cCtx.strokeStyle = '#f5b722'; cCtx.lineWidth = 2.5;
+    roundRect(cCtx, b2X, b2Y, b2W, b2H, 22); cCtx.stroke();
+    cCtx.fillStyle = '#ffd86b';
+    cCtx.textAlign = 'center';
+    cCtx.font = '700 18px "Fredoka", sans-serif';
+    cCtx.fillText(`⚡ ${finalBeauty}% SKOR PESONA`, b2X + b2W / 2, b2Y + 27);
+    cCtx.restore();
+
+    // Floating Center Match Badge
+    const badgeW = 440, badgeH = 50, badgeX = 540 - badgeW / 2, badgeY = py + ph - 74;
+    cCtx.save();
+    cCtx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+    cCtx.shadowBlur = 12;
+    cCtx.shadowOffsetY = 4;
+    cCtx.fillStyle = '#681a34';
+    roundRect(cCtx, badgeX, badgeY, badgeW, badgeH, 25);
+    cCtx.fill();
+    cCtx.restore();
+
+    cCtx.strokeStyle = '#f5b722'; cCtx.lineWidth = 3.5;
+    roundRect(cCtx, badgeX, badgeY, badgeW, badgeH, 25); cCtx.stroke();
+
+    cCtx.fillStyle = '#ffffff';
+    cCtx.textAlign = 'center';
+    cCtx.font = '700 22px "Fredoka", sans-serif';
+    cCtx.fillText(`★ SKOR SIMETRI ${finalSym}% • ${finalShape} ★`, 540, badgeY + 31);
+  }
+
+  // ================= METRICS BOX AREA (LOWER SECTION) =================
+  const by = 970, bw = 992, bh = 385, bx = 44;
+  cCtx.fillStyle = '#ffffff';
+  roundRect(cCtx, bx, by, bw, bh, 20); cCtx.fill();
+  cCtx.strokeStyle = '#4a0000'; cCtx.lineWidth = 4;
+  roundRect(cCtx, bx, by, bw, bh, 20); cCtx.stroke();
+
+  // 2x2 Grid of Stat Pills
+  const pillW = 464, pillH = 68;
+
+  // Pill 1: Usia & Gender (Top-Left)
+  const p1x = bx + 22, p1y = by + 22;
+  cCtx.fillStyle = '#fdfaf2'; roundRect(cCtx, p1x, p1y, pillW, pillH, 12); cCtx.fill();
+  cCtx.strokeStyle = '#ebdcb9'; cCtx.lineWidth = 1.5; roundRect(cCtx, p1x, p1y, pillW, pillH, 12); cCtx.stroke();
+  cCtx.textAlign = 'left';
+  cCtx.fillStyle = '#8a5b00'; cCtx.font = '700 16px "Fredoka", sans-serif';
+  cCtx.fillText('👤 USIA & GENDER', p1x + 16, p1y + 24);
+  cCtx.fillStyle = '#681a34'; cCtx.font = '700 21px "Fredoka", sans-serif';
+  cCtx.fillText(`${finalGender} • ${finalAge} Thn (${finalGen})`, p1x + 16, p1y + 51);
+
+  // Pill 2: Tekstur Kulit (Top-Right)
+  const p2x = bx + bw - 22 - pillW, p2y = by + 22;
+  cCtx.fillStyle = '#fdfaf2'; roundRect(cCtx, p2x, p2y, pillW, pillH, 12); cCtx.fill();
+  cCtx.strokeStyle = '#ebdcb9'; cCtx.lineWidth = 1.5; roundRect(cCtx, p2x, p2y, pillW, pillH, 12); cCtx.stroke();
+  cCtx.fillStyle = '#8a5b00'; cCtx.font = '700 16px "Fredoka", sans-serif';
+  cCtx.fillText('✨ KONDISI KULIT & KERUTAN', p2x + 16, p2y + 24);
+  cCtx.fillStyle = '#681a34'; cCtx.font = '700 21px "Fredoka", sans-serif';
+  cCtx.fillText(`${finalWrinkle}`, p2x + 16, p2y + 51);
+
+  // Pill 3: Pesona & Simetri (Bottom-Left)
+  const p3x = bx + 22, p3y = by + 102;
+  cCtx.fillStyle = '#fdfaf2'; roundRect(cCtx, p3x, p3y, pillW, pillH, 12); cCtx.fill();
+  cCtx.strokeStyle = '#ebdcb9'; cCtx.lineWidth = 1.5; roundRect(cCtx, p3x, p3y, pillW, pillH, 12); cCtx.stroke();
+  cCtx.fillStyle = '#0d6e5a'; cCtx.font = '700 16px "Fredoka", sans-serif';
+  cCtx.fillText('💖 SKOR PESONA & AURA', p3x + 16, p3y + 24);
+  cCtx.fillStyle = '#0d6e5a'; cCtx.font = '700 21px "Fredoka", sans-serif';
+  cCtx.fillText(`${finalBeauty}% (Simetri ${finalSym}%)`, p3x + 16, p3y + 51);
+
+  // Pill 4: Tokoh Mirip (Bottom-Right)
+  const p4x = bx + bw - 22 - pillW, p4y = by + 102;
+  cCtx.fillStyle = '#fdfaf2'; roundRect(cCtx, p4x, p4y, pillW, pillH, 12); cCtx.fill();
+  cCtx.strokeStyle = '#ebdcb9'; cCtx.lineWidth = 1.5; roundRect(cCtx, p4x, p4y, pillW, pillH, 12); cCtx.stroke();
+  cCtx.fillStyle = '#1e3a5f'; cCtx.font = '700 16px "Fredoka", sans-serif';
+  cCtx.fillText('🌟 KEMBARAN TOKOH TERDEKAT', p4x + 16, p4y + 24);
+  cCtx.fillStyle = '#1e3a5f'; cCtx.font = '700 21px "Fredoka", sans-serif';
+  cCtx.fillText(`${finalMatchPct}% Mirip ${finalLookalike}`, p4x + 16, p4y + 51);
+
+  // Quote Box Area
+  const qx = bx + 22, qy = by + 182, qw = bw - 44, qh = 100;
+  cCtx.fillStyle = '#fbf8f0';
+  roundRect(cCtx, qx, qy, qw, qh, 12); cCtx.fill();
+  cCtx.strokeStyle = '#ebdcb9'; cCtx.lineWidth = 1.5;
+  roundRect(cCtx, qx, qy, qw, qh, 12); cCtx.stroke();
+
+  // Quote left accent bar
+  cCtx.fillStyle = '#cfa138';
+  roundRect(cCtx, qx, qy, 6, qh, 3); cCtx.fill();
+
+  cCtx.fillStyle = '#4a2832';
+  cCtx.font = '600 20px "Fredoka", sans-serif';
+
+  let qTxt = `"${finalComment}"`;
+  const maxQW = qw - 48;
+  if (cCtx.measureText(qTxt).width <= maxQW) {
+    cCtx.fillText(qTxt, qx + 24, qy + 56);
+  } else {
+    const words = qTxt.split(' ');
+    let l1 = '', l2 = '', l3 = '';
+    for (let w of words) {
+      const t1 = l1 ? l1 + ' ' + w : w;
+      if (cCtx.measureText(t1).width <= maxQW && !l2) l1 = t1;
+      else {
+        const t2 = l2 ? l2 + ' ' + w : w;
+        if (cCtx.measureText(t2).width <= maxQW && !l3) l2 = t2;
+        else l3 = l3 ? l3 + ' ' + w : w;
+      }
+    }
+    cCtx.fillText(l1, qx + 24, qy + 40);
+    cCtx.fillText(l2, qx + 24, qy + 70);
+    if (l3) cCtx.fillText(l3, qx + 24, qy + 95);
+  }
+
+  // Stamp & Verification
+  cCtx.fillStyle = '#cfa138';
+  cCtx.font = '700 20px "Fredoka", sans-serif';
+  cCtx.fillText('★ Verified by Sains Data UHN • AI Neural Vision 2026', bx + 28, by + 328);
+
+  cCtx.fillStyle = '#681a34';
+  cCtx.textAlign = 'center';
+  cCtx.font = '700 28px "Caveat", cursive';
+  cCtx.fillText('Dovey ✦ Sains Data Experience', 540, 1395);
+
+  return certCv.toDataURL('image/png');
+}
+
+function setCertificateMode(mode) {
+  currentCertMode = mode;
+  document.querySelectorAll('.style-tab').forEach(t => {
+    t.classList.toggle('active', t.getAttribute('data-mode') === mode);
+  });
+  if (currentScanContext) {
+    currentCertDataUrl = renderCertificateCanvas(mode, currentScanContext);
+    $('certImg').src = currentCertDataUrl;
+    $('btnDownloadCert').href = currentCertDataUrl;
+  }
+}
+
 // ============ HIGH-TECH SIMULATED SCANNING & LIVE RESULT FLOW ============
 async function executeScanningFlow() {
   if (!video.videoWidth || isScanning) return;
@@ -1424,6 +1978,7 @@ async function executeScanningFlow() {
             symmetryPct: localM.symmetryPct,
             smilePct: localM.smilePct,
             wrinkleLabel: localM.wrinkleLabel,
+            wrinkleTension: (localTelemetry && localTelemetry.wrinkleTension) || 0.20,
             jawRatio: localM.jawRatio,
             gonionRatio: localM.gonionRatio,
             chinRatio: localM.chinRatio,
@@ -1507,126 +2062,51 @@ async function executeScanningFlow() {
   const finalMatchPct = aiResult ? (aiResult.lookalikeMatch || 95) : (fallbackM.matchPct || 95);
   const finalComment = aiResult ? aiResult.comment : (fallbackM.bestMatch ? fallbackM.bestMatch.comment : 'Struktur wajah simetris dengan ekspresi positif & berkarisma!');
 
-  // 4. Render Full HD Certificate Card in background (1080 x 1440)
+  // 4. Preload User and Celebrity Images for Instant Multi-Mode Certificate Rendering
   await document.fonts.ready;
-  const certCv = document.createElement('canvas');
-  certCv.width = 1080; certCv.height = 1440;
-  const cCtx = certCv.getContext('2d');
-
-  // Background Vintage Cream with fine border
-  const bgGrad = cCtx.createLinearGradient(0, 0, 0, 1440);
-  bgGrad.addColorStop(0, '#fdfaf2'); bgGrad.addColorStop(1, '#f5ecd2');
-  cCtx.fillStyle = bgGrad; cCtx.fillRect(0, 0, 1080, 1440);
-
-  // Double Decorative Borders
-  cCtx.strokeStyle = '#4a0000'; cCtx.lineWidth = 8;
-  roundRect(cCtx, 24, 24, 1032, 1392, 32); cCtx.stroke();
-  cCtx.strokeStyle = '#f5b722'; cCtx.lineWidth = 3.5;
-  roundRect(cCtx, 36, 36, 1008, 1368, 24); cCtx.stroke();
-
-  // Header Title & Subtitle
-  cCtx.fillStyle = '#681a34';
-  cCtx.font = '700 48px "Fredoka", "Luckiest Guy", sans-serif';
-  cCtx.textAlign = 'center'; cCtx.textBaseline = 'middle';
-  cCtx.fillText('UKM EXPO UHN', 540, 95);
-
-  cCtx.fillStyle = '#cfa138';
-  cCtx.font = '700 30px "Caveat", "Pacifico", cursive';
-  cCtx.fillText('Sains Data & AI Biometric Laboratory', 540, 145);
-
-  // Photo Area (Aspect 4:3 -> 800 x 600)
   const imgObj = new Image();
   imgObj.src = photoDataUrl;
   if (!imgObj.complete) {
     await new Promise(r => { imgObj.onload = r; imgObj.onerror = r; });
   }
 
-  const px = 140, py = 185, pw = 800, ph = 600;
-  let faceFocusY = 0.42;
-  if (currentLm && currentLm[10] && currentLm[152]) {
-    faceFocusY = (currentLm[10].y + currentLm[152].y) / 2;
-  }
-  cCtx.save();
-  roundRect(cCtx, px, py, pw, ph, 20); cCtx.clip();
-  drawCover(cCtx, imgObj, px, py, pw, ph, faceFocusY);
-  cCtx.restore();
-
-  cCtx.strokeStyle = '#4a0000'; cCtx.lineWidth = 5;
-  roundRect(cCtx, px, py, pw, ph, 20); cCtx.stroke();
-
-  // Metrics Box Area
-  const by = 805, bw = 800, bh = 500, bx = 140;
-  cCtx.fillStyle = '#ffffff';
-  roundRect(cCtx, bx, by, bw, bh, 20); cCtx.fill();
-  cCtx.strokeStyle = '#4a0000'; cCtx.lineWidth = 4;
-  roundRect(cCtx, bx, by, bw, bh, 20); cCtx.stroke();
-
-  cCtx.textAlign = 'left';
-  cCtx.fillStyle = '#681a34';
-  cCtx.font = '700 29px "Fredoka", sans-serif';
-  cCtx.fillText('📊 HASIL ANALISIS BIOMETRIK & KERUTAN AI:', bx + 32, by + 42);
-
-  cCtx.fillStyle = '#2d1d23';
-  cCtx.font = '700 23px "Fredoka", sans-serif';
-  cCtx.fillText('• Gender & Usia Terdeteksi:', bx + 32, by + 86);
-  cCtx.fillStyle = '#681a34';
-  cCtx.fillText(`${finalGender} • ${finalAge} Thn (${finalGen})`, bx + 390, by + 86);
-
-  cCtx.fillStyle = '#2d1d23';
-  cCtx.fillText('• Analisis Tekstur & Kerutan:', bx + 32, by + 130);
-  cCtx.fillStyle = '#8a5b00';
-  cCtx.fillText(`${finalWrinkle}`, bx + 390, by + 130);
-
-  cCtx.fillStyle = '#2d1d23';
-  cCtx.fillText('• Skor Pesona & Simetri:', bx + 32, by + 174);
-  cCtx.fillStyle = '#0d6e5a';
-  cCtx.fillText(`${finalBeauty}% (Simetri ${finalSym}%)`, bx + 390, by + 174);
-
-  cCtx.fillStyle = '#2d1d23';
-  cCtx.fillText('• Kembaran Tokoh Terdekat:', bx + 32, by + 218);
-  cCtx.fillStyle = '#1e3a5f';
-  cCtx.fillText(`${finalMatchPct}% Mirip ${finalLookalike}`, bx + 390, by + 218);
-
-  // Quote Box
-  cCtx.fillStyle = '#fbf8f0';
-  roundRect(cCtx, bx + 28, by + 252, bw - 56, 120, 12); cCtx.fill();
-  cCtx.strokeStyle = '#cfa138'; cCtx.lineWidth = 2;
-  roundRect(cCtx, bx + 28, by + 252, bw - 56, 120, 12); cCtx.stroke();
-
-  cCtx.fillStyle = '#4a2832';
-  cCtx.font = '600 21px "Fredoka", sans-serif';
-  
-  let qTxt = `"${finalComment}"`;
-  const maxQW = bw - 80;
-  if (cCtx.measureText(qTxt).width <= maxQW) {
-    cCtx.fillText(qTxt, bx + 44, by + 300);
-  } else {
-    const words = qTxt.split(' ');
-    let l1 = '', l2 = '', l3 = '';
-    for (let w of words) {
-      const t1 = l1 ? l1 + ' ' + w : w;
-      if (cCtx.measureText(t1).width <= maxQW && !l2) l1 = t1;
-      else {
-        const t2 = l2 ? l2 + ' ' + w : w;
-        if (cCtx.measureText(t2).width <= maxQW && !l3) l2 = t2;
-        else l3 = l3 ? l3 + ' ' + w : w;
-      }
-    }
-    cCtx.fillText(l1, bx + 44, by + 275);
-    cCtx.fillText(l2, bx + 44, by + 308);
-    if (l3) cCtx.fillText(l3, bx + 44, by + 340);
+  // Fetch matched celebrity image from server API
+  const cleanCelebName = String(finalLookalike).replace(/[\u{1F300}-\u{1FAFF}]/gu, '').replace(/[^\p{L}\p{N}\s.,-]/gu, '').trim();
+  const celebImgObj = new Image();
+  celebImgObj.crossOrigin = 'anonymous';
+  let celebLoaded = false;
+  if (cleanCelebName) {
+    const celebPromise = new Promise((resolve) => {
+      celebImgObj.onload = () => { celebLoaded = true; resolve(true); };
+      celebImgObj.onerror = () => { celebLoaded = false; resolve(false); };
+      celebImgObj.src = `/api/celeb-image?name=${encodeURIComponent(cleanCelebName)}`;
+    });
+    // Wait for image or timeout after 1.5s
+    await Promise.race([celebPromise, new Promise(r => setTimeout(r, 1500))]);
   }
 
-  cCtx.fillStyle = '#cfa138';
-  cCtx.font = '700 21px "Fredoka", sans-serif';
-  cCtx.fillText('★ Verified by Sains Data UHN • AI Neural Vision 2026', bx + 32, by + 435);
+  // Save full scanning context for instant (<20ms) style switching
+  currentScanContext = {
+    photoDataUrl,
+    userImgObj: imgObj,
+    celebImgObj,
+    celebLoaded,
+    currentLm,
+    finalGender,
+    finalAge,
+    finalGen,
+    finalShape,
+    finalBeauty,
+    finalSym,
+    finalWrinkle,
+    finalLookalike,
+    finalLookalikeRole,
+    finalMatchPct,
+    finalComment
+  };
 
-  cCtx.fillStyle = '#681a34';
-  cCtx.textAlign = 'center';
-  cCtx.font = '700 28px "Caveat", cursive';
-  cCtx.fillText('Dovey ✦ Sains Data Experience', 540, 1375);
-
-  currentCertDataUrl = certCv.toDataURL('image/png');
+  // Render certificate using currently selected style mode
+  setCertificateMode(currentCertMode || 'duo');
 
   // 5. Populate Live Results under Camera
   $('liveGenderAge').textContent = `${finalGender} • ${finalAge} Thn`;
@@ -1678,7 +2158,8 @@ function downloadCertificateFile() {
   if (!currentCertDataUrl) return;
   const a = document.createElement('a');
   a.href = currentCertDataUrl;
-  a.download = `ai-face-report-uhn-${Date.now().toString().slice(-6)}.png`;
+  const modeSuffix = currentCertMode || 'duo';
+  a.download = `ai-face-report-uhn-${modeSuffix}-${Date.now().toString().slice(-6)}.png`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -1686,6 +2167,17 @@ function downloadCertificateFile() {
 }
 
 // ============ EVENT LISTENERS ============
+document.querySelectorAll('.style-tab').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const mode = btn.getAttribute('data-mode');
+    if (mode) {
+      playTechSound('step');
+      setCertificateMode(mode);
+    }
+  });
+});
+
 $('btnScan').onclick = () => {
   executeScanningFlow();
 };
