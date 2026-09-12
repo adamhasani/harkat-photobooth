@@ -74,32 +74,13 @@ async function verifyInteractiveStyles() {
 
     results.tests.push({
       name: 'Scan Completion & Live Result Display',
-      passed: !!scanData.genderAge && scanData.styleTabsCount >= 6, // 3 in live panel + 3 in modal
+      passed: !!scanData.genderAge && scanData.styleTabsCount >= 4, // 2 in live panel + 2 in modal
       details: scanData
     });
 
-    // Test 3: Test Style Selector Tab switching (duo -> swap -> single -> duo)
+    // Test 3: Test Style Selector Tab switching (duo -> single -> duo)
     console.log('📌 Test 3: Testing Style Tabs in Live Result Panel...');
     
-    // Switch to SWAP
-    await page.evaluate(() => {
-      const swapBtn = document.querySelector('#liveResultPanel .style-tab[data-mode="swap"]');
-      if (swapBtn) swapBtn.click();
-    });
-    await new Promise(r => setTimeout(r, 300));
-    
-    const swapDataUrl = await page.evaluate(() => document.querySelector('#certImg').src);
-    const swapIsActive = await page.evaluate(() => {
-      const b = document.querySelector('#liveResultPanel .style-tab[data-mode="swap"]');
-      return b && b.classList.contains('active');
-    });
-
-    results.tests.push({
-      name: 'Switch to Head Swap Persona (swap)',
-      passed: swapIsActive && swapDataUrl.startsWith('data:image/png;base64,'),
-      details: { swapIsActive, dataUrlLen: swapDataUrl.length }
-    });
-
     // Switch to SINGLE
     await page.evaluate(() => {
       const singleBtn = document.querySelector('#liveResultPanel .style-tab[data-mode="single"]');
@@ -143,15 +124,15 @@ async function verifyInteractiveStyles() {
     await page.click('#btnLivePreview');
     await page.waitForFunction(() => document.querySelector('#modalResult').style.display === 'flex', { timeout: 5000 });
 
-    // Click swap inside modal
+    // Click single inside modal
     await page.evaluate(() => {
-      const modalSwapBtn = document.querySelector('#modalResult .style-tab[data-mode="swap"]');
-      if (modalSwapBtn) modalSwapBtn.click();
+      const modalSingleBtn = document.querySelector('#modalResult .style-tab[data-mode="single"]');
+      if (modalSingleBtn) modalSingleBtn.click();
     });
     await new Promise(r => setTimeout(r, 300));
 
-    const modalSwapActive = await page.evaluate(() => {
-      const b = document.querySelector('#modalResult .style-tab[data-mode="swap"]');
+    const modalSingleActive = await page.evaluate(() => {
+      const b = document.querySelector('#modalResult .style-tab[data-mode="single"]');
       return b && b.classList.contains('active');
     });
 
@@ -162,8 +143,8 @@ async function verifyInteractiveStyles() {
 
     results.tests.push({
       name: 'Modal Preview & Interactive Style Tabs Sync',
-      passed: modalSwapActive,
-      details: { modalSwapActive, screenshot: modalShotPath }
+      passed: modalSingleActive,
+      details: { modalSingleActive, screenshot: modalShotPath }
     });
 
     // Test 5: Verify Download URL integrity

@@ -324,6 +324,96 @@
     font-size: 11.5px; font-weight: 700; color: #8a5b00;
   }
 
+  /* ============ LIVE PHOTOS COMPARISON SHOWCASE ============ */
+  .live-photos-showcase {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin: 4px 0 2px;
+  }
+  .live-photo-card {
+    flex: 1;
+    background: #1c0610;
+    border: 2.5px solid var(--maroon-deep);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 3px 0 var(--maroon-deep);
+    position: relative;
+    aspect-ratio: 4 / 5;
+  }
+  .live-photo-frame {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+  .live-photo-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .live-photo-tag {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+    z-index: 2;
+    border: 1.5px solid var(--maroon-deep);
+    box-shadow: 0 1.5px 0 var(--maroon-deep);
+  }
+  .live-photo-tag.user-tag {
+    background: #fbf5e6;
+    color: var(--maroon-deep);
+  }
+  .live-photo-tag.celeb-tag {
+    background: #ffd86b;
+    color: var(--maroon-deep);
+    max-width: 90%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .live-match-badge-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+    flex-shrink: 0;
+  }
+  .live-match-badge {
+    background: linear-gradient(135deg, #ffd86b, #f5b722);
+    border: 2px solid var(--maroon-deep);
+    border-radius: 999px;
+    padding: 6px 8px;
+    box-shadow: 0 2px 0 var(--maroon-deep);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 48px;
+  }
+  .live-match-pct {
+    font-family: 'Luckiest Guy', cursive;
+    font-size: 14.5px;
+    color: var(--maroon-deep);
+    line-height: 1;
+  }
+  .live-match-sub {
+    font-size: 8px;
+    font-weight: 800;
+    color: #681a34;
+    letter-spacing: 0.5px;
+    line-height: 1;
+    margin-top: 2px;
+  }
+
   .live-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -353,12 +443,20 @@
     font-weight: 800;
     color: var(--maroon-deep);
     line-height: 1.25;
+    word-break: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   .live-card-sub {
     font-size: 10.5px;
     font-weight: 600;
     color: #8a5b00;
     line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .live-quote-card {
@@ -389,6 +487,10 @@
     border-left: 3px solid var(--gold);
     padding: 6px 8px;
     border-radius: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .live-btn-group {
@@ -736,6 +838,30 @@
         <span class="live-time-badge" id="liveScanTime">TERVERIFIKASI ✓</span>
       </div>
 
+      <!-- Live Lookalike & User Photo Showcase -->
+      <div class="live-photos-showcase">
+        <div class="live-photo-card">
+          <div class="live-photo-frame">
+            <img id="liveUserPhoto" src="" alt="Foto Asli Kamu">
+            <span class="live-photo-tag user-tag">👤 Wajah Kamu</span>
+          </div>
+        </div>
+
+        <div class="live-match-badge-wrap">
+          <div class="live-match-badge">
+            <span class="live-match-pct" id="liveMatchPctText">94%</span>
+            <span class="live-match-sub">MIRIP</span>
+          </div>
+        </div>
+
+        <div class="live-photo-card">
+          <div class="live-photo-frame">
+            <img id="liveCelebPhoto" src="" alt="Foto Kembaran Tokoh">
+            <span class="live-photo-tag celeb-tag" id="liveCelebNameTag">🌟 Kembaran Tokoh</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Live Metric Grid -->
       <div class="live-grid">
         <!-- 1. Gender & Usia -->
@@ -783,10 +909,6 @@
             <span class="tab-icon">👥</span>
             <span class="tab-label">Kembaran</span>
           </button>
-          <button class="style-tab" data-mode="swap" title="Head Swap Persona Tokoh">
-            <span class="tab-icon">🎭</span>
-            <span class="tab-label">Head Swap</span>
-          </button>
           <button class="style-tab" data-mode="single" title="Foto Klasik AI">
             <span class="tab-icon">📄</span>
             <span class="tab-label">Klasik</span>
@@ -832,10 +954,6 @@
           <span class="tab-icon">👥</span>
           <span class="tab-label">Kembaran</span>
         </button>
-        <button class="style-tab" data-mode="swap" title="Head Swap Persona Tokoh">
-          <span class="tab-icon">🎭</span>
-          <span class="tab-label">Head Swap</span>
-        </button>
         <button class="style-tab" data-mode="single" title="Foto Klasik AI">
           <span class="tab-icon">📄</span>
           <span class="tab-label">Klasik</span>
@@ -847,34 +965,10 @@
       <img id="certImg" src="" alt="Hasil Scan AI">
     </div>
 
-    <div class="cert-results-box">
-      <div class="cert-row">
-        <span>Gender & Usia:</span>
-        <b id="certPrimaryResult">Perempuan 👧 • 19 Tahun (Gen-Z)</b>
-      </div>
-      <div class="cert-row">
-        <span>Tekstur & Kerutan:</span>
-        <b id="certWrinkleResult">Kulit Halus & Kencang ✨</b>
-      </div>
-      <div class="cert-row">
-        <span>Skor Pesona & Aura:</span>
-        <b id="certBeautyResult">98% (Simetri 96%)</b>
-      </div>
-      <div class="cert-row">
-        <span>Kembaran Tokoh:</span>
-        <b id="certSecondaryResult">96% Mirip Maudy Ayunda 🎓</b>
-      </div>
-      <div class="cert-quote" id="certQuote">
-        "Wajah cerdas berkarisma tinggi, potensi meraih IPK 4.0 dan jadi bintang kampus UHN!"
-      </div>
-    </div>
-
-    <div class="cert-stamp">Verified by Sains Data UHN • 2026</div>
-
     <div class="cert-actions">
-      <button class="btn-cert-again" id="btnScanAgain">🔄 SCAN ORANG LAIN / SCAN ULANG</button>
+      <a class="btn-cert-dl" id="btnDownloadCert" href="#" download="ai-face-report-uhn.png">⬇️ Download Kartu (PNG)</a>
       <div class="cert-actions-row">
-        <a class="btn-cert-dl" id="btnDownloadCert" href="#" download="ai-face-report-uhn.png">⬇️ Download Kartu (PNG)</a>
+        <button class="btn-cert-again" id="btnScanAgain">🔄 Scan Orang Lain</button>
         <button class="btn-cert-close" id="btnCloseModal">✕ Tutup</button>
       </div>
     </div>
@@ -1270,10 +1364,10 @@ function getSmoothedFaceMetrics(landmarks, blendshapes, faceIndex = 0) {
   const beautyScore = Math.round(s.beauty);
   const symmetryPct = Math.round(s.symmetry);
   const smilePct = Math.round(s.smile);
-  const wrinkleLabel = estAge > 55 ? (s.wrinkle < 0.22 ? 'Garis Wajah Berkarisma ✨' : 'Garis Waktu Berwibawa & Penuh Pengalaman 📚') :
-                       estAge > 38 ? 'Garis Ekspresi Tegas & Karisma Matang 🧐' :
-                       estAge > 24 ? 'Tekstur Segar & Garis Senyum Alami 😊' :
-                       'Kulit Halus & Sangat Kencang (Baby Face ✨)';
+  const wrinkleLabel = estAge > 55 ? (s.wrinkle < 0.22 ? 'Garis Wajah Berkarisma ✨' : 'Garis Wajah Berwibawa 📚') :
+                       estAge > 38 ? 'Garis Rahang Tegas 🧐' :
+                       estAge > 24 ? 'Tekstur Segar Alami 😊' :
+                       'Kulit Halus & Kencang ✨';
 
   const userVec = {
     eyeRatio: s.eye,
@@ -1488,49 +1582,6 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-function extractUserFaceCutout(imgObj, landmarks) {
-  const fc = document.createElement('canvas');
-  fc.width = 400; fc.height = 480;
-  const fCtx = fc.getContext('2d');
-
-  let cx = 0.5, cy = 0.45, rx = 0.22, ry = 0.30;
-  if (landmarks && landmarks[10] && landmarks[152] && landmarks[234] && landmarks[454]) {
-    const topY = landmarks[10].y;
-    const botY = landmarks[152].y;
-    const leftX = Math.min(landmarks[234].x, landmarks[127] ? landmarks[127].x : landmarks[234].x);
-    const rightX = Math.max(landmarks[454].x, landmarks[356] ? landmarks[356].x : landmarks[454].x);
-    cx = (leftX + rightX) / 2;
-    cy = (topY + botY) / 2;
-    rx = Math.max(0.12, (rightX - leftX) * 0.65);
-    ry = Math.max(0.16, (botY - topY) * 0.65);
-  }
-
-  // Smooth Oval Clip
-  fCtx.save();
-  fCtx.beginPath();
-  fCtx.ellipse(200, 240, 180, 220, 0, 0, Math.PI * 2);
-  fCtx.clip();
-
-  const natW = imgObj.naturalWidth || imgObj.videoWidth || imgObj.width || 640;
-  const natH = imgObj.naturalHeight || imgObj.videoHeight || imgObj.height || 480;
-  const srcX = Math.max(0, (cx - rx) * natW);
-  const srcY = Math.max(0, (cy - ry) * natH);
-  const srcW = Math.min(natW - srcX, (rx * 2) * natW);
-  const srcH = Math.min(natH - srcY, (ry * 2) * natH);
-
-  fCtx.drawImage(imgObj, srcX, srcY, srcW, srcH, 0, 0, 400, 480);
-  fCtx.restore();
-
-  // Outer Gold Ring
-  fCtx.strokeStyle = '#f5b722';
-  fCtx.lineWidth = 6;
-  fCtx.beginPath();
-  fCtx.ellipse(200, 240, 180, 220, 0, 0, Math.PI * 2);
-  fCtx.stroke();
-
-  return fc;
-}
-
 function renderCertificateCanvas(mode, sCtx) {
   if (!sCtx) return null;
   const {
@@ -1665,98 +1716,6 @@ function renderCertificateCanvas(mode, sCtx) {
     cCtx.font = '700 22px "Fredoka", sans-serif';
     cCtx.fillText(`⚡ ${finalMatchPct}% KEMBARAN BIOMETRIK ⚡`, 540, badgeY + 31);
 
-  } else if (mode === 'swap') {
-    // ================= MODE 2: HEAD SWAP PERSONA =================
-    cCtx.save();
-    roundRect(cCtx, px, py, pw, ph, 20);
-    cCtx.clip();
-
-    // Celeb Background
-    if (celebLoaded && celebImgObj && celebImgObj.complete && celebImgObj.naturalWidth > 0) {
-      drawCover(cCtx, celebImgObj, px, py, pw, ph, 0.35);
-    } else {
-      const bgG = cCtx.createLinearGradient(px, py, px + pw, py + ph);
-      bgG.addColorStop(0, '#2d1d23');
-      bgG.addColorStop(1, '#16080e');
-      cCtx.fillStyle = bgG;
-      cCtx.fillRect(px, py, pw, ph);
-    }
-
-    // Soft Dark Veil for contrast
-    cCtx.fillStyle = 'rgba(18, 5, 12, 0.35)';
-    cCtx.fillRect(px, py, pw, ph);
-
-    // Extract User Face Cutout & Overlay
-    const cutoutCanvas = extractUserFaceCutout(userImgObj, currentLm);
-    const cutW = 380, cutH = 456;
-    const cutX = 540 - cutW / 2;
-    const cutY = py + (ph - cutH) / 2 + 10;
-
-    cCtx.save();
-    cCtx.shadowColor = 'rgba(245, 183, 34, 0.85)';
-    cCtx.shadowBlur = 30;
-    cCtx.shadowOffsetX = 0;
-    cCtx.shadowOffsetY = 4;
-    cCtx.drawImage(cutoutCanvas, cutX, cutY, cutW, cutH);
-    cCtx.restore();
-
-    // Draw Crown on top of user head
-    cCtx.font = '54px sans-serif';
-    cCtx.textAlign = 'center';
-    cCtx.textBaseline = 'middle';
-    cCtx.fillText('👑', 540, cutY - 14);
-
-    // Bottom Vignette
-    const bGrad = cCtx.createLinearGradient(0, py + ph - 130, 0, py + ph);
-    bGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
-    bGrad.addColorStop(1, 'rgba(18, 5, 12, 0.88)');
-    cCtx.fillStyle = bGrad;
-    cCtx.fillRect(px, py + ph - 130, pw, 130);
-
-    // Bottom Label
-    cCtx.textAlign = 'left';
-    cCtx.fillStyle = '#ffe082';
-    cCtx.font = '700 24px "Fredoka", sans-serif';
-    cCtx.fillText(`🎭 PERSONA: ${finalLookalike} x Kamu`, px + 28, py + ph - 26);
-
-    cCtx.restore();
-
-    // Frame Border
-    cCtx.strokeStyle = '#4a0000'; cCtx.lineWidth = 5;
-    roundRect(cCtx, px, py, pw, ph, 20); cCtx.stroke();
-
-    // Top-Left Floating Badge
-    const b1W = 320, b1H = 44, b1X = px + 20, b1Y = py + 20;
-    cCtx.save();
-    cCtx.fillStyle = '#681a34';
-    roundRect(cCtx, b1X, b1Y, b1W, b1H, 22); cCtx.fill();
-    cCtx.strokeStyle = '#f5b722'; cCtx.lineWidth = 2.5;
-    roundRect(cCtx, b1X, b1Y, b1W, b1H, 22); cCtx.stroke();
-    cCtx.fillStyle = '#ffd86b';
-    cCtx.textAlign = 'center';
-    cCtx.font = '700 18px "Fredoka", sans-serif';
-    cCtx.fillText('✨ PERSONA TOKOH EDITION', b1X + b1W / 2, b1Y + 27);
-    cCtx.restore();
-
-    // Floating Center Match Badge
-    const badgeW = 440, badgeH = 50, badgeX = 540 - badgeW / 2, badgeY = py + ph - 74;
-    cCtx.save();
-    cCtx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-    cCtx.shadowBlur = 12;
-    cCtx.shadowOffsetY = 4;
-    cCtx.fillStyle = '#681a34';
-    roundRect(cCtx, badgeX, badgeY, badgeW, badgeH, 25);
-    cCtx.fill();
-    cCtx.restore();
-
-    cCtx.strokeStyle = '#f5b722'; cCtx.lineWidth = 3.5;
-    roundRect(cCtx, badgeX, badgeY, badgeW, badgeH, 25); cCtx.stroke();
-
-    cCtx.fillStyle = '#ffffff';
-    cCtx.textAlign = 'center';
-    cCtx.font = '700 22px "Fredoka", sans-serif';
-    cCtx.fillText(`⚡ ${finalMatchPct}% SYNC COCOK PERSONA ⚡`, 540, badgeY + 31);
-
   } else {
     // ================= MODE 3: KLASIK (SINGLE HERO PORTRAIT) =================
     cCtx.save();
@@ -1843,8 +1802,18 @@ function renderCertificateCanvas(mode, sCtx) {
   cCtx.strokeStyle = '#ebdcb9'; cCtx.lineWidth = 1.5; roundRect(cCtx, p2x, p2y, pillW, pillH, 12); cCtx.stroke();
   cCtx.fillStyle = '#8a5b00'; cCtx.font = '700 16px "Fredoka", sans-serif';
   cCtx.fillText('✨ KONDISI KULIT & KERUTAN', p2x + 16, p2y + 24);
-  cCtx.fillStyle = '#681a34'; cCtx.font = '700 21px "Fredoka", sans-serif';
-  cCtx.fillText(`${finalWrinkle}`, p2x + 16, p2y + 51);
+  cCtx.fillStyle = '#681a34';
+  let wrkFont = 21;
+  cCtx.font = `700 ${wrkFont}px "Fredoka", sans-serif`;
+  let displayWrinkle = String(finalWrinkle);
+  while (cCtx.measureText(displayWrinkle).width > pillW - 32 && wrkFont > 15) {
+    wrkFont -= 1;
+    cCtx.font = `700 ${wrkFont}px "Fredoka", sans-serif`;
+  }
+  while (cCtx.measureText(displayWrinkle).width > pillW - 32 && displayWrinkle.length > 5) {
+    displayWrinkle = displayWrinkle.slice(0, -1);
+  }
+  cCtx.fillText(displayWrinkle, p2x + 16, p2y + 51);
 
   // Pill 3: Pesona & Simetri (Bottom-Left)
   const p3x = bx + 22, p3y = by + 102;
@@ -1894,9 +1863,15 @@ function renderCertificateCanvas(mode, sCtx) {
         else l3 = l3 ? l3 + ' ' + w : w;
       }
     }
-    cCtx.fillText(l1, qx + 24, qy + 40);
-    cCtx.fillText(l2, qx + 24, qy + 70);
-    if (l3) cCtx.fillText(l3, qx + 24, qy + 95);
+    if (l3) {
+      cCtx.font = '600 16.5px "Fredoka", sans-serif';
+      cCtx.fillText(l1, qx + 24, qy + 32);
+      cCtx.fillText(l2, qx + 24, qy + 57);
+      cCtx.fillText(l3, qx + 24, qy + 81);
+    } else {
+      cCtx.fillText(l1, qx + 24, qy + 42);
+      cCtx.fillText(l2, qx + 24, qy + 72);
+    }
   }
 
   // Stamp & Verification
@@ -1920,7 +1895,9 @@ function setCertificateMode(mode) {
   if (currentScanContext) {
     currentCertDataUrl = renderCertificateCanvas(mode, currentScanContext);
     $('certImg').src = currentCertDataUrl;
-    $('btnDownloadCert').href = currentCertDataUrl;
+    if ($('btnDownloadCert')) {
+      $('btnDownloadCert').href = currentCertDataUrl;
+    }
   }
 }
 
@@ -2042,7 +2019,7 @@ async function executeScanningFlow() {
   const fallbackM = localM || {
     estAge: 20, gen: 'Gen-Z Active 🌟', faceShape: 'Oval', beautyScore: 94, symmetryPct: 95,
     genderLabel: 'Laki-laki 👦', wrinkleLabel: 'Kulit Halus & Kencang ✨',
-    bestMatch: { name: 'Iqbaal Ramadhan 🎸', role: 'Aktor & Musisi Muda Cerdas', comment: 'Struktur wajah simetris & berkarisma!' }, matchPct: 95
+    bestMatch: { name: 'Iqbaal Ramadhan 🎸', role: 'Aktor & Musisi Cerdas', comment: 'Tatapan tajam dan proporsi wajah simetris penuh karisma!' }, matchPct: 95
   };
 
   const finalGender = aiResult ? aiResult.gender : fallbackM.genderLabel;
@@ -2056,11 +2033,32 @@ async function executeScanningFlow() {
   const finalShape = aiResult ? (aiResult.faceShape || fallbackM.faceShape || 'Oval') : (fallbackM.faceShape || 'Oval');
   const finalBeauty = aiResult ? aiResult.beautyScore : fallbackM.beautyScore;
   const finalSym = aiResult ? (aiResult.symmetryScore || 95) : fallbackM.symmetryPct;
-  const finalWrinkle = aiResult ? (aiResult.wrinkleAnalysis || 'Kulit Halus Bebas Kerutan ✨') : fallbackM.wrinkleLabel;
+
+  const rawWrinkle = aiResult ? (aiResult.wrinkleAnalysis || 'Kulit Halus & Kencang ✨') : fallbackM.wrinkleLabel;
+  let finalWrinkle = String(rawWrinkle).replace(/[\r\n]+/g, ' ').trim();
+  if (finalWrinkle.length > 32) {
+    const parts = finalWrinkle.split(/[.,;:|\-]/);
+    if (parts[0] && parts[0].trim().length >= 4 && parts[0].trim().length <= 32) {
+      finalWrinkle = parts[0].trim();
+    } else {
+      finalWrinkle = finalWrinkle.slice(0, 30).trim() + '...';
+    }
+  }
+
   const finalLookalike = aiResult ? aiResult.lookalike : (fallbackM.bestMatch ? fallbackM.bestMatch.name : 'Iqbaal Ramadhan 🎸');
   const finalLookalikeRole = (aiResult && aiResult.lookalikeRole) || (fallbackM.bestMatch ? fallbackM.bestMatch.role : 'Aktor & Musisi Cerdas');
   const finalMatchPct = aiResult ? (aiResult.lookalikeMatch || 95) : (fallbackM.matchPct || 95);
-  const finalComment = aiResult ? aiResult.comment : (fallbackM.bestMatch ? fallbackM.bestMatch.comment : 'Struktur wajah simetris dengan ekspresi positif & berkarisma!');
+
+  const rawComment = aiResult ? aiResult.comment : (fallbackM.bestMatch ? fallbackM.bestMatch.comment : 'Tatapan tajam dan proporsi wajah simetris penuh karisma!');
+  let finalComment = String(rawComment).replace(/[\r\n]+/g, ' ').trim().replace(/^["'«“]+|["'»”]+$/g, '');
+  if (finalComment.length > 90) {
+    const sentences = finalComment.split(/(?<=[.!?])\s+/);
+    if (sentences[0] && sentences[0].length <= 90 && sentences[0].length >= 10) {
+      finalComment = sentences[0];
+    } else {
+      finalComment = finalComment.slice(0, 85).trim() + '...';
+    }
+  }
 
   // 4. Preload User and Celebrity Images for Instant Multi-Mode Certificate Rendering
   await document.fonts.ready;
@@ -2109,6 +2107,19 @@ async function executeScanningFlow() {
   setCertificateMode(currentCertMode || 'duo');
 
   // 5. Populate Live Results under Camera
+  $('liveUserPhoto').src = photoDataUrl;
+  $('liveCelebPhoto').onerror = function() {
+    this.onerror = null;
+    this.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="250" viewBox="0 0 200 250"><rect width="200" height="250" fill="%232d1d23"/><text x="100" y="125" font-size="48" text-anchor="middle" dominant-baseline="middle" fill="%23f5b722">⭐</text></svg>';
+  };
+  if (celebLoaded && celebImgObj && celebImgObj.src) {
+    $('liveCelebPhoto').src = celebImgObj.src;
+  } else {
+    $('liveCelebPhoto').src = `/api/celeb-image?name=${encodeURIComponent(cleanCelebName)}`;
+  }
+  $('liveMatchPctText').textContent = `${finalMatchPct}%`;
+  $('liveCelebNameTag').textContent = `🌟 ${finalLookalike}`;
+
   $('liveGenderAge').textContent = `${finalGender} • ${finalAge} Thn`;
   $('liveGen').textContent = `${finalGen} • ${finalShape}`;
   $('liveWrinkle').textContent = finalWrinkle;
@@ -2120,12 +2131,6 @@ async function executeScanningFlow() {
 
   // Pre-populate Modal elements
   $('certImg').src = currentCertDataUrl;
-  $('btnDownloadCert').href = currentCertDataUrl;
-  $('certPrimaryResult').textContent = `${finalGender} • ${finalAge} Tahun (${finalGen})`;
-  $('certWrinkleResult').textContent = `${finalWrinkle}`;
-  $('certBeautyResult').textContent = `${finalBeauty}% (Simetri ${finalSym}%)`;
-  $('certSecondaryResult').textContent = `${finalMatchPct}% Mirip ${finalLookalike}`;
-  $('certQuote').textContent = `"${finalComment}"`;
 
   // Hide Scanning HUD on camera
   scanningOverlay.style.display = 'none';
@@ -2137,6 +2142,9 @@ async function executeScanningFlow() {
   // Swap Main Action Button with Live Result Panel under Camera
   $('actionWrap').style.display = 'none';
   $('liveResultPanel').style.display = 'flex';
+
+  // Auto-open Certificate Pop-Up Modal
+  $('modalResult').style.display = 'flex';
 
   // Smooth scroll so the live result data is clearly in view
   try {
@@ -2190,6 +2198,12 @@ $('btnFlip').onclick = () => {
 $('btnLiveDownload').onclick = () => {
   downloadCertificateFile();
 };
+
+if ($('btnDownloadCert')) {
+  $('btnDownloadCert').onclick = () => {
+    downloadCertificateFile();
+  };
+}
 
 $('btnLivePreview').onclick = () => {
   $('modalResult').style.display = 'flex';
