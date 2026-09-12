@@ -2,7 +2,6 @@
 // No framework, no deps beyond stdlib. Sessions expire 24h and auto-cleanup hourly.
 'use strict';
 const http = require('http');
-const https = require('https');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
@@ -12,10 +11,6 @@ const { findBestLookalike, CELEBS_DATABASE_1000 } = require('./assets/data/celeb
 const ROOT = __dirname;
 const PUBLIC = process.env.PUBLIC_URL || null;
 const UPLOAD_DIR = path.join(ROOT, 'uploads', 'sessions');
-const CELEB_CACHE_DIR = path.join(ROOT, 'assets', 'celebs_cache');
-if (!fs.existsSync(CELEB_CACHE_DIR)) {
-  try { fs.mkdirSync(CELEB_CACHE_DIR, { recursive: true }); } catch (_) {}
-}
 const TTL_HOURS = process.env.GALLERY_TTL_HOURS ? +process.env.GALLERY_TTL_HOURS : 24;
 const PORT = +process.env.PORT || 8123;
 
@@ -445,82 +440,10 @@ small{opacity:.7}
   res.end();
 }
 
-function fetchWikiJson(url) {
-  return new Promise((resolve) => {
-    https.get(url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) HarkatPhotobooth/1.0' }, timeout: 4000 }, (res) => {
-      let data = '';
-      res.on('data', c => data += c);
-      res.on('end', () => {
-        try { resolve(JSON.parse(data)); } catch(e) { resolve(null); }
-      });
-    }).on('error', () => resolve(null));
-  });
-}
-
-function fetchBuffer(url) {
-  return new Promise((resolve) => {
-    const mod = url.startsWith('https') ? https : http;
-    mod.get(url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }, timeout: 6000 }, (res) => {
-      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        return resolve(fetchBuffer(res.headers.location));
-      }
-      if (res.statusCode !== 200) return resolve(null);
-      const chunks = [];
-      res.on('data', c => chunks.push(c));
-      res.on('end', () => resolve(Buffer.concat(chunks)));
-    }).on('error', () => resolve(null));
-  });
-}
-
-async function getCelebImage(req, res, u) {
-  const rawName = u.searchParams.get('name') || '';
-  const cleanName = rawName.replace(/[\u{1F300}-\u{1FAFF}]/gu, '').replace(/[^\p{L}\p{N}\s.,-]/gu, '').trim();
-  if (!cleanName) return json(res, 400, { error: 'name parameter required' });
-
-  const slug = cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
-  const cachedFile = path.join(CELEB_CACHE_DIR, `${slug}.jpg`);
-
-  if (fs.existsSync(cachedFile)) {
-    const buf = fs.readFileSync(cachedFile);
-    res.writeHead(200, {
-      'Content-Type': 'image/jpeg',
-      'Content-Length': buf.length,
-      'Cache-Control': 'public, max-age=604800',
-      'Access-Control-Allow-Origin': '*'
-    });
-    return res.end(buf);
-  }
-
-  try {
-    let summary = await fetchWikiJson(`https://id.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanName)}`);
-    let imgUrl = summary?.thumbnail?.source || summary?.originalimage?.source;
-    if (!imgUrl) {
-      summary = await fetchWikiJson(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanName)}`);
-      imgUrl = summary?.thumbnail?.source || summary?.originalimage?.source;
-    }
-    if (imgUrl) {
-      const imgBuf = await fetchBuffer(imgUrl);
-      if (imgBuf && imgBuf.length > 500) {
-        try { fs.writeFileSync(cachedFile, imgBuf); } catch (_) {}
-        res.writeHead(200, {
-          'Content-Type': 'image/jpeg',
-          'Content-Length': imgBuf.length,
-          'Cache-Control': 'public, max-age=604800',
-          'Access-Control-Allow-Origin': '*'
-        });
-        return res.end(imgBuf);
-      }
-    }
-  } catch (_) {}
-
-  return json(res, 404, { error: 'celeb image not found', slug, name: cleanName });
-}
-
 const server = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x');
   const p = u.pathname;
   if (req.method === 'OPTIONS') return json(res, 204, {});
-  if ((req.method === 'GET' || req.method === 'HEAD') && p === '/api/celeb-image') return getCelebImage(req, res, u);
   if (req.method === 'POST' && p === '/api/session') return createSession(req, res);
   if (req.method === 'POST' && p === '/api/sheet') return saveSheet(req, res);
   if (req.method === 'POST' && p === '/api/ai-analyze') return analyzeFaceWithAi(req, res);
