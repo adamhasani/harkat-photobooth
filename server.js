@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const { findBestLookalike, CELEBS_DATABASE_1000 } = require('./assets/data/celebs_database.js');
 
 const ROOT = __dirname;
 const PUBLIC = process.env.PUBLIC_URL || null;
@@ -29,6 +30,7 @@ const MIME = {
 };
 
 function json(res, code, obj) {
+  if (res.headersSent || res.writableEnded) return;
   const body = JSON.stringify(obj);
   const h = {
     'Content-Type': 'application/json',
@@ -37,9 +39,11 @@ function json(res, code, obj) {
     'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type'
   };
-  res.writeHead(code, h);
-  res.write(body);
-  res.end();
+  try {
+    res.writeHead(code, h);
+    res.write(body);
+    res.end();
+  } catch (_) {}
 }
 
 // serve static file under ROOT (path traversal safe)
@@ -100,49 +104,116 @@ const GROQ_KEYS = [
 ];
 let groqKeyIdx = 0;
 
-const SYSTEM_PROMPT = `Kamu adalah sistem AI Computer Vision & Biometric Analyzer presisi tinggi untuk booth Sains Data & AI UKM EXPO UHN.
-Tugasmu: Analisis foto wajah pengunjung dengan SANGAT TELITI, OBJEKTIF, dan AKURAT untuk mendeteksi GENDER (Laki-laki vs Perempuan), USIA, CIRI FISIK NYATA, dan KEMBARAN TOKOH.
+const SYSTEM_PROMPT = `Kamu adalah sistem AI Computer Vision & Biometric Craniofacial Analyzer presisi tinggi.
+Tugasmu: Analisis foto wajah secara SANGAT TELITI, OBJEKTIF, REALISTIS, dan AKURAT untuk mendeteksi GENDER (Laki-laki vs Perempuan), USIA BIOLOGIS NYATA (rentang 15 - 85+ tahun), BENTUK WAJAH, CIRI FISIK NYATA, KONDISI KULIT & KERUTAN, dan KEMBARAN TOKOH PALING MIRIP dari database 1.000 tokoh dunia.
 
-PANDUAN KLASIFIKASI GENDER (SANGAT KRUSIAL - JANGAN SALAH):
-1. Periksa ciri maskulin vs feminin secara seksama:
-   - Ciri Laki-laki: Struktur alis alami/tebal tanpa pensil alis, tidak menggunakan riasan wajah/lipstik/eyeliner/mascara, proporsi garis rahang/dagu pria, garis leher/jakun/bahu pria, postur pria. Meskipun berwajah bersih/tanpa jenggot/kulit mulus/babyface dan rambut pendek, jika tidak memakai makeup wanita dan berpakaian kemeja/kaos pria, itu adalah LAKI-LAKI.
-   - Ciri Perempuan: Riasan wajah (eyeshadow, pensil alis, lipstick/gloss), bentuk bibir feminin dengan riasan, perhiasan anting wanita, pakaian/kerah wanita, gaya rambut wanita.
-   - JANGAN mengira pria muda berkulit bersih/rambut pendek sebagai perempuan!
+DIAGNOSTIK INDIKATOR USIA BIOLOGIS DARI KERUTAN & STRUKTUR WAJAH (SANGAT KRUSIAL):
+Lakukan inspeksi visual langkah-demi-langkah terhadap indikator penuaan & kematangan wajah berikut:
+1. Dahi & Glabella (Kerutan Dahi & Frown Lines):
+   - 15 - 22 thn: Mulus sempurna, tidak ada lipatan horizontal dahi atau garis vertikal glabella (antara alis) bahkan saat ekspresi biasa.
+   - 23 - 32 thn: Dahi mulus saat rileks, garis ekspresi sangat halus dinamis hanya muncul saat menaikkan alis dan cepat hilang.
+   - 33 - 45 thn: Garis dahi horizontal mulai menetap halus (garis statis), terlihat kerutan samar antara alis (garis 11).
+   - 46 - 60 thn: Garis horizontal dahi dan vertikal glabella terukir jelas & permanen meski wajah rileks.
+   - 60+ thn: Kerutan dahi mendalam, lipatan kulit dahi dan pelipis tebal & jelas.
 
-2. Tokoh mirip (lookalike) WAJIB 100% SESUAI GENDER:
-   - Jika Laki-laki: Tokoh pria yang berkarisma & relevan (misal: Nicholas Saputra, Reza Rahadian, Iqbaal Ramadhan, B.J. Habibie, Keanu Reeves, Elon Musk, Dikta, Jerome Polin, Raditya Dika, Tulus, dll).
-   - Jika Perempuan: Tokoh wanita yang berprestasi (misal: Maudy Ayunda, Chelsea Islan, Dian Sastro, Isyana Sarasvati, Taylor Swift, Najwa Shihab, Sri Mulyani, Lisa Blackpink, dll).
+2. Area Mata & Periorbital (Crow's Feet, Kantung Mata, Tear Troughs):
+   - 15 - 22 thn: Kulit bawah mata sangat kencang & halus tanpa lingkar/kantung mata usia, sudut luar mata bebas kerutan.
+   - 23 - 32 thn: Garis halus dinamis di sudut mata hanya saat tertawa/tersenyum lebar.
+   - 33 - 45 thn: Kerutan sudut mata (crow's feet) mulai terlihat saat senyum biasa, tear trough/kantung mata mulai tampak.
+   - 46 - 60 thn: Crow's feet jelas terlihat permanen, kelopak mata sedikit turun (hooded eyes), kantung mata jelas terdefinisi.
+   - 60+ thn: Kerutan periorbital dalam meluas ke pelipis dan pipi atas, kulit periorbital menipis.
 
-3. Panduan Estimasi Umur (17-30 tahun):
-   - Maba / Young (18-19): Kulit kencang, babyface, tanpa garis halus dahi/mata.
-   - Mahasiswa Aktif (20-22): Garis senyum dinamis, kulit elastis & segar.
-   - Senior / Alumni Muda (23-26): Sedikit garis ekspresi halus di sudut mata/dahi.
-   - Dewasa Matang (27-30+): Lipatan nasolabial lebih dalam atau garis dahi jelas.
+3. Area Pipi & Mulut (Lipatan Senyum Nasolabial & Garis Marionette):
+   - 15 - 22 thn: Pipi penuh/plump kenyal (baby fat alami), lipatan samping hidung langsung hilang seketika saat wajah rileks.
+   - 23 - 32 thn: Kontur pipi lebih terdefinisi dewasa, lipatan nasolabial samar saat rileks.
+   - 33 - 45 thn: Lipatan nasolabial (smile lines) terukir permanen dari samping hidung ke sudut bibir.
+   - 46 - 60 thn: Lipatan nasolabial dalam, garis marionette (sudut mulut ke rahang bawah) mulai tampak.
+   - 60+ thn: Garis marionette dan nasolabial sangat dalam, sudut bibir melengkung ke bawah alami.
+
+4. Tekstur Kulit, Elastisitas & Garis Rahang:
+   - 15 - 22 thn: Sangat kencang, pori-pori halus, elastisitas maksimal, garis rahang bersih tanpa sagging.
+   - 23 - 35 thn: Tekstur kulit segar & sehat, elastisitas prima, kontur wajah tegas.
+   - 36 - 50 thn: Tekstur kulit matang, sedikit penurunan elastisitas di garis rahang bawah.
+   - 51 - 65 thn: Tekstur kulit matang, sedikit kendur di rahang bawah/bawah dagu (jowls ringan), garis leher horizontal tampak.
+   - 65+ thn: Kulit menipis, elastisitas berkurang, bintik usia/tekstur senior terdefinisi.
+
+5. Rambut & Kematangan Wajah:
+   - Rambut hitam/berwarna alami muda vs uban di pelipis/cambang (38-50) vs rambut beruban/putih dominan (50-70+).
+
+PERINGATAN KERAS ANTI-BIAS UMUR:
+DILARANG KERAS SELALU MENEBAK 19, 20, ATAU 21 TAHUN!
+Tentukan umur biologis aktual secara objektif, jujur, dan spesifik (bisa 16, 18, 23, 27, 31, 36, 42, 48, 55, 63, 70+ tahun) berdasarkan bukti kerutan & tekstur wajah di atas.
+
+PANDUAN KLASIFIKASI GENDER:
+- Ciri Laki-laki: Struktur alis alami/tebal tanpa pensil alis, tidak menggunakan riasan wajah/lipstik/eyeliner/mascara, proporsi garis rahang/dagu pria, garis leher/jakun/bahu pria, postur pria. Pria muda berkulit bersih/tanpa jenggot tetap LAKI-LAKI.
+- Ciri Perempuan: Riasan wajah (eyeshadow, pensil alis, lipstick/gloss), bentuk bibir feminin dengan riasan, perhiasan wanita, gaya pakaian/rambut wanita.
+
+PANDUAN GENERASI (SESUAIKAN PERSIS DENGAN UMUR):
+- <= 19 Tahun: "Gen-Z Fresh 🎓"
+- 20 - 27 Tahun: "Gen-Z Active 🌟"
+- 28 - 39 Tahun: "Milenial Leader 💼"
+- 40 - 54 Tahun: "Prime Leader 🏛️"
+- 55 - 69 Tahun: "Senior Mentor 📚"
+- 70+ Tahun: "Maestro Kehormatan 👑"
+
+PENCOCOKKAN KEMBARAN TOKOH (LOOKALIKE) WAJIB SESUAI GENDER & USIA:
+- Pilih figur dari database 1.000 tokoh dunia yang BENAR-BENAR COCOK dengan GENDER, KELOMPOK USIA, dan CIRI VISUALNYA:
+  * Pria Muda (15-27 thn): Iqbaal Ramadhan, Jefri Nichol, Angga Yunanda, Timothée Chalamet, Jerome Polin, Windah Basudara, Tom Holland, dll.
+  * Pria Dewasa/Matang (28-48 thn): Nicholas Saputra, Reza Rahadian, Refal Hady, GadgetIn David, Pedro Pascal, Keanu Reeves, Henry Cavill, Cillian Murphy, Ryan Gosling, dll.
+  * Pria Senior/Orang Tua/Lansia (49-80+ thn): Prof. B.J. Habibie, Albert Einstein, Morgan Freeman, Steve Jobs, Bill Gates, George Clooney, Robert De Niro, Al Pacino, Harrison Ford, Tom Hanks, Joko Widodo, Anthony Hopkins, Nelson Mandela, Warren Buffett, dll.
+  * Wanita Muda (15-27 thn): Maudy Ayunda, Chelsea Islan, Prilly Latuconsina, Zee JKT48, Freya JKT48, Jennie Blackpink, Karina aespa, Zendaya, Billie Eilish, dll.
+  * Wanita Dewasa/Matang (28-48 thn): Dian Sastrowardoyo, Najwa Shihab, Laura Basuki, Song Hye-kyo, Anne Hathaway, Scarlett Johansson, Emma Stone, Gal Gadot, dll.
+  * Wanita Senior/Orang Tua/Lansia (49-80+ thn): Sri Mulyani Indrawati, Christine Hakim, Meryl Streep, Megawati Soekarnoputri, Michelle Obama, Judi Dench, Helen Mirren, Queen Elizabeth II, dll.
+- JANGAN PERNAH mencocokkan orang tua/lansia dengan artis remaja belia!
 
 Kembalikan HANYA format JSON murni tanpa markdown:
 {
   "gender": "<Laki-laki 👦 / Perempuan 👧>",
-  "age": <integer umur realistis 17-30>,
-  "generation": "<Gen-Z Fresh 🎓 / Gen-Z Tech Wizard 💻 / Creative Soul 🎨 / Young Achiever 🌟>",
+  "age": <integer umur realistis 15-85>,
+  "generation": "<Gen-Z Fresh 🎓 / Gen-Z Active 🌟 / Milenial Leader 💼 / Prime Leader 🏛️ / Senior Mentor 📚 / Maestro Kehormatan 👑>",
+  "faceShape": "<Oval / Square / Angular / Round / Soft / Heart / V-Shape / Diamond / Chiseled / Oblong / Regal>",
   "beautyScore": <skor pesona 88-99 integer>,
   "symmetryScore": <skor simetri 88-99 integer>,
-  "wrinkleAnalysis": "<Analisis tekstur kulit & kerutan>",
-  "lookalike": "<Nama Tokoh sesuai gender>",
+  "wrinkleAnalysis": "<Deskripsi detail analisis tekstur kulit, garis senyum, dan kerutan wajah>",
+  "lookalike": "<Nama Tokoh sesuai gender & rentang usia>",
   "lookalikeRole": "<Profesi/julukan tokoh>",
-  "lookalikeMatch": <persen 86-98 integer>,
-  "majorVibe": "<misal: Sains Data & AI / Sistem Informasi / Teknik Informatika / Bisnis Digital>",
-  "comment": "<1-2 kalimat analisis unik menyebut ciri fisik nyata & pakaian di foto>",
+  "lookalikeMatch": <persen 88-98 integer>,
+  "majorVibe": "<misal: Sains Data & AI / Kepemimpinan Strategis / Inovasi & Teknologi / Seni Kreatif>",
+  "comment": "<1-2 kalimat analisis tajam & personal menyebutkan kesamaan ciri fisik foto dengan tokoh>",
   "facialTraits": "<3 ciri fisik terdeteksi, pisahkan koma>"
 }`;
 
 async function callGroqVision(photo, telemetry) {
-  let telemetryText = 'Analisis biometrik wajah ini secara spesifik & akurat untuk booth Sains Data AI UKM EXPO UHN:';
+  let telemetryText = 'Lakukan analisis biometrik wajah & estimasi umur biologis dari foto ini secara presisi dan objektif:';
   if (telemetry) {
-    telemetryText = `Data Pengukuran Sensor Biometrik MediaPipe 3D:
+    let candMale = '';
+    let candFemale = '';
+    try {
+      const topM = findBestLookalike(telemetry, { gender: 'Laki-laki', topK: 5 }).topMatches;
+      const topF = findBestLookalike(telemetry, { gender: 'Perempuan', topK: 5 }).topMatches;
+      candMale = topM.map(m => `• ${m.celeb.name} [${m.celeb.faceShape}] - ${m.celeb.role} (Ciri: ${Array.isArray(m.celeb.traits) ? m.celeb.traits.join(', ') : m.celeb.traits})`).join('\n');
+      candFemale = topF.map(m => `• ${m.celeb.name} [${m.celeb.faceShape}] - ${m.celeb.role} (Ciri: ${Array.isArray(m.celeb.traits) ? m.celeb.traits.join(', ') : m.celeb.traits})`).join('\n');
+    } catch (_) {}
+
+    telemetryText = `Data Pengukuran Sensor Biometrik 3D:
+- Bentuk Wajah Terukur: ${telemetry.faceShape || 'Oval'}
 - Simetri Wajah Terukur: ${telemetry.symmetryPct || 95}%
 - Intensitas Senyuman: ${telemetry.smilePct || 80}%
+- Rasio Rahang (Jaw Ratio): ${(telemetry.jawRatio || 0.55).toFixed ? (telemetry.jawRatio || 0.55).toFixed(3) : telemetry.jawRatio}
+- Rasio Dagu (Chin Ratio): ${(telemetry.chinRatio || 0.62).toFixed ? (telemetry.chinRatio || 0.62).toFixed(3) : telemetry.chinRatio}
+- Rasio Mata (Eye Ratio): ${(telemetry.eyeRatio || 0.38).toFixed ? (telemetry.eyeRatio || 0.38).toFixed(3) : telemetry.eyeRatio}
+- Indeks Ketegangan Wajah: ${(telemetry.wrinkleTension || 0.20).toFixed ? (telemetry.wrinkleTension || 0.20).toFixed(3) : telemetry.wrinkleTension}
 
-Tugasmu: Tentukan gender pengunjung secara independen dari pengamatan visual nyata foto (rambut, pakaian, wajah, riasan) dan gabungkan dengan data sensor 3D ini:`;
+Kandidat Tokoh Rekomendasi Biometrik (Database 1.000 Tokoh Dunia):
+[Kandidat Pria]:
+${candMale}
+
+[Kandidat Wanita]:
+${candFemale}
+
+PENTING:
+1. Tentukan GENDER, USIA BIOLOGIS NYATA (15-85+ thn), dan KONDISI KULIT/KERUTAN murni dari observasi visual foto secara jujur (amati kerutan dahi, kantung mata, crow's feet, garis tawa/nasolabial, tekstur kulit, atau uban). JANGAN terjebak default usia 19-21 tahun!
+2. Pilih KEMBARAN TOKOH yang BENAR-BENAR COCOK dengan GENDER dan KELOMPOK USIA pengunjung dari kandidat di atas atau tokoh 1.000 figur dunia. JANGAN pasangkan orang tua dengan figur remaja belia.`;
   }
 
   const payload = JSON.stringify({
@@ -157,8 +228,8 @@ Tugasmu: Tentukan gender pengunjung secara independen dari pengamatan visual nya
         ]
       }
     ],
-    max_completion_tokens: 350,
-    temperature: 0.2
+    max_completion_tokens: 450,
+    temperature: 0.25
   });
 
   const https = require('https');
@@ -177,7 +248,7 @@ Tugasmu: Tentukan gender pengunjung secara independen dari pengamatan visual nya
           'User-Agent': 'Mozilla/5.0',
           'Content-Length': Buffer.byteLength(payload)
         },
-        timeout: 6000
+        timeout: 8000
       }, (resp) => {
         let raw = '';
         resp.on('data', d => raw += d);
@@ -226,7 +297,49 @@ async function analyzeFaceWithAi(req, res) {
     if (aiData) {
       return json(res, 200, { ok: true, provider: 'groq', ai: aiData, data: aiData });
     }
-    return json(res, 200, { fallback: true });
+
+    // High precision fallback using 1,000 personalities biometric database
+    const isMale = telemetry ? (typeof telemetry.isLikelyMale === 'boolean' ? telemetry.isLikelyMale : String(telemetry.gender || '').startsWith('Laki')) : true;
+    let match = null;
+    try {
+      match = findBestLookalike(telemetry || {}, { gender: isMale ? 'Laki-laki' : 'Perempuan', topK: 3 });
+    } catch (_) {}
+
+    const estAge = (telemetry && telemetry.estAge) || 20;
+    const defaultGen = estAge <= 19 ? 'Gen-Z Fresh 🎓' :
+                       estAge <= 27 ? 'Gen-Z Active 🌟' :
+                       estAge <= 39 ? 'Milenial Leader 💼' :
+                       estAge <= 54 ? 'Prime Leader 🏛️' :
+                       estAge <= 69 ? 'Senior Mentor 📚' : 'Maestro Kehormatan 👑';
+
+    const defaultWrinkle = estAge <= 22 ? 'Kulit Halus & Kencang ✨' :
+                           estAge <= 35 ? 'Tekstur Segar & Garis Senyum Alami 😊' :
+                           estAge <= 50 ? 'Garis Wajah Tegas & Karisma Matang 🧐' : 'Garis Waktu Berwibawa & Penuh Pengalaman 📚';
+
+    const bestCeleb = (match && match.bestMatch) || {
+      name: isMale ? (estAge > 45 ? 'Prof. B.J. Habibie 🚀' : 'Iqbaal Ramadhan 🎸') : (estAge > 45 ? 'Sri Mulyani Indrawati 💼' : 'Maudy Ayunda 🎓'),
+      role: isMale ? (estAge > 45 ? 'Teknokrat Visioner & Bapak Dirgantara' : 'Aktor & Musisi Muda Cerdas') : (estAge > 45 ? 'Ekonom Dunia & Pemimpin Cerdas' : 'Aktris & Edukator Cerdas'),
+      faceShape: 'Oval',
+      comment: isMale ? 'Tatapan ramah, berkarisma tinggi, dan berwawasan luas!' : 'Punya bentuk wajah proporsional dan aura cerdas berprestasi!',
+      traits: ['Simetris proporsional', 'Ekspresi cerah positif', 'Karisma tinggi']
+    };
+
+    const fallbackData = {
+      gender: isMale ? 'Laki-laki 👦' : 'Perempuan 👧',
+      age: estAge,
+      generation: (telemetry && telemetry.gen) || defaultGen,
+      faceShape: (telemetry && telemetry.faceShape) || bestCeleb.faceShape || 'Oval',
+      beautyScore: (telemetry && telemetry.beautyScore) || 94,
+      symmetryScore: (telemetry && telemetry.symmetryPct) || 95,
+      wrinkleAnalysis: (telemetry && telemetry.wrinkleLabel) || defaultWrinkle,
+      lookalike: bestCeleb.name,
+      lookalikeRole: bestCeleb.role,
+      lookalikeMatch: (match && match.matchPct) || 95,
+      majorVibe: 'Sains Data & AI',
+      comment: bestCeleb.comment || 'Struktur wajah simetris dengan ekspresi positif & berkarisma!',
+      facialTraits: Array.isArray(bestCeleb.traits) ? bestCeleb.traits.join(', ') : 'Simetris proporsional, Ekspresi positif, Berkarisma'
+    };
+    return json(res, 200, { ok: true, fallback: true, ai: fallbackData, data: fallbackData });
   });
 }
 

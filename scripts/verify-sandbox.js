@@ -59,7 +59,7 @@ async function runVerification() {
       details: uiLayout
     });
 
-    // Test 3: Simulated Scanning Flow & Modal Popup
+    // Test 3: Simulated Scanning Flow & Live Results Under Camera
     await page.click('#btnScan');
     await new Promise(r => setTimeout(r, 600));
 
@@ -71,7 +71,27 @@ async function runVerification() {
       };
     });
 
-    await page.waitForFunction(() => document.querySelector('#modalResult').style.display === 'flex', { timeout: 10000 });
+    // Wait for scanning sequence to complete and #liveResultPanel to appear
+    await page.waitForFunction(() => {
+      const panel = document.querySelector('#liveResultPanel');
+      return panel && panel.style.display === 'flex';
+    }, { timeout: 12000 });
+
+    const livePanelResult = await page.evaluate(() => {
+      const panel = document.querySelector('#liveResultPanel');
+      return {
+        isLivePanelVisible: panel && panel.style.display === 'flex',
+        genderAge: document.querySelector('#liveGenderAge')?.textContent?.trim(),
+        beauty: document.querySelector('#liveBeauty')?.textContent?.trim(),
+        lookalike: document.querySelector('#liveLookalike')?.textContent?.trim(),
+        hasDownloadBtn: !!document.querySelector('#btnLiveDownload'),
+        hasPreviewBtn: !!document.querySelector('#btnLivePreview')
+      };
+    });
+
+    // Open Modal via Preview button
+    await page.click('#btnLivePreview');
+    await page.waitForFunction(() => document.querySelector('#modalResult').style.display === 'flex', { timeout: 5000 });
 
     const modalResult = await page.evaluate(() => {
       return {
@@ -84,9 +104,9 @@ async function runVerification() {
     });
 
     results.tests.push({
-      name: 'Simulated Scanning Sequence & Certificate Modal',
-      passed: duringScan.isOverlayActive && modalResult.isOpen && modalResult.hasImage,
-      details: { duringScan, modalResult }
+      name: 'Simulated Scanning Sequence & Live Panel & Preview Modal',
+      passed: duringScan.isOverlayActive && livePanelResult.isLivePanelVisible && modalResult.isOpen && modalResult.hasImage,
+      details: { duringScan, livePanelResult, modalResult }
     });
 
     // Test 4: Landmarker Engine & Smoother API

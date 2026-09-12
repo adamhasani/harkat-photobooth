@@ -776,6 +776,7 @@
   </div>
 </div>
 
+<script src="/assets/data/celebs_database.js"></script>
 <script type="module">
 import { FilesetResolver, FaceLandmarker } from '/assets/wasm/vision_bundle.mjs';
 
@@ -847,27 +848,6 @@ function showToast(msg) {
     toast.classList.remove('show');
   }, 2500);
 }
-
-// Database personalities untuk Kembaran Tokoh
-const CELEBS_MALE = [
-  { name: 'Iqbaal Ramadhan 🎸', gender: 'Laki-laki', role: 'Aktor & Musisi Muda Cerdas', avatar: '😎', jaw: 0.60, eyeRatio: 0.39, noseRatio: 0.27, smile: 0.60, comment: 'Tatapan ramah, berkarisma muda, dan punya daya pikat tinggi!' },
-  { name: 'Nicholas Saputra 🕶️', gender: 'Laki-laki', role: 'Aktor Karismatik & Cool', avatar: '😎', jaw: 0.65, eyeRatio: 0.41, noseRatio: 0.28, smile: 0.35, comment: 'Tatapan mata tajam & garis rahang maskulin yang berwibawa!' },
-  { name: 'Reza Rahadian 🎭', gender: 'Laki-laki', role: 'Aktor Serba Bisa', avatar: '🎬', jaw: 0.58, eyeRatio: 0.39, noseRatio: 0.29, smile: 0.65, comment: 'Ekspresif banget, cocok jadi bintang panggung & public speaker!' },
-  { name: 'B.J. Habibie 🚀', gender: 'Laki-laki', role: 'Visioner & Jenius Teknologi', avatar: '🧠', jaw: 0.52, eyeRatio: 0.36, noseRatio: 0.25, smile: 0.70, comment: 'Aura pemikir strategis, cocok jadi master Data Science!' },
-  { name: 'Dikta Wicaksono ✨', gender: 'Laki-laki', role: 'Musisi Berkarisma & Santai', avatar: '✨', jaw: 0.54, eyeRatio: 0.38, noseRatio: 0.26, smile: 0.75, comment: 'Vibes ramah, murah senyum, dan disukai banyak orang!' },
-  { name: 'Raditya Dika 🎙️', gender: 'Laki-laki', role: 'Penulis & Komedian Kreatif', avatar: '💡', jaw: 0.53, eyeRatio: 0.37, noseRatio: 0.26, smile: 0.50, comment: 'Wajah komunikatif, penuh ide kreatif & daya pikat humor!' }
-];
-
-const CELEBS_FEMALE = [
-  { name: 'Maudy Ayunda 🎓', gender: 'Perempuan', role: 'Aktris & Edukator Cerdas', avatar: '👩🎓', jaw: 0.46, eyeRatio: 0.39, noseRatio: 0.26, smile: 0.75, comment: 'Punya bentuk wajah proporsional dan aura cerdas berprestasi!' },
-  { name: 'Chelsea Islan ✨', gender: 'Perempuan', role: 'Aktris Cantik & Elegan', avatar: '🌸', jaw: 0.43, eyeRatio: 0.37, noseRatio: 0.25, smile: 0.80, comment: 'Senyum manis ceria dengan fitur wajah yang sangat fotogenik!' },
-  { name: 'Dian Sastrowardoyo 🎬', gender: 'Perempuan', role: 'Icon Aktris Legendaris', avatar: '👑', jaw: 0.48, eyeRatio: 0.40, noseRatio: 0.27, smile: 0.65, comment: 'Aura anggun, tenang, dan berkarisma tinggi khas wanita cerdas!' },
-  { name: 'Najwa Shihab 🎙️', gender: 'Perempuan', role: 'Jurnalis Kritis & Vokal', avatar: '💡', jaw: 0.49, eyeRatio: 0.41, noseRatio: 0.28, smile: 0.60, comment: 'Sorot mata tajam penuh wawasan, berani, dan inspiratif!' },
-  { name: 'Taylor Swift 🎤', gender: 'Perempuan', role: 'Megabintang Dunia', avatar: '💖', jaw: 0.42, eyeRatio: 0.36, noseRatio: 0.25, smile: 0.85, comment: 'Fitur wajah ekspresif, berdaya pikat tinggi dan berkilau!' },
-  { name: 'Isyana Sarasvati 🎹', gender: 'Perempuan', role: 'Musisi Jenius & Ekspresif', avatar: '🎼', jaw: 0.45, eyeRatio: 0.38, noseRatio: 0.26, smile: 0.70, comment: 'Wajah manis berkarakter, kreatif, dan penuh energi positif!' }
-];
-
-const CELEBS = [...CELEBS_MALE, ...CELEBS_FEMALE];
 
 // Landmark indices for biometric contours
 const JAW_INDICES = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109, 10];
@@ -1000,6 +980,8 @@ function getFaceMetrics(landmarks, blendshapes) {
   const leftJaw = landmarks[234];
   const rightJaw = landmarks[454];
   const noseTip = landmarks[1];
+  const subnasale = landmarks[2];
+  const glabella = landmarks[168];
 
   const gonionL = landmarks[172];
   const gonionR = landmarks[397];
@@ -1014,11 +996,12 @@ function getFaceMetrics(landmarks, blendshapes) {
   const browR = landmarks[300];
   const eyeRTop = landmarks[386];
 
-  const eyeDist = Math.hypot(rightEye.x - leftEye.x, rightEye.y - leftEye.y);
+  const eyeDist = Math.hypot(rightEye.x - leftEye.x, rightEye.y - leftEye.y) || 0.01;
   const faceHeight = Math.hypot(chin.x - forehead.x, chin.y - forehead.y) || 0.01;
   const zygomaticWidth = Math.hypot(rightJaw.x - leftJaw.x, rightJaw.y - leftJaw.y) || 0.01;
   const gonionWidth = Math.hypot(gonionR.x - gonionL.x, gonionR.y - gonionL.y) || 0.01;
   const chinWidth = Math.hypot(chinR.x - chinL.x, chinR.y - chinL.y) || 0.01;
+  const foreheadHeight = Math.hypot(forehead.x - glabella.x, forehead.y - glabella.y) || 0.01;
 
   const lipHeight = Math.hypot(lowerLip.x - upperLip.x, lowerLip.y - upperLip.y) || 0.005;
   const lipWidth = Math.hypot(mouthR.x - mouthL.x, mouthR.y - mouthL.y) || 0.01;
@@ -1035,15 +1018,33 @@ function getFaceMetrics(landmarks, blendshapes) {
   }
 
   const eyeRatio = eyeDist / faceHeight;
-  const midFaceHeight = Math.hypot(landmarks[2].x - landmarks[168].x, landmarks[2].y - landmarks[168].y) || 0.01;
+  const midFaceHeight = Math.hypot(subnasale.x - glabella.x, subnasale.y - glabella.y) || 0.01;
   const noseRatio = midFaceHeight / faceHeight;
   const jawRatio = zygomaticWidth / faceHeight;
   const gonionRatio = gonionWidth / zygomaticWidth;
-  const chinTaperRatio = chinWidth / gonionWidth;
+  const chinRatio = chinWidth / gonionWidth;
+  const lipRatio = lipFullness;
+  const foreheadRatio = foreheadHeight / faceHeight;
+  const faceAspectRatio = faceHeight / zygomaticWidth;
 
-  const jawlineScore = (gonionRatio * 0.4) + (chinTaperRatio * 0.3) + ((jawRatio - 0.70) * 0.3);
+  // Multi-attribute Face Shape Classifier
+  let faceShape = 'Oval';
+  if (jawRatio >= 0.61 && gonionRatio >= 0.76) {
+    faceShape = 'Square / Angular';
+  } else if (jawRatio <= 0.51 && gonionRatio <= 0.67 && chinRatio <= 0.59) {
+    faceShape = 'Heart / V-Shape';
+  } else if (jawRatio <= 0.55 && chinRatio <= 0.64 && faceAspectRatio >= 1.65) {
+    faceShape = 'Oblong / Regal';
+  } else if (jawRatio >= 0.55 && chinRatio <= 0.61 && gonionRatio <= 0.72) {
+    faceShape = 'Diamond / Chiseled';
+  } else if (jawRatio >= 0.52 && gonionRatio >= 0.67 && chinRatio >= 0.62 && faceAspectRatio <= 1.55) {
+    faceShape = 'Round / Soft';
+  } else {
+    faceShape = 'Oval';
+  }
+
   // Empirical calibrated gender score (-1.0 female to +1.0 male)
-  const jawScore = (jawRatio - 0.62) * 3.0 + (gonionRatio - 0.72) * 2.5;
+  const jawScore = (jawRatio - 0.54) * 3.2 + (gonionRatio - 0.71) * 2.8;
   const browScore = (0.105 - browArchRatio) * 4.0;
   const lipScore = (0.35 - lipFullness) * 2.5;
   const rawMaleScore = jawScore + browScore + lipScore;
@@ -1085,8 +1086,14 @@ function getFaceMetrics(landmarks, blendshapes) {
     smilePct,
     wrinkleTension,
     jawRatio,
+    gonionRatio,
+    chinRatio,
     eyeRatio,
     noseRatio,
+    lipRatio,
+    browArchRatio,
+    foreheadRatio,
+    faceShape,
     box: { minX, minY, maxX, maxY }
   };
 }
@@ -1103,9 +1110,16 @@ function getSmoothedFaceMetrics(landmarks, blendshapes, faceIndex = 0) {
       beauty: raw.beautyScore,
       symmetry: raw.symmetryPct,
       wrinkle: raw.wrinkleTension,
-      smile: raw.smilePct
+      smile: raw.smilePct,
+      eye: raw.eyeRatio,
+      jaw: raw.jawRatio,
+      gonion: raw.gonionRatio,
+      chin: raw.chinRatio,
+      nose: raw.noseRatio,
+      lip: raw.lipRatio,
+      brow: raw.browArchRatio,
+      forehead: raw.foreheadRatio
     };
-    return raw;
   }
 
   const s = faceSmoothers[faceIndex];
@@ -1117,38 +1131,67 @@ function getSmoothedFaceMetrics(landmarks, blendshapes, faceIndex = 0) {
   s.symmetry = s.symmetry * (1 - alpha) + raw.symmetryPct * alpha;
   s.wrinkle = s.wrinkle * (1 - alpha) + raw.wrinkleTension * alpha;
   s.smile = s.smile * (1 - alpha) + raw.smilePct * alpha;
+  s.eye = s.eye * (1 - alpha) + raw.eyeRatio * alpha;
+  s.jaw = s.jaw * (1 - alpha) + raw.jawRatio * alpha;
+  s.gonion = s.gonion * (1 - alpha) + raw.gonionRatio * alpha;
+  s.chin = s.chin * (1 - alpha) + raw.chinRatio * alpha;
+  s.nose = s.nose * (1 - alpha) + raw.noseRatio * alpha;
+  s.lip = s.lip * (1 - alpha) + raw.lipRatio * alpha;
+  s.brow = s.brow * (1 - alpha) + raw.browArchRatio * alpha;
+  s.forehead = s.forehead * (1 - alpha) + raw.foreheadRatio * alpha;
 
   const isLikelyMale = s.maleScore > 0;
   const genderConfidence = Math.min(99, Math.round(55 + Math.min(1.0, Math.abs(s.maleScore)) * 40));
   const genderLabel = isLikelyMale ? 'Laki-laki 👦' : 'Perempuan 👧';
 
   const estAge = Math.round(s.age);
-  const gen = estAge <= 19 ? 'Gen-Z Fresh Maba 🎓' :
-              estAge <= 22 ? 'Gen-Z Active 🌟' :
-              estAge <= 25 ? 'Senior / Young Pro 💼' : 'Matang & Visioner 🚀';
+  const gen = estAge <= 19 ? 'Gen-Z Fresh 🎓' :
+              estAge <= 27 ? 'Gen-Z Active 🌟' :
+              estAge <= 39 ? 'Milenial Leader 💼' :
+              estAge <= 54 ? 'Prime Leader 🏛️' :
+              estAge <= 69 ? 'Senior Mentor 📚' : 'Maestro Kehormatan 👑';
 
   const beautyScore = Math.round(s.beauty);
   const symmetryPct = Math.round(s.symmetry);
   const smilePct = Math.round(s.smile);
-  const wrinkleLabel = s.wrinkle < 0.15 ? 'Kulit Halus & Kencang ✨' : s.wrinkle < 0.35 ? 'Garis Senyum Alami 😊' : 'Ekspresif & Matang 🧐';
+  const wrinkleLabel = estAge > 45 ? (s.wrinkle < 0.2 ? 'Garis Wajah Berkarisma ✨' : 'Garis Waktu Berwibawa 📚') :
+                       (s.wrinkle < 0.15 ? 'Kulit Halus & Kencang ✨' : s.wrinkle < 0.35 ? 'Garis Senyum Alami 😊' : 'Ekspresif & Matang 🧐');
 
-  const candidatePool = isLikelyMale ? CELEBS_MALE : CELEBS_FEMALE;
-  let bestMatch = candidatePool[0];
-  let minDiff = 999;
-  candidatePool.forEach(c => {
-    const diff = Math.abs(c.eyeRatio - raw.eyeRatio) * 2.5 +
-                 Math.abs(c.jaw - raw.jawRatio) * 2.0 +
-                 Math.abs(c.noseRatio - raw.noseRatio) * 2.0 +
-                 Math.abs(c.smile - (smilePct / 100)) * 0.8;
-    if (diff < minDiff) {
-      minDiff = diff;
-      bestMatch = c;
+  const userVec = {
+    eyeRatio: s.eye,
+    jawRatio: s.jaw,
+    gonionRatio: s.gonion,
+    chinRatio: s.chin,
+    noseRatio: s.nose,
+    lipRatio: s.lip,
+    browArchRatio: s.brow,
+    foreheadRatio: s.forehead,
+    smilePct: s.smile,
+    faceShape: raw.faceShape
+  };
+
+  let bestMatch = {
+    name: isLikelyMale ? 'Iqbaal Ramadhan 🎸' : 'Maudy Ayunda 🎓',
+    role: isLikelyMale ? 'Aktor & Musisi Muda Cerdas' : 'Aktris & Edukator Cerdas',
+    faceShape: 'Oval',
+    comment: 'Struktur wajah simetris dengan ekspresi cerah positif!',
+    traits: ['Simetris proporsional', 'Ekspresi cerah positif']
+  };
+  let matchPct = 95;
+  let topMatches = [];
+
+  if (window.findBestLookalike) {
+    const res = window.findBestLookalike(userVec, { gender: isLikelyMale ? 'Laki-laki' : 'Perempuan', topK: 5 });
+    if (res && res.bestMatch) {
+      bestMatch = res.bestMatch;
+      matchPct = res.matchPct;
+      topMatches = res.topMatches || [];
     }
-  });
-  const matchPct = Math.min(98, Math.max(88, Math.round(98 - minDiff * 35)));
+  }
 
   return {
     ...raw,
+    ...userVec,
     estAge,
     gen,
     genderLabel,
@@ -1159,7 +1202,8 @@ function getSmoothedFaceMetrics(landmarks, blendshapes, faceIndex = 0) {
     smilePct,
     wrinkleLabel,
     bestMatch,
-    matchPct
+    matchPct,
+    topMatches
   };
 }
 
@@ -1358,6 +1402,7 @@ async function executeScanningFlow() {
   const currentLm = lastFaces.length ? lastFaces[0] : null;
   const currentBs = lastBs && lastBs.length ? lastBs[0] : null;
   const localTelemetry = getFaceMetrics(currentLm, currentBs);
+  const localM = localTelemetry ? getSmoothedFaceMetrics(currentLm, currentBs, 0) : null;
 
   // 2. Fire backend AI Analysis in background
   let aiPromise = (async () => {
@@ -1369,10 +1414,24 @@ async function executeScanningFlow() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           photo: photoDataUrl,
-          telemetry: localTelemetry ? {
-            symmetryPct: localTelemetry.symmetryPct,
-            smilePct: localTelemetry.smilePct,
-            jawRatio: localTelemetry.jawRatio
+          telemetry: localM ? {
+            gender: localM.isLikelyMale ? 'Laki-laki' : 'Perempuan',
+            isLikelyMale: localM.isLikelyMale,
+            estAge: localM.estAge,
+            gen: localM.gen,
+            faceShape: localM.faceShape,
+            beautyScore: localM.beautyScore,
+            symmetryPct: localM.symmetryPct,
+            smilePct: localM.smilePct,
+            wrinkleLabel: localM.wrinkleLabel,
+            jawRatio: localM.jawRatio,
+            gonionRatio: localM.gonionRatio,
+            chinRatio: localM.chinRatio,
+            eyeRatio: localM.eyeRatio,
+            noseRatio: localM.noseRatio,
+            lipRatio: localM.lipRatio,
+            browArchRatio: localM.browArchRatio,
+            foreheadRatio: localM.foreheadRatio
           } : null
         }),
         signal: controller.signal
@@ -1425,22 +1484,28 @@ async function executeScanningFlow() {
   await new Promise(r => setTimeout(r, 300));
 
   // Compute final values
-  const localM = localTelemetry ? getSmoothedFaceMetrics(currentLm, currentBs, 0) : null || {
-    estAge: 19, gen: 'Gen-Z Fresh 🎓', beautyScore: 94, symmetryPct: 95,
+  const fallbackM = localM || {
+    estAge: 20, gen: 'Gen-Z Active 🌟', faceShape: 'Oval', beautyScore: 94, symmetryPct: 95,
     genderLabel: 'Laki-laki 👦', wrinkleLabel: 'Kulit Halus & Kencang ✨',
-    bestMatch: CELEBS_MALE[0], matchPct: 94
+    bestMatch: { name: 'Iqbaal Ramadhan 🎸', role: 'Aktor & Musisi Muda Cerdas', comment: 'Struktur wajah simetris & berkarisma!' }, matchPct: 95
   };
 
-  const finalGender = aiResult ? aiResult.gender : (localM ? localM.genderLabel : 'Laki-laki 👦');
-  const finalAge = aiResult ? aiResult.age : (localM ? localM.estAge : 19);
-  const finalGen = aiResult ? aiResult.generation : (localM ? localM.gen : 'Gen-Z Fresh 🎓');
-  const finalBeauty = aiResult ? aiResult.beautyScore : (localM ? localM.beautyScore : 94);
-  const finalSym = aiResult ? (aiResult.symmetryScore || 95) : (localM ? localM.symmetryPct : 95);
-  const finalWrinkle = aiResult ? (aiResult.wrinkleAnalysis || 'Kulit Halus Bebas Kerutan ✨') : (localM ? localM.wrinkleLabel : 'Kulit Halus & Kencang ✨');
-  const finalLookalike = aiResult ? aiResult.lookalike : (localM && localM.bestMatch ? localM.bestMatch.name : 'Iqbaal Ramadhan 🎸');
-  const finalLookalikeRole = (aiResult && aiResult.lookalikeRole) || (localM && localM.bestMatch ? localM.bestMatch.role : 'Aktor & Musisi Muda Cerdas');
-  const finalMatchPct = aiResult ? (aiResult.lookalikeMatch || 94) : (localM ? localM.matchPct : 94);
-  const finalComment = aiResult ? aiResult.comment : (localM && localM.bestMatch ? localM.bestMatch.comment : 'Struktur wajah simetris dengan ekspresi positif & berkarisma muda!');
+  const finalGender = aiResult ? aiResult.gender : fallbackM.genderLabel;
+  const finalAge = aiResult ? aiResult.age : fallbackM.estAge;
+  const calcGen = finalAge <= 19 ? 'Gen-Z Fresh 🎓' :
+                  finalAge <= 27 ? 'Gen-Z Active 🌟' :
+                  finalAge <= 39 ? 'Milenial Leader 💼' :
+                  finalAge <= 54 ? 'Prime Leader 🏛️' :
+                  finalAge <= 69 ? 'Senior Mentor 📚' : 'Maestro Kehormatan 👑';
+  const finalGen = (aiResult && aiResult.generation) ? aiResult.generation : (localM ? localM.gen : calcGen);
+  const finalShape = aiResult ? (aiResult.faceShape || fallbackM.faceShape || 'Oval') : (fallbackM.faceShape || 'Oval');
+  const finalBeauty = aiResult ? aiResult.beautyScore : fallbackM.beautyScore;
+  const finalSym = aiResult ? (aiResult.symmetryScore || 95) : fallbackM.symmetryPct;
+  const finalWrinkle = aiResult ? (aiResult.wrinkleAnalysis || 'Kulit Halus Bebas Kerutan ✨') : fallbackM.wrinkleLabel;
+  const finalLookalike = aiResult ? aiResult.lookalike : (fallbackM.bestMatch ? fallbackM.bestMatch.name : 'Iqbaal Ramadhan 🎸');
+  const finalLookalikeRole = (aiResult && aiResult.lookalikeRole) || (fallbackM.bestMatch ? fallbackM.bestMatch.role : 'Aktor & Musisi Cerdas');
+  const finalMatchPct = aiResult ? (aiResult.lookalikeMatch || 95) : (fallbackM.matchPct || 95);
+  const finalComment = aiResult ? aiResult.comment : (fallbackM.bestMatch ? fallbackM.bestMatch.comment : 'Struktur wajah simetris dengan ekspresi positif & berkarisma!');
 
   // 4. Render Full HD Certificate Card in background (1080 x 1440)
   await document.fonts.ready;
@@ -1565,7 +1630,7 @@ async function executeScanningFlow() {
 
   // 5. Populate Live Results under Camera
   $('liveGenderAge').textContent = `${finalGender} • ${finalAge} Thn`;
-  $('liveGen').textContent = finalGen;
+  $('liveGen').textContent = `${finalGen} • ${finalShape}`;
   $('liveWrinkle').textContent = finalWrinkle;
   $('liveBeauty').textContent = `${finalBeauty}%`;
   $('liveSymmetry').textContent = `Simetri Wajah ${finalSym}%`;
