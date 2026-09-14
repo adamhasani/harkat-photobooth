@@ -1050,14 +1050,16 @@ function showToast(msg) {
   }, 2500);
 }
 
-// Landmark indices for biometric contours
-const JAW_INDICES = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109, 10];
+// Landmark indices for biometric contours (Anatomical Curvature)
+const JAW_INDICES = [234, 93, 132, 58, 172, 136, 150, 149, 176, 148, 152, 377, 400, 378, 379, 365, 397, 288, 361, 323, 454];
 const LEFT_EYE_INDICES = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246];
-const RIGHT_EYE_INDICES = [263, 249, 390, 373, 374, 380, 381, 382, 362, 398, 384, 385, 386, 387, 388, 466];
+const RIGHT_EYE_INDICES = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398];
 const LIPS_INDICES = [61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95];
-const NOSE_INDICES = [168, 6, 197, 195, 5, 4, 1, 19, 94, 2];
-const LEFT_EYEBROW_INDICES = [70, 63, 105, 66, 107, 55, 65, 52, 53, 46];
-const RIGHT_EYEBROW_INDICES = [300, 293, 334, 296, 336, 285, 295, 282, 283, 276];
+const INNER_LIPS_INDICES = [78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308, 415, 310, 311, 312, 13, 82, 81, 80, 191];
+const NOSE_RIDGE_INDICES = [168, 6, 197, 195, 5, 4, 1];
+const NOSE_BASE_INDICES = [98, 97, 2, 326, 327];
+const LEFT_EYEBROW_INDICES = [70, 63, 105, 66, 107];
+const RIGHT_EYEBROW_INDICES = [336, 296, 334, 293, 300];
 
 // ============ VISION INIT ============
 async function initVision() {
@@ -1473,9 +1475,9 @@ function renderOverlay() {
     if (!metrics) continue;
 
     // 1. Draw Glowing Facial Contours mapped 1:1 to screen
-    drawMeshContours(ctx, lm, transform, isMirror);
+    drawMeshContours(ctx, lm, transform, isMirror, i);
 
-    // 2. Draw Futuristic Bounding Box accurately mapped to screen
+    // 2. Draw Futuristic Biometric Target Frame (Sleek & Perfectly Scaled)
     const pMin = mapNormalizedToCanvas({ x: metrics.box.minX, y: metrics.box.minY }, transform, isMirror);
     const pMax = mapNormalizedToCanvas({ x: metrics.box.maxX, y: metrics.box.maxY }, transform, isMirror);
 
@@ -1486,70 +1488,210 @@ function renderOverlay() {
 
     let bw = bxMax - bxMin;
     let bh = byMax - byMin;
-    let bx = bxMin - bw * 0.08;
-    let by = byMin - bh * 0.1;
-    bw *= 1.16;
-    bh *= 1.2;
+    let bx = bxMin - bw * 0.06;
+    let by = byMin - bh * 0.08;
+    bw *= 1.12;
+    bh *= 1.16;
 
     ctx.save();
-    ctx.strokeStyle = '#00f2fe';
-    ctx.lineWidth = 2.5;
-    ctx.shadowColor = '#00f2fe';
-    ctx.shadowBlur = 8;
+    ctx.strokeStyle = 'rgba(0, 242, 254, 0.85)';
+    ctx.lineWidth = 1.6;
+    ctx.shadowColor = 'rgba(0, 242, 254, 0.8)';
+    ctx.shadowBlur = 6;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
 
-    const cLen = Math.min(22, bw * 0.2);
-    ctx.beginPath(); ctx.moveTo(bx, by + cLen); ctx.lineTo(bx, by); ctx.lineTo(bx + cLen, by); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(bx + bw - cLen, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw, by + cLen); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(bx, by + bh - cLen); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + cLen, by + bh); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(bx + bw - cLen, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by + bh - cLen); ctx.stroke();
+    const cLen = Math.min(18, bw * 0.18);
+    const cRad = 4;
+    // Top-Left
+    ctx.beginPath();
+    ctx.moveTo(bx, by + cLen);
+    ctx.lineTo(bx, by + cRad);
+    ctx.arcTo(bx, by, bx + cRad, by, cRad);
+    ctx.lineTo(bx + cLen, by);
+    ctx.stroke();
+
+    // Top-Right
+    ctx.beginPath();
+    ctx.moveTo(bx + bw - cLen, by);
+    ctx.lineTo(bx + bw - cRad, by);
+    ctx.arcTo(bx + bw, by, bx + bw, by + cRad, cRad);
+    ctx.lineTo(bx + bw, by + cLen);
+    ctx.stroke();
+
+    // Bottom-Left
+    ctx.beginPath();
+    ctx.moveTo(bx, by + bh - cLen);
+    ctx.lineTo(bx, by + bh - cRad);
+    ctx.arcTo(bx, by + bh, bx + cRad, by + bh, cRad);
+    ctx.lineTo(bx + cLen, by + bh);
+    ctx.stroke();
+
+    // Bottom-Right
+    ctx.beginPath();
+    ctx.moveTo(bx + bw - cLen, by + bh);
+    ctx.lineTo(bx + bw - cRad, by + bh);
+    ctx.arcTo(bx + bw, by + bh, bx + bw, by + bh - cRad, cRad);
+    ctx.lineTo(bx + bw, by + bh - cLen);
+    ctx.stroke();
     ctx.restore();
   }
   ctx.restore();
 }
 
-function drawMeshContours(ctx, lm, transform, isMirror) {
-  ctx.save();
-  ctx.strokeStyle = 'rgba(0, 242, 254, 0.55)';
-  ctx.lineWidth = 1.3;
-  ctx.shadowColor = '#00f2fe';
-  ctx.shadowBlur = 4;
+// ============ BIOMETRIC OVERLAY RENDERING (SMOOTH & ORGANIC) ============
+let smoothedLandmarkCache = [];
 
-  const drawPath = (indices, close = false) => {
-    ctx.beginPath();
-    let started = false;
-    for (let idx = 0; idx < indices.length; idx++) {
-      const pt = lm[indices[idx]];
-      if (!pt) continue;
-      const sp = mapNormalizedToCanvas(pt, transform, isMirror);
-      if (!started) {
-        ctx.moveTo(sp.x, sp.y);
-        started = true;
-      } else {
-        ctx.lineTo(sp.x, sp.y);
-      }
+function getSmoothedLandmarks(faceIdx, rawLm) {
+  if (!smoothedLandmarkCache[faceIdx] || smoothedLandmarkCache[faceIdx].length !== rawLm.length) {
+    smoothedLandmarkCache[faceIdx] = rawLm.map(p => ({ x: p.x, y: p.y, z: p.z || 0 }));
+    return smoothedLandmarkCache[faceIdx];
+  }
+  const cached = smoothedLandmarkCache[faceIdx];
+  const alpha = 0.55;
+  for (let k = 0; k < rawLm.length; k++) {
+    cached[k].x = cached[k].x * (1 - alpha) + rawLm[k].x * alpha;
+    cached[k].y = cached[k].y * (1 - alpha) + rawLm[k].y * alpha;
+    if (rawLm[k].z !== undefined) {
+      cached[k].z = (cached[k].z || 0) * (1 - alpha) + rawLm[k].z * alpha;
     }
-    if (close && started) ctx.closePath();
-    ctx.stroke();
+  }
+  return cached;
+}
+
+function drawSmoothPath(ctx, points, close = false) {
+  if (!points || points.length < 2) return;
+  ctx.beginPath();
+  if (close && points.length > 2) {
+    const firstMid = {
+      x: (points[0].x + points[points.length - 1].x) / 2,
+      y: (points[0].y + points[points.length - 1].y) / 2
+    };
+    ctx.moveTo(firstMid.x, firstMid.y);
+    for (let i = 0; i < points.length; i++) {
+      const p1 = points[i];
+      const p2 = points[(i + 1) % points.length];
+      const mid = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+      ctx.quadraticCurveTo(p1.x, p1.y, mid.x, mid.y);
+    }
+    ctx.closePath();
+  } else {
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 0; i < points.length - 1; i++) {
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const mid = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+      ctx.quadraticCurveTo(p1.x, p1.y, mid.x, mid.y);
+    }
+    ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+  }
+  ctx.stroke();
+}
+
+function drawMeshContours(ctx, rawLm, transform, isMirror, faceIdx = 0) {
+  const lm = getSmoothedLandmarks(faceIdx, rawLm);
+  ctx.save();
+
+  const getPoints = (indices) => {
+    const pts = [];
+    for (let i = 0; i < indices.length; i++) {
+      const pt = lm[indices[i]];
+      if (pt) pts.push(mapNormalizedToCanvas(pt, transform, isMirror));
+    }
+    return pts;
   };
 
-  drawPath(JAW_INDICES, true);
-  drawPath(LEFT_EYE_INDICES, true);
-  drawPath(RIGHT_EYE_INDICES, true);
-  drawPath(LIPS_INDICES, true);
-  drawPath(NOSE_INDICES, false);
-  drawPath(LEFT_EYEBROW_INDICES, false);
-  drawPath(RIGHT_EYEBROW_INDICES, false);
+  // 1. Subtle Symmetry Vertical Axis
+  const symTop = lm[10] ? mapNormalizedToCanvas(lm[10], transform, isMirror) : null;
+  const symMid = lm[1] ? mapNormalizedToCanvas(lm[1], transform, isMirror) : null;
+  const symBot = lm[152] ? mapNormalizedToCanvas(lm[152], transform, isMirror) : null;
+  if (symTop && symBot) {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(0, 242, 254, 0.25)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 4]);
+    ctx.beginPath();
+    ctx.moveTo(symTop.x, symTop.y);
+    if (symMid) ctx.lineTo(symMid.x, symMid.y);
+    ctx.lineTo(symBot.x, symBot.y);
+    ctx.stroke();
+    ctx.restore();
+  }
 
-  // Key landmark nodes (forehead, chin, nose, eye corners, mouth corners, cheekbones)
-  ctx.fillStyle = '#ffd86b';
-  ctx.shadowColor = '#ffd86b';
+  // 2. Primary Facial Contours (Glowing Neon Cyan)
+  ctx.strokeStyle = 'rgba(0, 242, 254, 0.7)';
+  ctx.lineWidth = 1.2;
+  ctx.shadowColor = 'rgba(0, 242, 254, 0.8)';
   ctx.shadowBlur = 5;
-  for (let keyIdx of [1, 33, 263, 61, 291, 152, 10, 234, 454]) {
-    const pt = lm[keyIdx];
+
+  // Smooth Mandibular Jawline
+  drawSmoothPath(ctx, getPoints(JAW_INDICES), false);
+
+  // Smooth Eyebrows
+  drawSmoothPath(ctx, getPoints(LEFT_EYEBROW_INDICES), false);
+  drawSmoothPath(ctx, getPoints(RIGHT_EYEBROW_INDICES), false);
+
+  // Smooth Eyes
+  drawSmoothPath(ctx, getPoints(LEFT_EYE_INDICES), true);
+  drawSmoothPath(ctx, getPoints(RIGHT_EYE_INDICES), true);
+
+  // Nose Ridge & Base
+  drawSmoothPath(ctx, getPoints(NOSE_RIDGE_INDICES), false);
+  drawSmoothPath(ctx, getPoints(NOSE_BASE_INDICES), false);
+
+  // Smooth Outer Lips
+  drawSmoothPath(ctx, getPoints(LIPS_INDICES), true);
+
+  // Subtle Inner Lips
+  ctx.strokeStyle = 'rgba(0, 242, 254, 0.35)';
+  ctx.lineWidth = 0.9;
+  drawSmoothPath(ctx, getPoints(INNER_LIPS_INDICES), true);
+
+  // 3. Eye Pupil Iris Reticles (Delicate Glowing Rings)
+  const t = performance.now() * 0.003;
+  const pulseR = 3.5 + Math.sin(t) * 0.8;
+
+  const eyeL = getPoints([159, 145]);
+  if (eyeL.length >= 2) {
+    const eyeCenterL = { x: (eyeL[0].x + eyeL[1].x) / 2, y: (eyeL[0].y + eyeL[1].y) / 2 };
+    ctx.strokeStyle = 'rgba(0, 242, 254, 0.85)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(eyeCenterL.x, eyeCenterL.y, pulseR, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = '#00f2fe';
+    ctx.beginPath();
+    ctx.arc(eyeCenterL.x, eyeCenterL.y, 1.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const eyeR = getPoints([386, 374]);
+  if (eyeR.length >= 2) {
+    const eyeCenterR = { x: (eyeR[0].x + eyeR[1].x) / 2, y: (eyeR[0].y + eyeR[1].y) / 2 };
+    ctx.strokeStyle = 'rgba(0, 242, 254, 0.85)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(eyeCenterR.x, eyeCenterR.y, pulseR, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = '#00f2fe';
+    ctx.beginPath();
+    ctx.arc(eyeCenterR.x, eyeCenterR.y, 1.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // 4. Subtle Key Feature Anchors (Glabella, Nose Tip, Chin, Oral Commissures)
+  ctx.fillStyle = 'rgba(255, 216, 107, 0.9)';
+  ctx.shadowColor = '#ffd86b';
+  ctx.shadowBlur = 4;
+  for (const anchorIdx of [1, 152, 168, 61, 291]) {
+    const pt = lm[anchorIdx];
     if (!pt) continue;
     const sp = mapNormalizedToCanvas(pt, transform, isMirror);
-    ctx.beginPath(); ctx.arc(sp.x, sp.y, 2.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath();
+    ctx.arc(sp.x, sp.y, 1.8, 0, Math.PI * 2);
+    ctx.fill();
   }
+
   ctx.restore();
 }
 

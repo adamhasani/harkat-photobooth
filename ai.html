@@ -2,7 +2,15 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Harkat Photo">
+<meta name="application-name" content="Harkat Photo">
+<meta name="theme-color" content="#4a0000">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/assets/icon-192.png">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔮</text></svg>">
 <title>UKM EXPO UHN — AI Face Scanner & Biometrics</title>
 <link rel="stylesheet" href="/assets/fonts/LuckiestGuy.css">
@@ -57,7 +65,8 @@
   .app {
     width: 100%;
     max-width: 480px;
-    min-height: 100vh;
+    height: 100vh;
+    height: 100dvh;
     background: var(--cream-sheet);
     border-left: 2.5px solid var(--maroon-deep);
     border-right: 2.5px solid var(--maroon-deep);
@@ -70,46 +79,59 @@
   /* ============ TOOLBAR ============ */
   .toolbar {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 14px 8px; border-bottom: 2.5px solid var(--maroon-deep);
+    padding: calc(env(safe-area-inset-top, 8px) + 8px) 14px 10px;
+    border-bottom: 2.5px solid var(--maroon-deep);
     background: #fbf5e6;
-  }
-  .toolbar-left {
-    display: flex; align-items: center; gap: 10px;
+    gap: 8px;
   }
   .btn-nav {
     background: var(--cream); color: var(--maroon-deep);
-    border: 1.5px solid var(--maroon-deep); border-radius: 999px;
-    padding: 5px 12px; font-size: 12px; font-weight: 700;
+    border: 2px solid var(--maroon-deep); border-radius: 999px;
+    padding: 6px 12px; font-size: 12px; font-weight: 700;
     text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
     box-shadow: 0 1.5px 0 var(--maroon-deep); transition: transform 0.1s;
+    flex-shrink: 0; white-space: nowrap;
   }
   .btn-nav:active { transform: translateY(1px); }
-  .brand { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+  .btn-nav-pb {
+    background: #ffcc4d;
+    color: var(--maroon-deep);
+  }
+  .brand {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; min-width: 0; flex: 1; line-height: 1.15;
+  }
   .brand h1 {
     font-family: 'Luckiest Guy', cursive;
-    color: var(--maroon); font-size: clamp(16px, 4.5vw, 24px);
-    letter-spacing: 1px; line-height: 1.1;
-    transform: rotate(-1.5deg); text-shadow: 1.5px 1.5px 0 rgba(245,183,34,0.4);
+    color: var(--maroon); font-size: clamp(16px, 4.8vw, 22px);
+    letter-spacing: 0.8px; margin: 0;
+    text-shadow: 1.5px 1.5px 0 rgba(245,183,34,0.4);
     white-space: nowrap;
   }
   .brand small {
-    font-family: 'Pacifico', cursive;
-    color: var(--maroon-deep); font-size: clamp(11px, 2.5vw, 15px); transform: rotate(2deg);
-    white-space: nowrap;
+    font-family: 'Fredoka', sans-serif;
+    color: var(--maroon-deep); font-size: 10.5px; font-weight: 800;
+    letter-spacing: 1px; text-transform: uppercase;
+    white-space: nowrap; margin-top: 1px;
   }
 
   /* ============ CAMERA & SCANNER VIEWPORT ============ */
   .cam-container {
-    padding: 14px 14px 20px;
-    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    padding: 10px 14px calc(env(safe-area-inset-bottom, 16px) + 12px);
+    display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+    flex: 1;
     width: 100%;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
   }
   .cam-wrap {
     position: relative; width: 100%; border-radius: 20px; overflow: hidden;
-    background: #0d0610; border: 3px solid var(--maroon-deep);
+    background: #0d0610; border: 3.5px solid var(--maroon-deep);
     box-shadow: 0 5px 0 var(--maroon-deep), 0 10px 24px rgba(0,0,0,0.35);
-    aspect-ratio: 3 / 4;
-    max-height: 48vh;
+    flex: 1 1 auto;
+    min-height: 320px;
     margin: 0 auto;
     display: flex; align-items: center; justify-content: center;
   }
@@ -122,28 +144,41 @@
     position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3;
   }
 
-  /* Sci-Fi Corner Brackets */
+  /* Sci-Fi Corner Brackets (Framed inside viewport without badge collision) */
   .corner-bracket {
-    position: absolute; width: 20px; height: 20px; pointer-events: none; z-index: 4;
-    border: 3px solid var(--gold);
+    position: absolute; width: 22px; height: 22px; pointer-events: none; z-index: 4;
+    border: 3.5px solid var(--gold);
   }
-  .corner-bracket.top-left { top: 10px; left: 10px; border-right: none; border-bottom: none; border-top-left-radius: 6px; }
-  .corner-bracket.top-right { top: 10px; right: 10px; border-left: none; border-bottom: none; border-top-right-radius: 6px; }
-  .corner-bracket.bottom-left { bottom: 10px; left: 10px; border-right: none; border-top: none; border-bottom-left-radius: 6px; }
-  .corner-bracket.bottom-right { bottom: 10px; right: 10px; border-left: none; border-top: none; border-bottom-right-radius: 6px; }
+  .corner-bracket.top-left { display: none; }
+  .corner-bracket.top-right { display: none; }
+  .corner-bracket.bottom-left { bottom: 12px; left: 12px; border-right: none; border-top: none; border-bottom-left-radius: 8px; }
+  .corner-bracket.bottom-right { bottom: 12px; right: 12px; border-left: none; border-top: none; border-bottom-right-radius: 8px; }
 
   /* Live Detection Status Badge */
   .scan-badge {
-    position: absolute; top: 12px; left: 12px; z-index: 6;
+    position: absolute; top: 10px; left: 10px; z-index: 6;
     background: rgba(74,0,0,0.88); color: #ffd86b;
     border: 1.5px solid var(--gold); border-radius: 999px;
-    padding: 4px 12px; font-size: 11.5px; font-weight: 700;
+    padding: 4px 10px; font-size: 11px; font-weight: 700;
     display: flex; align-items: center; gap: 6px;
     backdrop-filter: blur(4px); box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+    max-width: calc(100% - 135px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .dot-live {
-    width: 8px; height: 8px; border-radius: 50%; background: #00ff88;
-    box-shadow: 0 0 8px #00ff88; animation: pulseDot 1.2s infinite;
+    width: 8px; height: 8px; border-radius: 50%; background: #ffaa00;
+    box-shadow: 0 0 8px #ffaa00; animation: pulseDot 1.2s infinite;
+  }
+  .dot-live.online {
+    background: #00ff88;
+    box-shadow: 0 0 8px #00ff88;
+  }
+  .dot-live.offline {
+    background: #ff4757;
+    box-shadow: 0 0 8px #ff4757;
+    animation: none;
   }
   @keyframes pulseDot {
     0%, 100% { opacity: 1; transform: scale(1); }
@@ -155,10 +190,11 @@
     position: absolute; top: 10px; right: 10px; z-index: 6;
     background: rgba(251, 245, 230, 0.92); color: var(--maroon-deep);
     border: 1.5px solid var(--maroon-deep); border-radius: 999px;
-    padding: 5px 12px; font-size: 11.5px; font-weight: 700;
+    padding: 4px 10px; font-size: 11px; font-weight: 700;
     font-family: 'Fredoka', sans-serif; cursor: pointer;
     box-shadow: 0 2px 0 var(--maroon-deep); display: flex; align-items: center; gap: 4px;
     transition: transform 0.1s;
+    flex-shrink: 0;
   }
   .btn-flip-overlay:active { transform: translateY(1.5px); }
 
@@ -270,10 +306,11 @@
 
   /* ============ MAIN ACTION BUTTON (BEFORE SCAN) ============ */
   .action-wrap {
-    width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 2px;
+    width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    margin-top: 10px; flex-shrink: 0;
   }
   .btn-main-scan {
-    width: 100%; height: 58px; border-radius: 999px;
+    width: 100%; height: 56px; border-radius: 999px;
     border: 3px solid var(--maroon-deep);
     background: linear-gradient(135deg, #f5b722 0%, #ffd86b 50%, #f5b722 100%);
     color: var(--maroon-deep);
@@ -760,6 +797,100 @@
     font-family: 'Fredoka', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer;
     box-shadow: 0 2px 0 var(--maroon-deep);
   }
+
+  /* ============ FOLLOW GATE / SMART INTERCEPTOR MODAL ============ */
+  .follow-modal-card {
+    max-width: 380px;
+    text-align: center;
+    padding: 24px 20px;
+    gap: 16px;
+    border: 3.5px solid var(--maroon-deep);
+    border-radius: 24px;
+    background: #fffdfa;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+    animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .follow-avatar-wrap {
+    width: 68px;
+    height: 68px;
+    margin: 0 auto -4px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(225, 48, 108, 0.4);
+    font-size: 32px;
+    color: #fff;
+  }
+  .follow-action-box {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    margin-top: 6px;
+  }
+  .btn-ig-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+    color: #fff;
+    text-decoration: none;
+    padding: 14px 16px;
+    border-radius: 14px;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    border: 2px solid #fff;
+    box-shadow: 0 4px 14px rgba(225, 48, 108, 0.4);
+    transition: transform 0.1s, box-shadow 0.1s;
+    cursor: pointer;
+  }
+  .btn-ig-main:active {
+    transform: scale(0.97);
+  }
+  .btn-ig-confirmed {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: #2b7a4b;
+    color: #fff;
+    border: 2px solid #164629;
+    border-radius: 14px;
+    padding: 12px 14px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    box-shadow: 0 3px 0 #164629;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .btn-ig-confirmed:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #164629;
+  }
+  .follow-footer-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 2px;
+  }
+  .btn-follow-cancel {
+    background: transparent;
+    border: none;
+    color: #777;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 6px 12px;
+  }
+  .btn-follow-cancel:hover {
+    color: var(--maroon-deep);
+    text-decoration: underline;
+  }
 </style>
 </head>
 <body>
@@ -767,14 +898,12 @@
 <div class="app">
   <!-- TOOLBAR -->
   <div class="toolbar">
-    <div class="toolbar-left">
-      <a href="/" class="btn-nav">🏠 Menu</a>
-      <div class="brand">
-        <h1>UKM EXPO UHN</h1>
-        <small>AI VISION 🔮</small>
-      </div>
+    <a href="/" class="btn-nav">🏠 Menu</a>
+    <div class="brand">
+      <h1>UKM EXPO UHN</h1>
+      <small>AI VISION 🔮</small>
     </div>
-    <a href="/photobooth" class="btn-nav" style="background:#ffcc4d;">📸 Photobooth</a>
+    <a href="/photobooth" class="btn-nav btn-nav-pb">📸 Photobooth</a>
   </div>
 
   <!-- CAMERA VIEWPORT -->
@@ -975,6 +1104,30 @@
   </div>
 </div>
 
+<!-- MODAL FOLLOW GATE (SMART INTERCEPTOR) -->
+<div class="modal-backdrop" id="modalFollowGate" style="z-index: 120;">
+  <div class="modal-card follow-modal-card" style="position: relative;">
+    <button type="button" class="modal-close-x" id="btnCancelFollow" aria-label="Tutup" style="position: absolute; top: 12px; right: 14px; width: 32px; height: 32px; border-radius: 50%; background: rgba(74,0,0,0.07); border: none; font-size: 16px; font-weight: 800; color: var(--maroon-deep); display: flex; align-items: center; justify-content: center; cursor: pointer;">✕</button>
+    <div class="follow-avatar-wrap">
+      📸
+    </div>
+    <div class="cert-header" style="margin-top:-6px;">
+      <div class="cert-tag" style="background:#fff0f5; border-color:#e1306c; color:#c13584;">✨ BOOTH UKM EXPO</div>
+      <h2 style="font-size:22px; color:var(--maroon-deep); margin:6px 0 2px;">Follow Instagram</h2>
+      <small style="font-family:'Fredoka', sans-serif; font-size:13.5px; color:#5c4326; display:block; line-height:1.4;">
+        Follow akun <b>@dsc.harkatnegeri</b> untuk langsung membuka dan mengunduh kartu AI kamu! 🎉
+      </small>
+    </div>
+
+    <!-- Actions Box -->
+    <div class="follow-action-box">
+      <a href="https://www.instagram.com/dsc.harkatnegeri/" target="_blank" rel="noopener noreferrer" class="btn-ig-main" id="btnFollowIg">
+        <span>📸 Follow @dsc.harkatnegeri</span>
+      </a>
+    </div>
+  </div>
+</div>
+
 <script src="/assets/data/celebs_database.js"></script>
 <script type="module">
 import { FilesetResolver, FaceLandmarker } from '/assets/wasm/vision_bundle.mjs';
@@ -1050,14 +1203,16 @@ function showToast(msg) {
   }, 2500);
 }
 
-// Landmark indices for biometric contours
-const JAW_INDICES = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109, 10];
+// Landmark indices for biometric contours (Anatomical Curvature)
+const JAW_INDICES = [234, 93, 132, 58, 172, 136, 150, 149, 176, 148, 152, 377, 400, 378, 379, 365, 397, 288, 361, 323, 454];
 const LEFT_EYE_INDICES = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246];
-const RIGHT_EYE_INDICES = [263, 249, 390, 373, 374, 380, 381, 382, 362, 398, 384, 385, 386, 387, 388, 466];
+const RIGHT_EYE_INDICES = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398];
 const LIPS_INDICES = [61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95];
-const NOSE_INDICES = [168, 6, 197, 195, 5, 4, 1, 19, 94, 2];
-const LEFT_EYEBROW_INDICES = [70, 63, 105, 66, 107, 55, 65, 52, 53, 46];
-const RIGHT_EYEBROW_INDICES = [300, 293, 334, 296, 336, 285, 295, 282, 283, 276];
+const INNER_LIPS_INDICES = [78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308, 415, 310, 311, 312, 13, 82, 81, 80, 191];
+const NOSE_RIDGE_INDICES = [168, 6, 197, 195, 5, 4, 1];
+const NOSE_BASE_INDICES = [98, 97, 2, 326, 327];
+const LEFT_EYEBROW_INDICES = [70, 63, 105, 66, 107];
+const RIGHT_EYEBROW_INDICES = [336, 296, 334, 293, 300];
 
 // ============ VISION INIT ============
 async function initVision() {
@@ -1115,6 +1270,8 @@ async function startCamera() {
   } catch (err) {
     console.warn('Camera access fallback:', err);
     $('scanStatusText').textContent = 'Kamera tidak aktif';
+    const dot = document.querySelector('#scanBadge .dot-live');
+    if (dot) dot.className = 'dot-live offline';
   }
 }
 
@@ -1457,6 +1614,8 @@ function renderOverlay() {
   if (!lastFaces.length) {
     if (!isScanning) {
       $('scanStatusText').textContent = 'Mencari Wajah... 🔍';
+      const dot = document.querySelector('#scanBadge .dot-live');
+      if (dot) dot.className = 'dot-live';
     }
     ctx.restore();
     return;
@@ -1464,6 +1623,8 @@ function renderOverlay() {
 
   if (!isScanning) {
     $('scanStatusText').textContent = `${lastFaces.length} Wajah Terdeteksi ✨ Siap Scan`;
+    const dot = document.querySelector('#scanBadge .dot-live');
+    if (dot) dot.className = 'dot-live online';
   }
 
   for (let i = 0; i < lastFaces.length; i++) {
@@ -1473,9 +1634,9 @@ function renderOverlay() {
     if (!metrics) continue;
 
     // 1. Draw Glowing Facial Contours mapped 1:1 to screen
-    drawMeshContours(ctx, lm, transform, isMirror);
+    drawMeshContours(ctx, lm, transform, isMirror, i);
 
-    // 2. Draw Futuristic Bounding Box accurately mapped to screen
+    // 2. Draw Futuristic Biometric Target Frame (Sleek & Perfectly Scaled)
     const pMin = mapNormalizedToCanvas({ x: metrics.box.minX, y: metrics.box.minY }, transform, isMirror);
     const pMax = mapNormalizedToCanvas({ x: metrics.box.maxX, y: metrics.box.maxY }, transform, isMirror);
 
@@ -1486,70 +1647,210 @@ function renderOverlay() {
 
     let bw = bxMax - bxMin;
     let bh = byMax - byMin;
-    let bx = bxMin - bw * 0.08;
-    let by = byMin - bh * 0.1;
-    bw *= 1.16;
-    bh *= 1.2;
+    let bx = bxMin - bw * 0.06;
+    let by = byMin - bh * 0.08;
+    bw *= 1.12;
+    bh *= 1.16;
 
     ctx.save();
-    ctx.strokeStyle = '#00f2fe';
-    ctx.lineWidth = 2.5;
-    ctx.shadowColor = '#00f2fe';
-    ctx.shadowBlur = 8;
+    ctx.strokeStyle = 'rgba(0, 242, 254, 0.85)';
+    ctx.lineWidth = 1.6;
+    ctx.shadowColor = 'rgba(0, 242, 254, 0.8)';
+    ctx.shadowBlur = 6;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
 
-    const cLen = Math.min(22, bw * 0.2);
-    ctx.beginPath(); ctx.moveTo(bx, by + cLen); ctx.lineTo(bx, by); ctx.lineTo(bx + cLen, by); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(bx + bw - cLen, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw, by + cLen); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(bx, by + bh - cLen); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + cLen, by + bh); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(bx + bw - cLen, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by + bh - cLen); ctx.stroke();
+    const cLen = Math.min(18, bw * 0.18);
+    const cRad = 4;
+    // Top-Left
+    ctx.beginPath();
+    ctx.moveTo(bx, by + cLen);
+    ctx.lineTo(bx, by + cRad);
+    ctx.arcTo(bx, by, bx + cRad, by, cRad);
+    ctx.lineTo(bx + cLen, by);
+    ctx.stroke();
+
+    // Top-Right
+    ctx.beginPath();
+    ctx.moveTo(bx + bw - cLen, by);
+    ctx.lineTo(bx + bw - cRad, by);
+    ctx.arcTo(bx + bw, by, bx + bw, by + cRad, cRad);
+    ctx.lineTo(bx + bw, by + cLen);
+    ctx.stroke();
+
+    // Bottom-Left
+    ctx.beginPath();
+    ctx.moveTo(bx, by + bh - cLen);
+    ctx.lineTo(bx, by + bh - cRad);
+    ctx.arcTo(bx, by + bh, bx + cRad, by + bh, cRad);
+    ctx.lineTo(bx + cLen, by + bh);
+    ctx.stroke();
+
+    // Bottom-Right
+    ctx.beginPath();
+    ctx.moveTo(bx + bw - cLen, by + bh);
+    ctx.lineTo(bx + bw - cRad, by + bh);
+    ctx.arcTo(bx + bw, by + bh, bx + bw, by + bh - cRad, cRad);
+    ctx.lineTo(bx + bw, by + bh - cLen);
+    ctx.stroke();
     ctx.restore();
   }
   ctx.restore();
 }
 
-function drawMeshContours(ctx, lm, transform, isMirror) {
-  ctx.save();
-  ctx.strokeStyle = 'rgba(0, 242, 254, 0.55)';
-  ctx.lineWidth = 1.3;
-  ctx.shadowColor = '#00f2fe';
-  ctx.shadowBlur = 4;
+// ============ BIOMETRIC OVERLAY RENDERING (SMOOTH & ORGANIC) ============
+let smoothedLandmarkCache = [];
 
-  const drawPath = (indices, close = false) => {
-    ctx.beginPath();
-    let started = false;
-    for (let idx = 0; idx < indices.length; idx++) {
-      const pt = lm[indices[idx]];
-      if (!pt) continue;
-      const sp = mapNormalizedToCanvas(pt, transform, isMirror);
-      if (!started) {
-        ctx.moveTo(sp.x, sp.y);
-        started = true;
-      } else {
-        ctx.lineTo(sp.x, sp.y);
-      }
+function getSmoothedLandmarks(faceIdx, rawLm) {
+  if (!smoothedLandmarkCache[faceIdx] || smoothedLandmarkCache[faceIdx].length !== rawLm.length) {
+    smoothedLandmarkCache[faceIdx] = rawLm.map(p => ({ x: p.x, y: p.y, z: p.z || 0 }));
+    return smoothedLandmarkCache[faceIdx];
+  }
+  const cached = smoothedLandmarkCache[faceIdx];
+  const alpha = 0.55;
+  for (let k = 0; k < rawLm.length; k++) {
+    cached[k].x = cached[k].x * (1 - alpha) + rawLm[k].x * alpha;
+    cached[k].y = cached[k].y * (1 - alpha) + rawLm[k].y * alpha;
+    if (rawLm[k].z !== undefined) {
+      cached[k].z = (cached[k].z || 0) * (1 - alpha) + rawLm[k].z * alpha;
     }
-    if (close && started) ctx.closePath();
-    ctx.stroke();
+  }
+  return cached;
+}
+
+function drawSmoothPath(ctx, points, close = false) {
+  if (!points || points.length < 2) return;
+  ctx.beginPath();
+  if (close && points.length > 2) {
+    const firstMid = {
+      x: (points[0].x + points[points.length - 1].x) / 2,
+      y: (points[0].y + points[points.length - 1].y) / 2
+    };
+    ctx.moveTo(firstMid.x, firstMid.y);
+    for (let i = 0; i < points.length; i++) {
+      const p1 = points[i];
+      const p2 = points[(i + 1) % points.length];
+      const mid = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+      ctx.quadraticCurveTo(p1.x, p1.y, mid.x, mid.y);
+    }
+    ctx.closePath();
+  } else {
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 0; i < points.length - 1; i++) {
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const mid = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+      ctx.quadraticCurveTo(p1.x, p1.y, mid.x, mid.y);
+    }
+    ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+  }
+  ctx.stroke();
+}
+
+function drawMeshContours(ctx, rawLm, transform, isMirror, faceIdx = 0) {
+  const lm = getSmoothedLandmarks(faceIdx, rawLm);
+  ctx.save();
+
+  const getPoints = (indices) => {
+    const pts = [];
+    for (let i = 0; i < indices.length; i++) {
+      const pt = lm[indices[i]];
+      if (pt) pts.push(mapNormalizedToCanvas(pt, transform, isMirror));
+    }
+    return pts;
   };
 
-  drawPath(JAW_INDICES, true);
-  drawPath(LEFT_EYE_INDICES, true);
-  drawPath(RIGHT_EYE_INDICES, true);
-  drawPath(LIPS_INDICES, true);
-  drawPath(NOSE_INDICES, false);
-  drawPath(LEFT_EYEBROW_INDICES, false);
-  drawPath(RIGHT_EYEBROW_INDICES, false);
+  // 1. Subtle Symmetry Vertical Axis
+  const symTop = lm[10] ? mapNormalizedToCanvas(lm[10], transform, isMirror) : null;
+  const symMid = lm[1] ? mapNormalizedToCanvas(lm[1], transform, isMirror) : null;
+  const symBot = lm[152] ? mapNormalizedToCanvas(lm[152], transform, isMirror) : null;
+  if (symTop && symBot) {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(0, 242, 254, 0.25)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 4]);
+    ctx.beginPath();
+    ctx.moveTo(symTop.x, symTop.y);
+    if (symMid) ctx.lineTo(symMid.x, symMid.y);
+    ctx.lineTo(symBot.x, symBot.y);
+    ctx.stroke();
+    ctx.restore();
+  }
 
-  // Key landmark nodes (forehead, chin, nose, eye corners, mouth corners, cheekbones)
-  ctx.fillStyle = '#ffd86b';
-  ctx.shadowColor = '#ffd86b';
+  // 2. Primary Facial Contours (Glowing Neon Cyan)
+  ctx.strokeStyle = 'rgba(0, 242, 254, 0.7)';
+  ctx.lineWidth = 1.2;
+  ctx.shadowColor = 'rgba(0, 242, 254, 0.8)';
   ctx.shadowBlur = 5;
-  for (let keyIdx of [1, 33, 263, 61, 291, 152, 10, 234, 454]) {
-    const pt = lm[keyIdx];
+
+  // Smooth Mandibular Jawline
+  drawSmoothPath(ctx, getPoints(JAW_INDICES), false);
+
+  // Smooth Eyebrows
+  drawSmoothPath(ctx, getPoints(LEFT_EYEBROW_INDICES), false);
+  drawSmoothPath(ctx, getPoints(RIGHT_EYEBROW_INDICES), false);
+
+  // Smooth Eyes
+  drawSmoothPath(ctx, getPoints(LEFT_EYE_INDICES), true);
+  drawSmoothPath(ctx, getPoints(RIGHT_EYE_INDICES), true);
+
+  // Nose Ridge & Base
+  drawSmoothPath(ctx, getPoints(NOSE_RIDGE_INDICES), false);
+  drawSmoothPath(ctx, getPoints(NOSE_BASE_INDICES), false);
+
+  // Smooth Outer Lips
+  drawSmoothPath(ctx, getPoints(LIPS_INDICES), true);
+
+  // Subtle Inner Lips
+  ctx.strokeStyle = 'rgba(0, 242, 254, 0.35)';
+  ctx.lineWidth = 0.9;
+  drawSmoothPath(ctx, getPoints(INNER_LIPS_INDICES), true);
+
+  // 3. Eye Pupil Iris Reticles (Delicate Glowing Rings)
+  const t = performance.now() * 0.003;
+  const pulseR = 3.5 + Math.sin(t) * 0.8;
+
+  const eyeL = getPoints([159, 145]);
+  if (eyeL.length >= 2) {
+    const eyeCenterL = { x: (eyeL[0].x + eyeL[1].x) / 2, y: (eyeL[0].y + eyeL[1].y) / 2 };
+    ctx.strokeStyle = 'rgba(0, 242, 254, 0.85)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(eyeCenterL.x, eyeCenterL.y, pulseR, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = '#00f2fe';
+    ctx.beginPath();
+    ctx.arc(eyeCenterL.x, eyeCenterL.y, 1.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const eyeR = getPoints([386, 374]);
+  if (eyeR.length >= 2) {
+    const eyeCenterR = { x: (eyeR[0].x + eyeR[1].x) / 2, y: (eyeR[0].y + eyeR[1].y) / 2 };
+    ctx.strokeStyle = 'rgba(0, 242, 254, 0.85)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(eyeCenterR.x, eyeCenterR.y, pulseR, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = '#00f2fe';
+    ctx.beginPath();
+    ctx.arc(eyeCenterR.x, eyeCenterR.y, 1.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // 4. Subtle Key Feature Anchors (Glabella, Nose Tip, Chin, Oral Commissures)
+  ctx.fillStyle = 'rgba(255, 216, 107, 0.9)';
+  ctx.shadowColor = '#ffd86b';
+  ctx.shadowBlur = 4;
+  for (const anchorIdx of [1, 152, 168, 61, 291]) {
+    const pt = lm[anchorIdx];
     if (!pt) continue;
     const sp = mapNormalizedToCanvas(pt, transform, isMirror);
-    ctx.beginPath(); ctx.arc(sp.x, sp.y, 2.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath();
+    ctx.arc(sp.x, sp.y, 1.8, 0, Math.PI * 2);
+    ctx.fill();
   }
+
   ctx.restore();
 }
 
@@ -2174,6 +2475,64 @@ function downloadCertificateFile() {
   showToast('📥 Kartu AI Berhasil Diunduh!');
 }
 
+// ============ FOLLOW GATE / SMART INTERCEPTOR ============
+function isDownloadUnlocked() {
+  try {
+    return localStorage.getItem('harkat_ig_unlocked') === 'true' ||
+           sessionStorage.getItem('harkat_ig_unlocked') === 'true';
+  } catch (_) {
+    return false;
+  }
+}
+
+function openFollowGate() {
+  $('modalFollowGate').style.display = 'flex';
+}
+
+function closeFollowGate() {
+  $('modalFollowGate').style.display = 'none';
+}
+
+function unlockAndDownload() {
+  try {
+    localStorage.setItem('harkat_ig_unlocked', 'true');
+    sessionStorage.setItem('harkat_ig_unlocked', 'true');
+  } catch (_) {}
+  playTechSound('success');
+  showToast('🎉 Berhasil! Mengunduh kartu...');
+  setTimeout(() => {
+    closeFollowGate();
+    downloadCertificateFile();
+  }, 400);
+}
+
+if ($('btnFollowIg')) {
+  $('btnFollowIg').addEventListener('click', () => {
+    unlockAndDownload();
+  });
+}
+
+if ($('btnCancelFollow')) {
+  $('btnCancelFollow').addEventListener('click', () => {
+    closeFollowGate();
+  });
+}
+
+const modalFollowGate = $('modalFollowGate');
+if (modalFollowGate) {
+  modalFollowGate.addEventListener('click', (e) => {
+    if (e.target === modalFollowGate) closeFollowGate();
+  });
+}
+
+function requestDownloadCertificate() {
+  if (isDownloadUnlocked()) {
+    downloadCertificateFile();
+  } else {
+    openFollowGate();
+  }
+}
+
 // ============ EVENT LISTENERS ============
 document.querySelectorAll('.style-tab').forEach(btn => {
   btn.addEventListener('click', (e) => {
@@ -2195,13 +2554,15 @@ $('btnFlip').onclick = () => {
   startCamera();
 };
 
-$('btnLiveDownload').onclick = () => {
-  downloadCertificateFile();
+$('btnLiveDownload').onclick = (e) => {
+  if (e) e.preventDefault();
+  requestDownloadCertificate();
 };
 
 if ($('btnDownloadCert')) {
-  $('btnDownloadCert').onclick = () => {
-    downloadCertificateFile();
+  $('btnDownloadCert').onclick = (e) => {
+    if (e) e.preventDefault();
+    requestDownloadCertificate();
   };
 }
 

@@ -1,0 +1,26 @@
+{
+  "name": "HARKAT Photobooth",
+  "short_name": "Photobooth",
+  "description": "UKM EXPO UHN Photo Booth & AI Camera",
+  "start_url": "/dev2",
+  "scope": "/",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#4a0000",
+  "theme_color": "#4a0000",
+  "icons": [
+    {
+      "src": "/assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,3 +1,39 @@
-uploads/
-server.log
+# Dependencies and runtime logs
 node_modules/
+server.log
+uploads/
+test-output/
+
+# Environment and secrets
+.env
+.env.*
+
+# Media and recordings
+*.mp4
+*.webm
+
+# Backups
+*.bak*
+
+# Scratch experiments and temporary patches
+test_*.js
+verify_*.js
+patch_*.py
+patch_*.js
+apply_*.py
+apply_*.js
+update_*.js
+update_*.py
+refine_*.py
+check_*.js
+compare_*.js
+debug_*.js
+render_*.js
+capture_*.js
+create_*.js
+create_*.py
+generate_*.js
+upgrade_*.js
+batman_cowl_new.js
+fullscreen-demo.html
+remove_multiverse_theme.py

@@ -1,0 +1,9 @@
+{
+  "name": "Fullscreen Web Demo",
+  "short_name": "FullWeb",
+  "start_url": "/fullscreen-demo",
+  "display": "fullscreen",
+  "background_color": "#0d0b14",
+  "theme_color": "#0d0b14",
+  "orientation": "any"
+}
