@@ -1721,23 +1721,22 @@
     justify-content: center;
     position: relative;
     width: 100%;
-    padding: 0 !important;
+    padding: 4px 8px !important;
     overflow: hidden;
   }
   .cam-wrap {
     position: relative;
-    margin: 0 !important;
-    border-radius: 0 !important;
+    margin: auto !important;
+    border-radius: 18px !important;
     overflow: hidden;
-    border: none !important;
-    border-top: 2.5px solid var(--maroon-deep) !important;
-    border-bottom: 2.5px solid var(--maroon-deep) !important;
-    box-shadow: none !important;
+    border: 3.5px solid var(--maroon-deep) !important;
+    box-shadow: 0 4px 14px rgba(74,16,36,0.25) !important;
     background: #1a1420;
-    height: 100% !important;
+    height: auto !important;
     max-height: 100% !important;
     width: 100% !important;
-    max-width: 100% !important;
+    max-width: min(100%, calc((100dvh - 200px) * 0.75)) !important;
+    aspect-ratio: 3 / 4;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2619,26 +2618,51 @@ function setHint(html) {
 async function startCamera() {
   stopCamera();
   const facingMode = facing === 'environment' ? { exact: 'environment' } : 'user';
-  // Adaptive resolution: low-end tier uses 480p to prevent thermal overload; mid/high use 720p
+  // Adaptive resolution: low-end tier uses 480p to prevent thermal overload; mid/high use 720p/960p
   const perfCfg = (typeof DeviceProfiler !== 'undefined' && DeviceProfiler.getConfig) ? DeviceProfiler.getConfig() : null;
   const isLowTier = typeof DeviceProfiler !== 'undefined' && DeviceProfiler.tier === 'low';
-  const widthIdeal = isLowTier ? 480 : 720;
-  const heightIdeal = isLowTier ? 640 : 960;
-  // Wide natural camera FOV: avoid restrictive ideal width/height so phone camera does not digital-crop/zoom
+  
+  // Natural 4:3 native camera sensor FOV (Full sensor angle identical to native Camera App)
+  // Requesting 4:3 / 3:4 stops phone camera driver from 16:9 digital sensor cropping
+  const isPortrait = window.innerHeight >= window.innerWidth;
+  const targetAspect = isPortrait ? (3 / 4) : (4 / 3);
+  const widthIdeal = isPortrait ? (isLowTier ? 480 : 960) : (isLowTier ? 640 : 1280);
+  const heightIdeal = isPortrait ? (isLowTier ? 640 : 1280) : (isLowTier ? 480 : 960);
+
   const opts = {
     video: {
       facingMode,
-      width: { ideal: 1280 },
-      height: { ideal: 720 }
+      aspectRatio: { ideal: targetAspect },
+      width: { ideal: widthIdeal },
+      height: { ideal: heightIdeal }
     },
     audio: false
   };
   try {
     stream = await navigator.mediaDevices.getUserMedia(opts);
   } catch (e) {
-    // fallback: any camera
-    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode, aspectRatio: { ideal: targetAspect } }, audio: false });
+    } catch (e2) {
+      // fallback: any camera
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    }
   }
+
+  // Normalize camera zoom to minimum wide FOV if supported by mobile browser HAL
+  try {
+    const track = stream && stream.getVideoTracks ? stream.getVideoTracks()[0] : null;
+    if (track && typeof track.getCapabilities === 'function') {
+      const caps = track.getCapabilities();
+      if (caps && caps.zoom) {
+        const minZoom = (caps.zoom.min !== undefined) ? caps.zoom.min : 1.0;
+        if (track.applyConstraints) {
+          track.applyConstraints({ advanced: [{ zoom: minZoom }] }).catch(() => {});
+        }
+      }
+    }
+  } catch (_) {}
+
   video.srcObject = stream;
   await video.play().catch(() => {});
   // mirror preview HANYA kamera depan; kamera belakang tampil normal
@@ -2663,21 +2687,27 @@ function applyFilterStyle(el) {
 }
 function adaptFrame() {
   if (!video.videoWidth || !video.videoHeight) return;
+  const streamRatio = video.videoWidth / video.videoHeight;
+  const a = video.videoWidth + ' / ' + video.videoHeight;
   const isMobile = window.innerWidth <= 768;
+
   if (isMobile) {
-    // Pada mobile, layar pratinjau kamera memenuhi 100% lebar (full-width) tanpa ruang kosong di kiri-kanan
-    if (camWrap.style.maxWidth !== '100%') camWrap.style.maxWidth = '100%';
+    if (camWrap.style.aspectRatio !== a) camWrap.style.aspectRatio = a;
+    const stage = camWrap.parentElement;
+    const availH = stage ? (stage.clientHeight - 8) : (window.innerHeight - 220);
+    const maxAllowedW = Math.round(availH * streamRatio);
+    const maxWStr = `min(100%, ${maxAllowedW}px)`;
+    if (camWrap.style.maxWidth !== maxWStr) camWrap.style.maxWidth = maxWStr;
     if (camWrap.style.width !== '100%') camWrap.style.width = '100%';
-    if (camWrap.style.aspectRatio) camWrap.style.aspectRatio = '';
     return;
   }
+
   // Mode desktop: adaptasi rasio aspect di dalam booth container
-  const a = video.videoWidth + ' / ' + video.videoHeight;
   if (camWrap.style.aspectRatio !== a) camWrap.style.aspectRatio = a;
   const maxH = Math.min(window.innerHeight * 0.60, 560);
-  const streamRatio = video.videoWidth / video.videoHeight;
   const fittedW = Math.round(maxH * streamRatio);
-  camWrap.style.maxWidth = `min(${fittedW}px, calc(100% - 24px))`;
+  const maxWStr = `min(${fittedW}px, calc(100% - 24px))`;
+  if (camWrap.style.maxWidth !== maxWStr) camWrap.style.maxWidth = maxWStr;
 }
 
 function stopCamera() {
