@@ -1746,8 +1746,11 @@
       padding: 4px 8px !important;
     }
     .cam-wrap {
-      width: min(480px, calc(100% - 24px)) !important;
-      max-width: 480px !important;
+      width: 100% !important;
+      height: auto !important;
+      aspect-ratio: 3 / 4 !important;
+      max-height: 100% !important;
+      max-width: min(440px, calc(100% - 24px), calc((100vh - 220px) * 0.75)) !important;
       border: 3.5px solid var(--maroon-deep) !important;
       border-radius: 18px !important;
       box-shadow: 0 4px 0 rgba(74,16,36,0.35) !important;
@@ -2622,12 +2625,10 @@ async function startCamera() {
   const perfCfg = (typeof DeviceProfiler !== 'undefined' && DeviceProfiler.getConfig) ? DeviceProfiler.getConfig() : null;
   const isLowTier = typeof DeviceProfiler !== 'undefined' && DeviceProfiler.tier === 'low';
   
-  // Natural 4:3 native camera sensor FOV (Full sensor angle identical to native Camera App)
-  // Requesting 4:3 / 3:4 stops phone camera driver from 16:9 digital sensor cropping
-  const isPortrait = window.innerHeight >= window.innerWidth;
-  const targetAspect = isPortrait ? (3 / 4) : (4 / 3);
-  const widthIdeal = isPortrait ? (isLowTier ? 480 : 960) : (isLowTier ? 640 : 1280);
-  const heightIdeal = isPortrait ? (isLowTier ? 640 : 1280) : (isLowTier ? 480 : 960);
+  // Photobooth standard: Selalu prioritaskan rasio potret 3:4 standar photobox
+  const targetAspect = 3 / 4;
+  const widthIdeal = isLowTier ? 480 : 960;
+  const heightIdeal = isLowTier ? 640 : 1280;
 
   const opts = {
     video: {
@@ -2642,7 +2643,7 @@ async function startCamera() {
     stream = await navigator.mediaDevices.getUserMedia(opts);
   } catch (e) {
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode, aspectRatio: { ideal: targetAspect } }, audio: false });
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode, aspectRatio: { ideal: 3 / 4 } }, audio: false });
     } catch (e2) {
       // fallback: any camera
       stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
@@ -2686,28 +2687,28 @@ function applyFilterStyle(el) {
   }
 }
 function adaptFrame() {
-  if (!video.videoWidth || !video.videoHeight) return;
-  const streamRatio = video.videoWidth / video.videoHeight;
-  const a = video.videoWidth + ' / ' + video.videoHeight;
+  if (!camWrap) return;
+  // Viewfinder photobooth selalu konsisten potret 3:4 standar arcade/photobox (tidak berubah jadi landscape)
+  if (camWrap.style.aspectRatio !== '3 / 4') camWrap.style.aspectRatio = '3 / 4';
+
+  const stage = camWrap.parentElement;
+  const availH = stage ? (stage.clientHeight - 8) : (window.innerHeight - 220);
   const isMobile = window.innerWidth <= 768;
+  const maxAllowedW = Math.round(availH * (3 / 4));
 
   if (isMobile) {
-    if (camWrap.style.aspectRatio !== a) camWrap.style.aspectRatio = a;
-    const stage = camWrap.parentElement;
-    const availH = stage ? (stage.clientHeight - 8) : (window.innerHeight - 220);
-    const maxAllowedW = Math.round(availH * streamRatio);
     const maxWStr = `min(100%, ${maxAllowedW}px)`;
     if (camWrap.style.maxWidth !== maxWStr) camWrap.style.maxWidth = maxWStr;
     if (camWrap.style.width !== '100%') camWrap.style.width = '100%';
     return;
   }
 
-  // Mode desktop: adaptasi rasio aspect di dalam booth container
-  if (camWrap.style.aspectRatio !== a) camWrap.style.aspectRatio = a;
+  // Mode desktop: jaga rasio potret 3:4 proporsional di dalam frame photobooth
   const maxH = Math.min(window.innerHeight * 0.60, 560);
-  const fittedW = Math.round(maxH * streamRatio);
-  const maxWStr = `min(${fittedW}px, calc(100% - 24px))`;
+  const fittedW = Math.round(maxH * (3 / 4));
+  const maxWStr = `min(${fittedW}px, calc(100% - 24px), ${maxAllowedW}px)`;
   if (camWrap.style.maxWidth !== maxWStr) camWrap.style.maxWidth = maxWStr;
+  if (camWrap.style.width !== '100%') camWrap.style.width = '100%';
 }
 
 function stopCamera() {
