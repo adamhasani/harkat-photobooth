@@ -1735,8 +1735,8 @@
     height: auto !important;
     max-height: 100% !important;
     width: 100% !important;
-    max-width: min(100%, calc((100dvh - 200px) * 0.75)) !important;
-    aspect-ratio: 3 / 4;
+    max-width: 440px;
+    aspect-ratio: 9 / 16;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1746,8 +1746,10 @@
       padding: 4px 8px !important;
     }
     .cam-wrap {
-      width: min(480px, calc(100% - 24px)) !important;
-      max-width: 480px !important;
+      width: 100% !important;
+      height: auto !important;
+      max-height: 100% !important;
+      max-width: min(440px, calc(100% - 24px)) !important;
       border: 3.5px solid var(--maroon-deep) !important;
       border-radius: 18px !important;
       box-shadow: 0 4px 0 rgba(74,16,36,0.35) !important;
@@ -1789,6 +1791,38 @@
   }
   .btn-cam-flip .flip-text {
     line-height: 1;
+  }
+
+  /* Floating FOV / Zoom Pill Button */
+  .btn-cam-fov {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    background: rgba(255, 252, 245, 0.95);
+    color: var(--maroon-deep);
+    border: 2px solid var(--maroon-deep);
+    border-radius: 999px;
+    padding: 5px 13px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 11.5px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.9) inset;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    transition: transform 0.12s ease, background 0.15s ease;
+    touch-action: manipulation;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .btn-cam-fov:active {
+    transform: translateX(-50%) scale(0.92);
+    background: #e8dcc4;
   }
 
   /* Bottom Dock Controls */
@@ -2151,6 +2185,12 @@
           <button class="btn-cam-flip" id="btnFlip" title="Putar Kamera Depan / Belakang" aria-label="Putar Kamera">
             <span class="flip-icon">🔄</span>
             <span class="flip-text">Kamera</span>
+          </button>
+
+          <!-- Overlay Sudut Kamera / FOV Normalisasi (Lebar 0.8x / 1.0x Normal) -->
+          <button class="btn-cam-fov" id="btnFov" title="Sudut Pandang Kamera (Lebar / Normal)" aria-label="Sudut Kamera">
+            <span id="fovIcon">📐</span>
+            <span id="fovText">0.8x Lebar</span>
           </button>
 
           <div class="scan-hint" id="scanHint">SMILE! 😁</div>
@@ -2614,60 +2654,113 @@ function setHint(html) {
   scanHint.innerHTML = html;
 }
 
-// ============ CAMERA ============
+// ============ CAMERA (NATURAL FOV & INTERACTIVE ZOOM) ============
+let currentFovMode = 'wide'; // 'wide' (default: sudut lebar alami / uncropped) | 'normal' (3:4 photobox)
+
+async function applyCameraFov(mode) {
+  currentFovMode = mode;
+  const track = stream && stream.getVideoTracks ? stream.getVideoTracks()[0] : null;
+  let hasHwZoom = false;
+  let minZ = 1.0, maxZ = 1.0;
+
+  if (track && typeof track.getCapabilities === 'function') {
+    try {
+      const caps = track.getCapabilities();
+      if (caps && caps.zoom) {
+        hasHwZoom = true;
+        minZ = (caps.zoom.min !== undefined) ? caps.zoom.min : 1.0;
+        maxZ = (caps.zoom.max !== undefined) ? caps.zoom.max : 1.0;
+        const targetZoom = (mode === 'wide') ? minZ : Math.max(minZ, 1.0);
+        if (track.applyConstraints) {
+          await track.applyConstraints({ advanced: [{ zoom: targetZoom }] });
+        }
+      }
+    } catch (e) {
+      console.warn('applyCameraFov hardware zoom notice:', e);
+    }
+  }
+
+  // Update UI pill button
+  const fovText = $('fovText');
+  const fovIcon = $('fovIcon');
+  if (fovText && fovIcon) {
+    if (mode === 'wide') {
+      const zoomLabel = (hasHwZoom && minZ < 1.0) ? (minZ.toFixed(1) + 'x Lebar') : '0.8x Lebar';
+      fovText.textContent = zoomLabel;
+      fovIcon.textContent = '📐';
+    } else {
+      fovText.textContent = '1.0x Normal';
+      fovIcon.textContent = '🔍';
+    }
+  }
+
+  adaptFrame();
+}
+
+async function toggleCameraFov() {
+  const newMode = (currentFovMode === 'wide') ? 'normal' : 'wide';
+  await applyCameraFov(newMode);
+  toast(newMode === 'wide' ? '📐 Sudut Lebar (Wide FOV) aktif — foto lebih luas!' : '🔍 Sudut Standar (3:4) aktif');
+}
+
 async function startCamera() {
   stopCamera();
   const facingMode = facing === 'environment' ? { exact: 'environment' } : 'user';
-  // Adaptive resolution: low-end tier uses 480p to prevent thermal overload; mid/high use 720p/960p
   const perfCfg = (typeof DeviceProfiler !== 'undefined' && DeviceProfiler.getConfig) ? DeviceProfiler.getConfig() : null;
   const isLowTier = typeof DeviceProfiler !== 'undefined' && DeviceProfiler.tier === 'low';
-  
-  // Natural 4:3 native camera sensor FOV (Full sensor angle identical to native Camera App)
-  // Requesting 4:3 / 3:4 stops phone camera driver from 16:9 digital sensor cropping
   const isPortrait = window.innerHeight >= window.innerWidth;
-  const targetAspect = isPortrait ? (3 / 4) : (4 / 3);
-  const widthIdeal = isPortrait ? (isLowTier ? 480 : 960) : (isLowTier ? 640 : 1280);
-  const heightIdeal = isPortrait ? (isLowTier ? 640 : 1280) : (isLowTier ? 480 : 960);
+
+  // Resolusi native standar mobile (menghindari center-crop driver Android Camera2):
+  // 720x1280 (HD portrait) atau 1080x1920 (FHD)
+  const widthIdeal = isPortrait ? (isLowTier ? 480 : 720) : (isLowTier ? 640 : 1280);
+  const heightIdeal = isPortrait ? (isLowTier ? 640 : 1280) : (isLowTier ? 480 : 720);
 
   const opts = {
     video: {
       facingMode,
-      aspectRatio: { ideal: targetAspect },
       width: { ideal: widthIdeal },
-      height: { ideal: heightIdeal }
+      height: { ideal: heightIdeal },
+      resizeMode: { ideal: 'none' }
     },
     audio: false
   };
+
   try {
     stream = await navigator.mediaDevices.getUserMedia(opts);
   } catch (e) {
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode, aspectRatio: { ideal: targetAspect } }, audio: false });
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode,
+          width: { ideal: widthIdeal },
+          height: { ideal: heightIdeal }
+        },
+        audio: false
+      });
     } catch (e2) {
-      // fallback: any camera
-      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-    }
-  }
-
-  // Normalize camera zoom to minimum wide FOV if supported by mobile browser HAL
-  try {
-    const track = stream && stream.getVideoTracks ? stream.getVideoTracks()[0] : null;
-    if (track && typeof track.getCapabilities === 'function') {
-      const caps = track.getCapabilities();
-      if (caps && caps.zoom) {
-        const minZoom = (caps.zoom.min !== undefined) ? caps.zoom.min : 1.0;
-        if (track.applyConstraints) {
-          track.applyConstraints({ advanced: [{ zoom: minZoom }] }).catch(() => {});
-        }
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode }, audio: false });
+      } catch (e3) {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
       }
     }
-  } catch (_) {}
+  }
 
   video.srcObject = stream;
   await video.play().catch(() => {});
   // mirror preview HANYA kamera depan; kamera belakang tampil normal
   video.classList.toggle('mirror', facing === 'user');
-  video.addEventListener('loadedmetadata', adaptFrame, { once: true });
+
+  const onReady = () => {
+    applyCameraFov(currentFovMode);
+    adaptFrame();
+  };
+  if (video.readyState >= 1) {
+    onReady();
+  } else {
+    video.addEventListener('loadedmetadata', onReady, { once: true });
+  }
+
   loop();
 }
 
@@ -2685,29 +2778,54 @@ function applyFilterStyle(el) {
     el.style.filter = 'none';
   }
 }
-function adaptFrame() {
-  if (!video.videoWidth || !video.videoHeight) return;
-  const streamRatio = video.videoWidth / video.videoHeight;
-  const a = video.videoWidth + ' / ' + video.videoHeight;
-  const isMobile = window.innerWidth <= 768;
 
-  if (isMobile) {
-    if (camWrap.style.aspectRatio !== a) camWrap.style.aspectRatio = a;
-    const stage = camWrap.parentElement;
-    const availH = stage ? (stage.clientHeight - 8) : (window.innerHeight - 220);
-    const maxAllowedW = Math.round(availH * streamRatio);
-    const maxWStr = `min(100%, ${maxAllowedW}px)`;
-    if (camWrap.style.maxWidth !== maxWStr) camWrap.style.maxWidth = maxWStr;
-    if (camWrap.style.width !== '100%') camWrap.style.width = '100%';
-    return;
+function adaptFrame() {
+  if (!camWrap || !video) return;
+  const vw = video.videoWidth || 720;
+  const vh = video.videoHeight || 1280;
+  const streamRatio = vw / vh;
+  const isMobile = window.innerWidth <= 768;
+  const stage = camWrap.parentElement;
+  const availH = stage ? (stage.clientHeight - 8) : (window.innerHeight - 220);
+
+  let targetRatioStr = '3 / 4';
+  let targetRatioNum = 3 / 4;
+
+  if (currentFovMode === 'wide') {
+    if (streamRatio < 1) {
+      // Natural uncropped portrait stream (e.g. 9:16 or 3:4)
+      targetRatioStr = `${vw} / ${vh}`;
+      targetRatioNum = streamRatio;
+    } else {
+      targetRatioStr = '9 / 16';
+      targetRatioNum = 9 / 16;
+    }
+  } else {
+    // Normal 3:4 photobox
+    targetRatioStr = '3 / 4';
+    targetRatioNum = 3 / 4;
   }
 
-  // Mode desktop: adaptasi rasio aspect di dalam booth container
-  if (camWrap.style.aspectRatio !== a) camWrap.style.aspectRatio = a;
-  const maxH = Math.min(window.innerHeight * 0.60, 560);
-  const fittedW = Math.round(maxH * streamRatio);
-  const maxWStr = `min(${fittedW}px, calc(100% - 24px))`;
-  if (camWrap.style.maxWidth !== maxWStr) camWrap.style.maxWidth = maxWStr;
+  if (camWrap.style.getPropertyValue('aspect-ratio') !== targetRatioStr) {
+    camWrap.style.setProperty('aspect-ratio', targetRatioStr, 'important');
+  }
+
+  if (isMobile) {
+    const maxAllowedW = Math.round(availH * targetRatioNum);
+    const maxWStr = `min(100%, ${maxAllowedW}px, 440px)`;
+    if (camWrap.style.getPropertyValue('max-width') !== maxWStr) {
+      camWrap.style.setProperty('max-width', maxWStr, 'important');
+    }
+    if (camWrap.style.width !== '100%') camWrap.style.width = '100%';
+  } else {
+    const maxH = Math.min(window.innerHeight * 0.60, 560);
+    const fittedW = Math.round(maxH * targetRatioNum);
+    const maxWStr = `min(${fittedW}px, calc(100% - 24px))`;
+    if (camWrap.style.getPropertyValue('max-width') !== maxWStr) {
+      camWrap.style.setProperty('max-width', maxWStr, 'important');
+    }
+    if (camWrap.style.width !== '100%') camWrap.style.width = '100%';
+  }
 }
 
 function stopCamera() {
@@ -11790,6 +11908,9 @@ $('btnFlip').addEventListener('click', async () => {
   facing = facing === 'user' ? 'environment' : 'user';
   await startCamera();
 });
+if ($('btnFov')) {
+  $('btnFov').addEventListener('click', toggleCameraFov);
+}
 $('btnReset').addEventListener('click', () => {
   if (!photos || photos.length === 0) return;
   photos.forEach(p => {
