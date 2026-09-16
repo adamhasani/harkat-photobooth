@@ -69,7 +69,10 @@ async function verifyEndpoint(url) {
 
   // Open modal
   await page.click('#btnLivePreview');
-  await page.waitForFunction(() => document.querySelector('#modalResult').style.display === 'flex', { timeout: 5000 });
+  await page.waitForFunction(() => {
+    const m = document.querySelector('#modalResult');
+    return m && (m.classList.contains('active') || m.style.display === 'flex' || getComputedStyle(m).display !== 'none');
+  }, { timeout: 5000 });
 
   const modalData = await page.evaluate(() => {
     return {

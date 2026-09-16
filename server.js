@@ -8,7 +8,8 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { execFile } = require('child_process');
-const { findBestLookalike, CELEBS_DATABASE_1000 } = require('./assets/data/celebs_database.js');
+const { findBestLookalike, CELEBS_DATABASE_1000, matchCelebByKeywords } = require('./assets/data/celebs_database.js');
+const { analyzeFaceWithAiDev } = require('./ai_accuracy_engine.js');
 
 const ROOT = __dirname;
 const PUBLIC = process.env.PUBLIC_URL || null;
@@ -118,7 +119,7 @@ function decodeVideo(dataURL) {
 }
 
 // Convert any incoming video buffer (WebM, fMP4, etc.) to 100% standard progressive H.264 MP4 with faststart & AAC
-// Applies mpdecimate to remove duplicate frozen frames from browser rendering lag and re-times PTS to a smooth constant framerate.
+// Maintains exact playback timing, full 5.0s duration, and constant framerate for universal mobile playback.
 function convertVideoToStandardMp4(inputBuffer, inputExt, targetFpsOrCallback, maybeCallback) {
   let targetFps = 24;
   let callback;
@@ -143,7 +144,7 @@ function convertVideoToStandardMp4(inputBuffer, inputExt, targetFpsOrCallback, m
   }
 
   // Universal H.264 Baseline/High with Even Dimensions + AAC Audio + FastStart MOOV
-  // mpdecimate drops identical/duplicate frames from client rendering delay, setpts restores true smooth playback
+  // Preserve full photostrip video frames without false duplicate drops, locking duration strictly to intended PTS
   const args = [
     '-y',
     '-i', inPath,
@@ -152,7 +153,7 @@ function convertVideoToStandardMp4(inputBuffer, inputExt, targetFpsOrCallback, m
     '-preset', 'ultrafast',
     '-crf', '20',
     '-pix_fmt', 'yuv420p',
-    '-vf', `mpdecimate=hi=256:lo=128:frac=0.02,setpts=N/(${targetFps}*TB),scale=trunc(iw/2)*2:trunc(ih/2)*2`,
+    '-vf', `scale=trunc(iw/2)*2:trunc(ih/2)*2,setpts=PTS-STARTPTS`,
     '-r', String(targetFps),
     '-map', '0:v:0',
     '-map', '1:a:0',
@@ -312,9 +313,16 @@ PERINGATAN KERAS ANTI-BIAS UMUR:
 DILARANG KERAS SELALU MENEBAK 19, 20, ATAU 21 TAHUN!
 Tentukan umur biologis aktual secara objektif, jujur, dan spesifik (bisa 16, 18, 23, 27, 31, 36, 42, 48, 55, 63, 70+ tahun) berdasarkan bukti kerutan & tekstur wajah di atas.
 
-PANDUAN KLASIFIKASI GENDER:
-- Ciri Laki-laki: Struktur alis alami/tebal tanpa pensil alis, tidak menggunakan riasan wajah/lipstik/eyeliner/mascara, proporsi garis rahang/dagu pria, garis leher/jakun/bahu pria, postur pria. Pria muda berkulit bersih/tanpa jenggot tetap LAKI-LAKI.
-- Ciri Perempuan: Riasan wajah (eyeshadow, pensil alis, lipstick/gloss), bentuk bibir feminin dengan riasan, perhiasan wanita, gaya pakaian/rambut wanita.
+PANDUAN KLASIFIKASI GENDER (SANGAT KRUSIAL - MUTLAK DILARANG SALAH TEBAK):
+1. ATURAN KERUDUNG/HIJAB (MUTLAK 100% PEREMPUAN):
+   - Jika pengguna mengenakan HIJAB, JILBAB, KERUDUNG, CIPUT, atau PASMINA, WAJIB MUTLAK 100% diklasifikasikan sebagai "Perempuan 👧". DILARANG KERAS menebak laki-laki jika terlihat memakai hijab/kerudung/jilbab!
+2. ATURAN RAMBUT PANJANG & RIASAN (MUTLAK 100% PEREMPUAN):
+   - RAMBUT PANJANG (terurai ke bahu/dada, kuncir kuda, kuncir dua, kepang, bando wanita, atau gaya rambut feminin): WAJIB MUTLAK diklasifikasikan sebagai "Perempuan 👧".
+   - Riasan wajah (lipstik/lipgloss, perona pipi/blush, pensil alis, eyeliner, maskara), anting/giwang wanita, atau struktur wajah feminin: WAJIB diklasifikasikan sebagai "Perempuan 👧".
+3. ATURAN PRIA (LAKI-LAKI 👦):
+   - Hanya klasifikasikan sebagai "Laki-laki 👦" jika subjek memiliki potongan rambut pendek khas pria (undercut, fade, cepak, crop, pompadour pendek, belah samping pria), atau terlihat kumis, jenggot, jambang, atau jakun leher pria tanpa riasan feminin.
+   - Pria muda berkulit bersih/tanpa jenggot dengan potongan rambut pendek pria tetap LAKI-LAKI 👦.
+   - JIKA RAGU/AMBIGU: jika ada rambut panjang, hijab, atau sentuhan riasan wajah => WAJIB PILIH "Perempuan 👧".
 
 PANDUAN GENERASI (SESUAIKAN PERSIS DENGAN UMUR):
 - <= 19 Tahun: "Gen-Z Fresh 🎓"
@@ -325,14 +333,17 @@ PANDUAN GENERASI (SESUAIKAN PERSIS DENGAN UMUR):
 - 70+ Tahun: "Maestro Kehormatan 👑"
 
 PENCOCOKKAN KEMBARAN TOKOH (LOOKALIKE) WAJIB SESUAI GENDER & USIA:
-- Pilih figur dari database 1.000 tokoh dunia yang BENAR-BENAR COCOK dengan GENDER, KELOMPOK USIA, dan CIRI VISUALNYA:
-  * Pria Muda (15-27 thn): Iqbaal Ramadhan, Jefri Nichol, Angga Yunanda, Timothée Chalamet, Jerome Polin, Windah Basudara, Tom Holland, dll.
-  * Pria Dewasa/Matang (28-48 thn): Nicholas Saputra, Reza Rahadian, Refal Hady, GadgetIn David, Pedro Pascal, Keanu Reeves, Henry Cavill, Cillian Murphy, Ryan Gosling, dll.
-  * Pria Senior/Orang Tua/Lansia (49-80+ thn): Prof. B.J. Habibie, Albert Einstein, Morgan Freeman, Steve Jobs, Bill Gates, George Clooney, Robert De Niro, Al Pacino, Harrison Ford, Tom Hanks, Joko Widodo, Anthony Hopkins, Nelson Mandela, Warren Buffett, dll.
-  * Wanita Muda (15-27 thn): Maudy Ayunda, Chelsea Islan, Prilly Latuconsina, Zee JKT48, Freya JKT48, Jennie Blackpink, Karina aespa, Zendaya, Billie Eilish, dll.
-  * Wanita Dewasa/Matang (28-48 thn): Dian Sastrowardoyo, Najwa Shihab, Laura Basuki, Song Hye-kyo, Anne Hathaway, Scarlett Johansson, Emma Stone, Gal Gadot, dll.
-  * Wanita Senior/Orang Tua/Lansia (49-80+ thn): Sri Mulyani Indrawati, Christine Hakim, Meryl Streep, Megawati Soekarnoputri, Michelle Obama, Judi Dench, Helen Mirren, Queen Elizabeth II, dll.
-- JANGAN PERNAH mencocokkan orang tua/lansia dengan artis remaja belia!
+- Analisis struktur rahang, proporsi mata, senyuman, bentuk dahi, dan aura wajah foto untuk mencocokkan kembaran figur publik terkenal dunia atau Indonesia (artis sinema, musisi, atlet, kreator, idola pop/global, atau tokoh inspiratif).
+- PRINSIP KEBERAGAMAN MAKSIMAL & ANTI-REPETISI (1.000 TOKOH DUNIA):
+  * DILARANG KERAS terpaku pada 1-2 nama tokoh tertentu (seperti Jack Dorsey, Elon Musk, atau Shenina Cinnamon)!
+  * Pilih kembaran figur publik secara dinamis dan bervariasi dari beragam kategori: aktor/aktris perfilman, musisi (pop/rock/indie/jazz), seniman, atlet olahraga, inovator, dan figur inspiratif Indonesia maupun dunia.
+  * Jelajahi database 1.000 tokoh secara kaya dan merata murni berdasarkan observasi visual foto (bentuk wajah, sorot mata, senyuman, proporsi rahang) serta rekomendasi kandidat biometrik.
+- SESUAIKAN DENGAN GENDER & RENTANG USIA SUBJEK:
+  * Pengunjung Remaja / Gen-Z (15-27 thn): Pilih tokoh publik / artis / idola / atlet generasi muda.
+  * Pengunjung Dewasa / Milenial (28-48 thn): Pilih artis / tokoh publik generasi matang.
+  * Pengunjung Senior / Lansia (49-80+ thn): Pilih tokoh berwibawa, negarawan, ilmuwan, atau legenda seni peran senior.
+  * JANGAN PERNAH memasangkan orang tua/lansia dengan artis remaja belia!
+- Jika disediakan daftar [Kandidat Tokoh Rekomendasi Biometrik], gunakan sebagai rekomendasi presisi atau pilih figur publik terkenal lain yang lebih mirip secara visual.
 
 ATURAN PANJANG TEKS (WAJIB SUPER RINGKAS & PUNCHY UNTUK KARTU PHOTOBOOTH):
 1. wrinkleAnalysis: WAJIB SANGAT RINGKAS (Maksimal 3-4 kata + 1 emoji). Contoh: "Kulit Halus & Kencang ✨", "Tekstur Segar Alami 😊", "Garis Rahang Tegas 🌟", "Wajah Matang Berwibawa 🧐". DILARANG menuliskan paragraf atau kalimat panjang!
@@ -348,7 +359,7 @@ Kembalikan HANYA format JSON murni tanpa markdown:
   "beautyScore": <skor pesona 88-99 integer>,
   "symmetryScore": <skor simetri 88-99 integer>,
   "wrinkleAnalysis": "<Frasa ringkas max 3-4 kata + 1 emoji>",
-  "lookalike": "<Nama Tokoh sesuai gender & rentang usia>",
+  "lookalike": "<Nama Tokoh yang paling mirip struktur wajahnya (bebas batas gender)>",
   "lookalikeRole": "<Profesi/julukan singkat max 3-4 kata>",
   "lookalikeMatch": <persen 88-98 integer>,
   "majorVibe": "<misal: Sains Data & AI / Inovasi & Teknologi / Seni Kreatif>",
@@ -356,18 +367,137 @@ Kembalikan HANYA format JSON murni tanpa markdown:
   "facialTraits": "<3 ciri fisik terdeteksi, pisahkan koma>"
 }`;
 
+function getOmniRouteKey() {
+  if (process.env.HERMES_CUSTOM_LOCALHOST_20128_API_KEY) return process.env.HERMES_CUSTOM_LOCALHOST_20128_API_KEY.trim();
+  if (process.env.OMNIRUTE_API_KEY) return process.env.OMNIRUTE_API_KEY.trim();
+  try {
+    const keyFile = path.join(os.homedir(), 'keys_omniroute_20128.txt');
+    if (fs.existsSync(keyFile)) {
+      const line = fs.readFileSync(keyFile, 'utf8').split('\n')[0].trim();
+      if (line) return line;
+    }
+  } catch (_) {}
+  return '';
+}
+
+function getDiverseLookalikeCandidates(telemetry, gender, estAge, count = 8) {
+  try {
+    const res = findBestLookalike(telemetry || {}, { age: estAge, topK: 35, randomizeTop: true });
+    const topMatches = (res && res.topMatches) || [];
+    if (!topMatches.length) return [];
+
+    const shuffled = [...topMatches].sort(() => Math.random() - 0.5);
+    const selected = [];
+    const usedCategories = new Set();
+
+    for (const m of shuffled) {
+      const cat = m.celeb.category || 'Umum';
+      if (!usedCategories.has(cat)) {
+        selected.push(m);
+        usedCategories.add(cat);
+        if (selected.length >= count) break;
+      }
+    }
+
+    if (selected.length < count) {
+      for (const m of shuffled) {
+        if (!selected.some(s => s.celeb.id === m.celeb.id)) {
+          selected.push(m);
+          if (selected.length >= count) break;
+        }
+      }
+    }
+    return selected.slice(0, count);
+  } catch (_) {
+    return [];
+  }
+}
+
+async function callOmniRouteVision(photo, telemetry) {
+  const key = getOmniRouteKey();
+  if (!key) return null;
+
+  let telemetryText = 'Lakukan analisis biometrik wajah & estimasi umur biologis dari foto ini secara presisi dan objektif:';
+  if (telemetry) {
+    telemetryText = `Data Pengukuran Sensor Biometrik 3D:
+- Bentuk Wajah Terukur: ${telemetry.faceShape || 'Oval'}
+- Simetri Wajah Terukur: ${telemetry.symmetryPct || 95}%
+- Intensitas Senyuman: ${telemetry.smilePct || 80}%
+
+PENTING:
+1. PENCOCOKAN BEBAS GENDER: JANGAN batasi kembaran tokoh berdasarkan gender subjek. Fokuskan pencocokan murni pada kemiripan struktur kontur wajah, bentuk mata, garis senyum, rahang, dan hidung. Pengunjung perempuan bisa mirip dengan tokoh pria, dan pengunjung pria bisa mirip dengan tokoh wanita jika proporsi wajahnya memang identik. Prioritaskan kemiripan visual yang nyata!
+2. Tentukan USIA BIOLOGIS NYATA (15-85+ thn) dan KONDISI KULIT/KERUTAN murni dari observasi visual foto secara jujur (amati kerutan dahi, kantung mata, crow's feet, garis tawa/nasolabial, tekstur kulit, atau uban). JANGAN terjebak default usia 19-21 tahun!
+3. Pilih KEMBARAN TOKOH / FIGUR PUBLIK yang BENAR-BENAR COCOK secara struktur kraniofasial dan kelompok usia pengunjung (aktor/aktris, musisi, atlet, atau tokoh inspiratif dunia maupun Indonesia). Tulis nama lengkap tokoh yang umum dikenal. JANGAN pasangkan orang tua dengan figur remaja belia.`;
+  }
+
+  const models = ['agy/gemini-3.5-flash-lite', 'antigravity/gemini-3.5-flash-lite', 'agy/gemini-3-flash'];
+
+  for (const model of models) {
+    const payload = JSON.stringify({
+      model: model,
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: telemetryText },
+            { type: 'image_url', image_url: { url: photo } }
+          ]
+        }
+      ],
+      max_tokens: 2000,
+      temperature: 0.7
+    });
+
+    const res = await new Promise((resolve) => {
+      const req = http.request({
+        hostname: '127.0.0.1',
+        port: 20128,
+        path: '/v1/chat/completions',
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + key,
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(payload)
+        },
+        timeout: 8000
+      }, (resp) => {
+        let raw = '';
+        resp.on('data', d => raw += d);
+        resp.on('end', () => {
+          if (resp.statusCode === 200) {
+            try {
+              const parsed = JSON.parse(raw);
+              const content = parsed.choices && parsed.choices[0] && parsed.choices[0].message && parsed.choices[0].message.content;
+              if (content) {
+                const m = /\{[\s\S]*\}/.exec(content);
+                if (m) {
+                  const data = JSON.parse(m[0]);
+                  if (data && (data.gender || data.age)) {
+                    return resolve(data);
+                  }
+                }
+              }
+            } catch (_) {}
+          }
+          resolve(null);
+        });
+      });
+
+      req.on('error', () => resolve(null));
+      req.on('timeout', () => { req.destroy(); resolve(null); });
+      req.write(payload);
+      req.end();
+    });
+
+    if (res) return res;
+  }
+  return null;
+}
+
 async function callGroqVision(photo, telemetry) {
   let telemetryText = 'Lakukan analisis biometrik wajah & estimasi umur biologis dari foto ini secara presisi dan objektif:';
   if (telemetry) {
-    let candMale = '';
-    let candFemale = '';
-    try {
-      const topM = findBestLookalike(telemetry, { gender: 'Laki-laki', topK: 5 }).topMatches;
-      const topF = findBestLookalike(telemetry, { gender: 'Perempuan', topK: 5 }).topMatches;
-      candMale = topM.map(m => `• ${m.celeb.name} [${m.celeb.faceShape}] - ${m.celeb.role} (Ciri: ${Array.isArray(m.celeb.traits) ? m.celeb.traits.join(', ') : m.celeb.traits})`).join('\n');
-      candFemale = topF.map(m => `• ${m.celeb.name} [${m.celeb.faceShape}] - ${m.celeb.role} (Ciri: ${Array.isArray(m.celeb.traits) ? m.celeb.traits.join(', ') : m.celeb.traits})`).join('\n');
-    } catch (_) {}
-
     telemetryText = `Data Pengukuran Sensor Biometrik 3D:
 - Bentuk Wajah Terukur: ${telemetry.faceShape || 'Oval'}
 - Simetri Wajah Terukur: ${telemetry.symmetryPct || 95}%
@@ -377,16 +507,10 @@ async function callGroqVision(photo, telemetry) {
 - Rasio Mata (Eye Ratio): ${(telemetry.eyeRatio || 0.38).toFixed ? (telemetry.eyeRatio || 0.38).toFixed(3) : telemetry.eyeRatio}
 - Indeks Ketegangan Wajah: ${(telemetry.wrinkleTension || 0.20).toFixed ? (telemetry.wrinkleTension || 0.20).toFixed(3) : telemetry.wrinkleTension}
 
-Kandidat Tokoh Rekomendasi Biometrik (Database 1.000 Tokoh Dunia):
-[Kandidat Pria]:
-${candMale}
-
-[Kandidat Wanita]:
-${candFemale}
-
 PENTING:
-1. Tentukan GENDER, USIA BIOLOGIS NYATA (15-85+ thn), dan KONDISI KULIT/KERUTAN murni dari observasi visual foto secara jujur (amati kerutan dahi, kantung mata, crow's feet, garis tawa/nasolabial, tekstur kulit, atau uban). JANGAN terjebak default usia 19-21 tahun!
-2. Pilih KEMBARAN TOKOH yang BENAR-BENAR COCOK dengan GENDER dan KELOMPOK USIA pengunjung dari kandidat di atas atau tokoh 1.000 figur dunia. JANGAN pasangkan orang tua dengan figur remaja belia.`;
+1. PENCOCOKAN BEBAS GENDER: JANGAN batasi kembaran tokoh berdasarkan gender subjek. Fokuskan pencocokan murni pada kemiripan struktur kontur wajah, bentuk mata, garis senyum, rahang, dan hidung. Perempuan bisa mirip dengan tokoh pria, dan pria bisa mirip dengan tokoh wanita jika proporsi wajahnya identik. Prioritaskan kemiripan visual yang nyata!
+2. Tentukan USIA BIOLOGIS NYATA (15-85+ thn) dan KONDISI KULIT/KERUTAN murni dari observasi visual foto secara jujur (amati kerutan dahi, kantung mata, crow's feet, garis tawa/nasolabial, tekstur kulit, atau uban). JANGAN terjebak default usia 19-21 tahun!
+3. Pilih KEMBARAN TOKOH / FIGUR PUBLIK yang BENAR-BENAR COCOK secara struktur kraniofasial dan kelompok usia pengunjung (aktor/aktris, musisi, atlet, atau tokoh inspiratif dunia maupun Indonesia). Tulis nama lengkap tokoh yang umum dikenal. JANGAN pasangkan orang tua dengan figur remaja belia.`;
   }
 
   const payload = JSON.stringify({
@@ -402,7 +526,7 @@ PENTING:
       }
     ],
     max_completion_tokens: 450,
-    temperature: 0.25
+    temperature: 0.7
   });
 
   const https = require('https');
@@ -454,6 +578,71 @@ PENTING:
   return null;
 }
 
+const FALLBACK_CELEBS = {
+  maleYoung: [
+    { name: 'Iqbaal Ramadhan 🎸', role: 'Aktor & Musisi Berbakat', faceShape: 'Oval', comment: 'Tatapan tajam dan proporsi wajah simetris penuh karisma!', traits: ['Simetris proporsional', 'Ekspresi cerah positif', 'Karisma tinggi'] },
+    { name: 'Angga Yunanda 🌟', role: 'Aktor & Model Berbakat', faceShape: 'V-Shape', comment: 'Garis rahang tirus tegas dengan aura bintang muda memikat!', traits: ['Rahang tirus proporsional', 'Sorot mata hangat', 'Senyum karismatik'] },
+    { name: 'Timothée Chalamet 🎬', role: 'Aktor Global Karismatik', faceShape: 'Diamond / Chiseled', comment: 'Struktur tulang pipi tegas dengan tatapan artistik mendalam!', traits: ['Tulang pipi tinggi', 'Garis rahang tajam', 'Ekspresi puitis'] },
+    { name: 'Nadhif Basalamah 🎶', role: 'Penyanyi & Komponis Cerdas', faceShape: 'Oval', comment: 'Senyum hangat bersahabat dengan proporsi wajah simetris!', traits: ['Senyum ramah natural', 'Tatapan tenang', 'Struktur seimbang'] },
+    { name: 'Tom Holland 🕷️', role: 'Aktor & Bintang Hollywood', faceShape: 'Square / Angular', comment: 'Bentuk wajah dinamis penuh energi positif dan keceriaan!', traits: ['Garis rahang bersih', 'Ekspresi ceria antusias', 'Mata ekspresif'] },
+    { name: 'Jerome Polin 📐', role: 'Kreator & Edukator Cerdas', faceShape: 'Round / Soft', comment: 'Aura cerdas penuh antusiasme dengan senyum ramah terbuka!', traits: ['Senyum lebar positif', 'Tatapan cerdas', 'Wajah ramah'] },
+    { name: 'Cha Eun-woo ✨', role: 'Aktor & Bintang Pop Asia', faceShape: 'Oval', comment: 'Proporsi rasio emas wajah dengan simetri nyaris sempurna!', traits: ['Rasio emas proporsional', 'Mata berbinar', 'Garis wajah rapi'] },
+    { name: 'Windah Basudara 🎮', role: 'Kreator Konten & Penghibur', faceShape: 'Round / Soft', comment: 'Ekspresi penuh energi positif dan kehangatan tulus!', traits: ['Senyum ekspresif', 'Aura bersahabat', 'Wajah ramah'] }
+  ],
+  maleMature: [
+    { name: 'Nicholas Saputra 🕶️', role: 'Aktor Ikonik Sinema Indonesia', faceShape: 'Oval', comment: 'Tatapan mata tajam misterius dengan garis rahang proporsional!', traits: ['Tatapan mata intens', 'Rahang proporsional', 'Aura karismatik tenang'] },
+    { name: 'Reza Rahadian 🎭', role: 'Aktor Karakter & Maestro Peran', faceShape: 'Square / Angular', comment: 'Struktur wajah ekspresif penuh daya hidup dan intensitas!', traits: ['Garis ekspresi tegas', 'Sorot mata tajam', 'Proporsi matang berwibawa'] },
+    { name: 'Refal Hady ☕', role: 'Aktor Karismatik & Berwibawa', faceShape: 'Square / Angular', comment: 'Garis rahang maskulin tegas dengan senyum teduh memikat!', traits: ['Rahang maskulin kokoh', 'Tatapan hangat', 'Aura teduh berwibawa'] },
+    { name: 'David Brendi (GadgetIn) 📱', role: 'Kreator Teknologi Terpercaya', faceShape: 'Oval', comment: 'Proporsi wajah seimbang dengan ekspresi komunikatif terpercaya!', traits: ['Tatapan fokus cerdas', 'Senyum ramah', 'Wajah seimbang'] },
+    { name: 'Ryan Gosling 🎹', role: 'Aktor Hollywood & Musisi', faceShape: 'Oblong / Regal', comment: 'Struktur wajah matang tenang dengan sorot mata puitis!', traits: ['Garis rahang memanjang', 'Sorot mata tenang', 'Senyum tipis berkarisma'] },
+    { name: 'Keanu Reeves 🏍️', role: 'Aktor Legendaris Penuh Karisma', faceShape: 'Oval', comment: 'Aura rendah hati berpadu dengan ketegasan garis wajah ikonik!', traits: ['Garis wajah simetris', 'Tatapan bijaksana', 'Karisma abadi'] }
+  ],
+  maleSenior: [
+    { name: 'Prof. B.J. Habibie 🚀', role: 'Teknokrat Visioner & Presiden ke-3 RI', faceShape: 'Oval', comment: 'Sorot mata jenius penuh imajinasi dengan senyum ramah kebapakan!', traits: ['Mata binar kecerdasan', 'Dahi intelektual luas', 'Senyum kebapakan'] },
+    { name: 'Steve Jobs 💻', role: 'Inovator Visioner Apple', faceShape: 'Oval', comment: 'Tatapan mata intens penuh visi masa depan dan standar kesempurnaan!', traits: ['Sorot mata fokus visioner', 'Garis rahang tegas', 'Aura inovator'] },
+    { name: 'Tony Leung Chiu-wai 🎬', role: 'Maestro Aktor Sinema Dunia', faceShape: 'Oval', comment: 'Kedalaman ekspresi mata yang mampu bercerita seribu makna!', traits: ['Tatapan mata puitis', 'Garis senyum bijak', 'Aura kharismatik tenang'] },
+    { name: 'George Clooney ☕', role: 'Aktor & Produser Berwibawa', faceShape: 'Square / Angular', comment: 'Simbol ketampanan matang klasik dengan karisma tak lekang waktu!', traits: ['Rahang maskulin klasik', 'Senyum karismatik', 'Tatapan hangat percaya diri'] }
+  ],
+  femaleYoung: [
+    { name: 'Maudy Ayunda 🎓', role: 'Aktris & Edukator Berprestasi', faceShape: 'Oval', comment: 'Bentuk wajah proporsional dengan aura cerdas memikat!', traits: ['Simetris proporsional', 'Senyum cerdas cerah', 'Tatapan mata fokus'] },
+    { name: 'Bernadya 🌧️', role: 'Penyanyi & Penulis Lagu Berbakat', faceShape: 'Oval', comment: 'Garis wajah lembut artistik dengan tatapan melankolis yang hangat!', traits: ['Ekspresi lembut tenang', 'Garis senyum natural', 'Aura puitis mendalam'] },
+    { name: 'Chelsea Islan 🌸', role: 'Aktris & Aktivis Kepemudaan', faceShape: 'Round / Soft', comment: 'Senyum ceria binar positif dengan proporsi wajah segar alami!', traits: ['Mata berbinar riang', 'Pipi penuh vitalitas', 'Senyum optimis'] },
+    { name: 'Prilly Latuconsina 🎬', role: 'Aktris & Produser Muda', faceShape: 'Heart / V-Shape', comment: 'Bentuk dagu lancip manis dengan senyum ramah penuh vitalitas!', traits: ['Dagu tirus manis', 'Tatapan gesit cerdas', 'Senyum penuh energi'] },
+    { name: 'Freya Jayawardana (Freya JKT48) 🍦', role: 'Idol & Aktris Penuh Pesona', faceShape: 'Heart / V-Shape', comment: 'Garis wajah manis proporsional dengan senyum imut berenergi!', traits: ['Senyum manis memikat', 'Mata bulat cerah', 'Garis rahang lembut'] },
+    { name: 'Zee Asadel 🌟', role: 'Aktris & Bintang Pop Generasi Z', faceShape: 'Heart / V-Shape', comment: 'Struktur wajah tegas modern berpadu dengan pesona energik!', traits: ['Tatapan mata tegas', 'Garis rahang modern', 'Aura bintang muda'] },
+    { name: 'Sydney Sweeney 🚗', role: 'Aktris Hollywood Populer', faceShape: 'Oval', comment: 'Sorot mata ekspresif dengan garis bibir feminin penuh pesona!', traits: ['Mata ekspresif lembut', 'Bibir proporsional feminin', 'Garis wajah seimbang'] }
+  ],
+  femaleMature: [
+    { name: 'Dian Sastrowardoyo 📚', role: 'Aktris Legendaris & Tokoh Budaya', faceShape: 'Oval', comment: 'Kecantikan klasik Nusantara dengan garis wajah anggun terpelajar!', traits: ['Proporsi wajah klasik', 'Tatapan berwibawa cerdas', 'Senyum anggun berkelas'] },
+    { name: 'Najwa Shihab ⚖️', role: 'Jurnalis Kritis & Tokoh Inspiratif', faceShape: 'Heart / V-Shape', comment: 'Tatapan mata tajam berintegritas tinggi dengan rahang tegas percaya diri!', traits: ['Mata tajam fokus', 'Rahang tegas percaya diri', 'Aura intelek berwibawa'] },
+    { name: 'Laura Basuki 🏆', role: 'Aktris Karakter Peraih Penghargaan', faceShape: 'Heart / V-Shape', comment: 'Garis rahang tirus anggun dengan tatapan artistik menenangkan!', traits: ['Garis rahang elegan', 'Kulit segar kencang', 'Sorot mata puitis'] },
+    { name: 'Tara Basro 🌺', role: 'Aktris Berdaya & Ikon Pesona Eksotis', faceShape: 'Oval', comment: 'Karakter wajah kuat penuh percaya diri dan pesona autentik alami!', traits: ['Struktur tulang tegas', 'Senyum percaya diri', 'Aura autentik menawan'] },
+    { name: 'Song Hye-kyo 👑', role: 'Ratu Drama Korea & Bintang Asia', faceShape: 'Oval', comment: 'Simetri wajah sempurna dengan keanggunan tenang yang abadi!', traits: ['Simetri wajah tinggi', 'Kulit halus bercahaya', 'Garis wajah proporsional'] },
+    { name: 'Raisa Andriana 🎤', role: 'Diva Musik Pop Indonesia', faceShape: 'Oval', comment: 'Garis wajah feminin lembut dengan senyum manis memesona!', traits: ['Senyum manis anggun', 'Mata teduh hangat', 'Proporsi wajah halus'] }
+  ],
+  femaleSenior: [
+    { name: 'Sri Mulyani Indrawati 💼', role: 'Ekonom Kelas Dunia & Pemimpin Publik', faceShape: 'Oval', comment: 'Tatapan mata tajam analitis dengan aura kepemimpinan global berwibawa!', traits: ['Tatapan analitis tajam', 'Dahi intelektual berwibawa', 'Aura kepemimpinan teguh'] },
+    { name: 'Christine Hakim 🎭', role: 'Legenda Seni Peran & Duta Budaya', faceShape: 'Oval', comment: 'Kewibawaan seni mendalam terpancar dari setiap garis ekspresi wajah!', traits: ['Garis ekspresi berwibawa', 'Tatapan penuh kearifan', 'Aura maestro budaya'] },
+    { name: 'Michelle Obama 📖', role: 'Advokat, Penulis & Tokoh Dunia', faceShape: 'Oval', comment: 'Senyum hangat penuh empati dan struktur wajah tegap menginspirasi!', traits: ['Senyum empati hangat', 'Garis rahang kokoh', 'Tatapan inspiratif'] },
+    { name: 'Meryl Streep 🏆', role: 'Legenda Akting Sinema Dunia', faceShape: 'Oval', comment: 'Proporsi wajah ekspresif penuh kecerdasan seni peran legendaris!', traits: ['Sorot mata sarat pengalaman', 'Senyum penuh kehangatan', 'Garis wajah autentik'] }
+  ]
+};
+
+function getRandomFallbackCeleb(isMale, estAge) {
+  let pool;
+  if (isMale) {
+    if (estAge <= 28) pool = FALLBACK_CELEBS.maleYoung;
+    else if (estAge <= 48) pool = FALLBACK_CELEBS.maleMature;
+    else pool = FALLBACK_CELEBS.maleSenior;
+  } else {
+    if (estAge <= 28) pool = FALLBACK_CELEBS.femaleYoung;
+    else if (estAge <= 48) pool = FALLBACK_CELEBS.femaleMature;
+    else pool = FALLBACK_CELEBS.femaleSenior;
+  }
+  const idx = Math.floor(Math.random() * pool.length);
+  return pool[idx];
+}
+
 async function analyzeFaceWithAi(req, res) {
   let raw = '';
   req.on('data', (c) => raw += c);
@@ -466,19 +655,28 @@ async function analyzeFaceWithAi(req, res) {
       return json(res, 400, { error: 'photo dataURL required' });
     }
 
-    const aiData = await callGroqVision(photo, telemetry);
-    if (aiData) {
-      return json(res, 200, { ok: true, provider: 'groq', ai: aiData, data: aiData });
+    // 1. Try OmniRoute Vision first (agy/gemini-3.5-flash-lite - verified ultra accurate)
+    let aiData = await callOmniRouteVision(photo, telemetry);
+    let provider = 'omniroute';
+
+    // 2. Secondary fallback to Groq if OmniRoute is unavailable
+    if (!aiData && GROQ_KEYS.length > 0) {
+      aiData = await callGroqVision(photo, telemetry);
+      provider = 'groq';
     }
 
-    // High precision fallback using 1,000 personalities biometric database
+    if (aiData) {
+      return json(res, 200, { ok: true, provider, ai: aiData, data: aiData });
+    }
+
+    // High precision calibrated fallback using 1,000 personalities biometric database
     const isMale = telemetry ? (typeof telemetry.isLikelyMale === 'boolean' ? telemetry.isLikelyMale : String(telemetry.gender || '').startsWith('Laki')) : true;
+    const estAge = (telemetry && telemetry.estAge) || 22;
     let match = null;
     try {
-      match = findBestLookalike(telemetry || {}, { gender: isMale ? 'Laki-laki' : 'Perempuan', topK: 3 });
+      match = findBestLookalike(telemetry || {}, { age: estAge, topK: 10, randomizeTop: true });
     } catch (_) {}
 
-    const estAge = (telemetry && telemetry.estAge) || 20;
     const defaultGen = estAge <= 19 ? 'Gen-Z Fresh 🎓' :
                        estAge <= 27 ? 'Gen-Z Active 🌟' :
                        estAge <= 39 ? 'Milenial Leader 💼' :
@@ -489,13 +687,7 @@ async function analyzeFaceWithAi(req, res) {
                            estAge <= 35 ? 'Tekstur Segar Alami 😊' :
                            estAge <= 50 ? 'Garis Rahang Tegas 🧐' : 'Garis Wajah Berwibawa 📚';
 
-    const bestCeleb = (match && match.bestMatch) || {
-      name: isMale ? (estAge > 45 ? 'Prof. B.J. Habibie 🚀' : 'Iqbaal Ramadhan 🎸') : (estAge > 45 ? 'Sri Mulyani Indrawati 💼' : 'Maudy Ayunda 🎓'),
-      role: isMale ? (estAge > 45 ? 'Teknokrat Visioner' : 'Aktor & Musisi Cerdas') : (estAge > 45 ? 'Ekonom & Tokoh Dunia' : 'Aktris & Edukator Cerdas'),
-      faceShape: 'Oval',
-      comment: isMale ? 'Tatapan tajam dan proporsi wajah simetris penuh karisma!' : 'Bentuk wajah proporsional dengan aura cerdas memikat!',
-      traits: ['Simetris proporsional', 'Ekspresi cerah positif', 'Karisma tinggi']
-    };
+    const bestCeleb = (match && match.bestMatch) || getRandomFallbackCeleb(isMale, estAge);
 
     const fallbackData = {
       gender: isMale ? 'Laki-laki 👦' : 'Perempuan 👧',
@@ -513,6 +705,25 @@ async function analyzeFaceWithAi(req, res) {
       facialTraits: Array.isArray(bestCeleb.traits) ? bestCeleb.traits.join(', ') : 'Simetris proporsional, Ekspresi positif, Berkarisma'
     };
     return json(res, 200, { ok: true, fallback: true, ai: fallbackData, data: fallbackData });
+  });
+}
+
+function handleMatchByKeywords(req, res) {
+  let raw = '';
+  req.on('data', (c) => raw += c);
+  req.on('end', () => {
+    let body;
+    try { body = JSON.parse(raw); } catch (e) { return json(res, 400, { error: 'bad json' }); }
+    try {
+      const result = matchCelebByKeywords(body, {
+        gender: body.gender,
+        category: body.category,
+        topK: body.topK || 5
+      });
+      return json(res, 200, { ok: true, ...result });
+    } catch (err) {
+      return json(res, 500, { error: err.message });
+    }
   });
 }
 
@@ -1341,22 +1552,76 @@ h1 {
 }
 
 
-function fetchWikiJson(url) {
+function getImageMime(buf) {
+  if (buf && buf.length >= 4) {
+    if (buf[0] === 0xFF && buf[1] === 0xD8 && buf[2] === 0xFF) return 'image/jpeg';
+    if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4E && buf[3] === 0x47) return 'image/png';
+    if (buf[0] === 0x52 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x46) return 'image/webp';
+  }
+  return 'image/jpeg';
+}
+
+function isTitleRelevant(query, title) {
+  if (!query || !title) return false;
+  const qWords = query.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w.length >= 3);
+  const tNorm = ' ' + title.toLowerCase().replace(/[^a-z0-9\s]/g, ' ') + ' ';
+  if (qWords.length === 0) return true;
+  const lastWord = qWords[qWords.length - 1];
+  if (new RegExp('\\b' + lastWord + '\\b').test(tNorm)) return true;
+  const matchCount = qWords.filter(w => new RegExp('\\b' + w + '\\b').test(tNorm)).length;
+  return (matchCount / qWords.length) >= 0.5;
+}
+
+function fetchWikiImage(query) {
   return new Promise((resolve) => {
-    https.get(url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) HarkatPhotobooth/1.0' }, timeout: 4000 }, (res) => {
-      let data = '';
-      res.on('data', c => data += c);
-      res.on('end', () => {
-        try { resolve(JSON.parse(data)); } catch(e) { resolve(null); }
+    const clean = String(query).replace(/[\u{1F300}-\u{1FAFF}]/gu, '').replace(/[^\p{L}\p{N}\s.,-]/gu, '').trim();
+    if (!clean) return resolve(null);
+
+    const tryLang = (lang) => {
+      return new Promise((resLang) => {
+        const url = `https://${lang}.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(clean)}&limit=1&namespace=0&format=json`;
+        https.get(url, { headers: { 'User-Agent': 'HarkatPhotobooth/2.0 (contact@harkat.id; https://harkat.id)' }, timeout: 4000 }, (res) => {
+          if (res.statusCode !== 200) return resLang(null);
+          let data = '';
+          res.on('data', c => data += c);
+          res.on('end', () => {
+            try {
+              const parsed = JSON.parse(data);
+              const title = parsed[1] && parsed[1][0];
+              if (!title || !isTitleRelevant(clean, title)) return resLang(null);
+              const sumUrl = `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
+              https.get(sumUrl, { headers: { 'User-Agent': 'HarkatPhotobooth/2.0 (contact@harkat.id; https://harkat.id)' }, timeout: 4000 }, (res2) => {
+                if (res2.statusCode !== 200) return resLang(null);
+                let sData = '';
+                res2.on('data', c => sData += c);
+                res2.on('end', () => {
+                  try {
+                    const sum = JSON.parse(sData);
+                    const img = sum.thumbnail?.source || sum.originalimage?.source || null;
+                    resLang({ title, img });
+                  } catch (_) { resLang(null); }
+                });
+              }).on('error', () => resLang(null));
+            } catch (_) { resLang(null); }
+          });
+        }).on('error', () => resLang(null));
       });
-    }).on('error', () => resolve(null));
+    };
+
+    tryLang('id').then(res => {
+      if (res && res.img) return resolve(res);
+      tryLang('en').then(resEn => {
+        resolve(resEn || null);
+      });
+    });
   });
 }
 
 function fetchBuffer(url) {
   return new Promise((resolve) => {
+    if (!url || typeof url !== 'string') return resolve(null);
     const mod = url.startsWith('https') ? https : http;
-    mod.get(url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }, timeout: 6000 }, (res) => {
+    mod.get(url, { headers: { 'User-Agent': 'HarkatPhotobooth/2.0 (contact@harkat.id; https://harkat.id) Mozilla/5.0' }, timeout: 7000 }, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
         return resolve(fetchBuffer(res.headers.location));
       }
@@ -1368,44 +1633,116 @@ function fetchBuffer(url) {
   });
 }
 
+function fetchBingImageUrl(query) {
+  return new Promise((resolve) => {
+    const url = `https://www.bing.com/images/search?q=${encodeURIComponent(query + ' portrait photo')}`;
+    https.get(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
+      timeout: 5000
+    }, (res) => {
+      let html = '';
+      res.on('data', c => html += c);
+      res.on('end', () => {
+        const matches = [...html.matchAll(/murl&quot;:&quot;(http[^&]+)&quot;/g)].map(m => m[1]);
+        resolve(matches[0] || null);
+      });
+    }).on('error', () => resolve(null));
+  });
+}
+
 async function getCelebImage(req, res, u) {
   const rawName = u.searchParams.get('name') || '';
-  const cleanName = rawName.replace(/[\u{1F300}-\u{1FAFF}]/gu, '').replace(/[^\p{L}\p{N}\s.,-]/gu, '').trim();
+  let cleanName = rawName.replace(/[\u{1F300}-\u{1FAFF}]/gu, '').replace(/[^\p{L}\p{N}\s.,-]/gu, '').trim();
   if (!cleanName) return json(res, 400, { error: 'name parameter required' });
 
-  const slug = cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  // Normalize diacritics / accents (e.g. René -> Rene, Rosé -> Rose, Mbappé -> Mbappe)
+  const normalizedAscii = cleanName.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const slug = normalizedAscii.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
   const cachedFile = path.join(CELEB_CACHE_DIR, `${slug}.jpg`);
 
   if (fs.existsSync(cachedFile)) {
     const buf = fs.readFileSync(cachedFile);
-    res.writeHead(200, {
-      'Content-Type': 'image/jpeg',
-      'Content-Length': buf.length,
-      'Cache-Control': 'public, max-age=604800',
-      'Access-Control-Allow-Origin': '*'
-    });
-    return res.end(buf);
+    if (buf && buf.length > 10000) {
+      res.writeHead(200, {
+        'Content-Type': getImageMime(buf),
+        'Content-Length': buf.length,
+        'Cache-Control': 'public, max-age=604800',
+        'Access-Control-Allow-Origin': '*'
+      });
+      return res.end(buf);
+    }
   }
 
+  // 1. Check fuzzy match among existing cached files
   try {
-    let summary = await fetchWikiJson(`https://id.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanName)}`);
-    let imgUrl = summary?.thumbnail?.source || summary?.originalimage?.source;
-    if (!imgUrl) {
-      summary = await fetchWikiJson(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanName)}`);
-      imgUrl = summary?.thumbnail?.source || summary?.originalimage?.source;
+    const allCached = fs.readdirSync(CELEB_CACHE_DIR);
+    const slugParts = slug.split('_').filter(p => p.length > 2);
+    const matched = allCached.find(f => {
+      if (!f.endsWith('.jpg') && !f.endsWith('.png') && !f.endsWith('.webp')) return false;
+      const base = f.replace(/\.[^.]+$/, '');
+      return base === slug || base.includes(slug) || slug.includes(base) || (slugParts.length >= 2 && slugParts.every(p => base.includes(p)));
+    });
+    if (matched) {
+      const buf = fs.readFileSync(path.join(CELEB_CACHE_DIR, matched));
+      try { fs.copyFileSync(path.join(CELEB_CACHE_DIR, matched), cachedFile); } catch (_) {}
+      res.writeHead(200, {
+        'Content-Type': getImageMime(buf),
+        'Content-Length': buf.length,
+        'Cache-Control': 'public, max-age=604800',
+        'Access-Control-Allow-Origin': '*'
+      });
+      return res.end(buf);
     }
-    if (imgUrl) {
-      const imgBuf = await fetchBuffer(imgUrl);
+  } catch (_) {}
+
+  // 2. Primary: Fast Wikipedia OpenSearch + Summary Fetcher (id -> en)
+  try {
+    const wikiInfo = await fetchWikiImage(cleanName);
+    if (wikiInfo && wikiInfo.img) {
+      const imgBuf = await fetchBuffer(wikiInfo.img);
       if (imgBuf && imgBuf.length > 500) {
         try { fs.writeFileSync(cachedFile, imgBuf); } catch (_) {}
         res.writeHead(200, {
-          'Content-Type': 'image/jpeg',
+          'Content-Type': getImageMime(imgBuf),
           'Content-Length': imgBuf.length,
           'Cache-Control': 'public, max-age=604800',
           'Access-Control-Allow-Origin': '*'
         });
         return res.end(imgBuf);
       }
+    }
+  } catch (_) {}
+
+  // 3. Secondary: Bing Image Search fallback
+  try {
+    const bingUrl = await fetchBingImageUrl(cleanName);
+    if (bingUrl) {
+      const imgBuf = await fetchBuffer(bingUrl);
+      if (imgBuf && imgBuf.length > 2000) {
+        try { fs.writeFileSync(cachedFile, imgBuf); } catch (_) {}
+        res.writeHead(200, {
+          'Content-Type': getImageMime(imgBuf),
+          'Content-Length': imgBuf.length,
+          'Cache-Control': 'public, max-age=604800',
+          'Access-Control-Allow-Origin': '*'
+        });
+        return res.end(imgBuf);
+      }
+    }
+  } catch (_) {}
+
+  // 4. Tertiary: Fallback to default portrait if still not found
+  try {
+    const fallbackDefault = path.join(CELEB_CACHE_DIR, 'angga_yunanda.jpg');
+    if (fs.existsSync(fallbackDefault)) {
+      const buf = fs.readFileSync(fallbackDefault);
+      res.writeHead(200, {
+        'Content-Type': 'image/jpeg',
+        'Content-Length': buf.length,
+        'Cache-Control': 'public, max-age=86400',
+        'Access-Control-Allow-Origin': '*'
+      });
+      return res.end(buf);
     }
   } catch (_) {}
 
@@ -1421,7 +1758,11 @@ const server = http.createServer((req, res) => {
   if (req.method === 'POST' && p === '/api/sheet') return saveSheet(req, res);
   if (req.method === 'POST' && p === '/api/sheet-video') return saveSheetVideo(req, res);
   if (req.method === 'POST' && p === '/api/convert-video') return handleConvertVideo(req, res);
+  if (req.method === 'POST' && (p === '/api/dev-ai-analyze' || (p === '/api/ai-analyze' && u.searchParams.get('env') === 'dev'))) {
+    return analyzeFaceWithAiDev(req, res, json);
+  }
   if (req.method === 'POST' && p === '/api/ai-analyze') return analyzeFaceWithAi(req, res);
+  if (req.method === 'POST' && p === '/api/match-by-keywords') return handleMatchByKeywords(req, res);
   const dl = /^\/download\/([0-9a-f-]+)$/.exec(p);
   if (dl) return downloadSheet(req, res, dl[1]);
   const gal = /^\/gallery\/([0-9a-f-]+)$/.exec(p);

@@ -1379,6 +1379,162 @@
     grid-column: 1 / -1;
   }
 
+
+  /* ============ SHARE MODAL POPUP ============ */
+  #modalShareSheet {
+    z-index: 99998;
+  }
+  .share-modal-card {
+    background: #fffdf7;
+    border: 3px solid var(--maroon-deep);
+    border-radius: 22px;
+    width: 92%;
+    max-width: 440px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    box-shadow: 0 16px 44px rgba(0,0,0,0.55);
+    animation: zoomIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .share-modal-body {
+    padding: 14px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .share-success-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(201, 162, 39, 0.15));
+    border: 1.5px solid rgba(34, 197, 94, 0.35);
+    border-radius: 14px;
+    padding: 10px 12px;
+  }
+  .share-success-icon {
+    font-size: 28px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .share-success-title {
+    font-family: 'Fredoka', system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1b3d22;
+  }
+  .share-success-sub {
+    font-size: 11px;
+    color: #4a5568;
+    margin-top: 2px;
+    line-height: 1.3;
+  }
+  .share-options-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .share-opt-card {
+    background: #ffffff;
+    border: 2px solid rgba(74, 16, 36, 0.18);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  .share-opt-card:hover {
+    border-color: var(--maroon);
+  }
+  .share-opt-card.opt-disabled {
+    opacity: 0.75;
+    background: #faf8f5;
+  }
+  .share-opt-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .share-opt-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    background: #f5eedf;
+    border: 1.5px solid rgba(74,16,36,0.14);
+    flex-shrink: 0;
+  }
+  .share-opt-info {
+    flex: 1;
+  }
+  .share-opt-title {
+    font-family: 'Fredoka', system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--maroon-deep);
+  }
+  .share-opt-desc {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 2px;
+    line-height: 1.35;
+  }
+  .share-opt-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .btn-share-main {
+    flex: 2;
+    padding: 9px 12px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .share-social-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 2px;
+  }
+  .btn-social {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 6px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(74, 16, 36, 0.2);
+    background: #ffffff;
+    font-family: 'Fredoka', system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--maroon-deep);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-social:hover {
+    background: #fdf6ec;
+    border-color: var(--maroon);
+    transform: translateY(-1px);
+  }
+  .btn-social-wa {
+    color: #065f46;
+    border-color: rgba(16, 185, 129, 0.4);
+    background: #ecfdf5;
+  }
+  .btn-social-wa:hover {
+    background: #d1fae5;
+    border-color: #10b981;
+  }
+  .share-modal-footer {
+    margin-top: 4px;
+  }
+
   /* Modal Download Loading Popup */
   #modalDownloadLoading {
     z-index: 99999;
@@ -1633,10 +1789,11 @@
     }
     .layout-actions .btn {
       flex: 1 !important;
-      max-width: 190px !important;
+      max-width: 135px !important;
+      min-width: 0 !important;
       height: 48px !important;
-      padding: 8px 12px !important;
-      font-size: 13.5px !important;
+      padding: 8px 6px !important;
+      font-size: 13px !important;
       font-family: 'Fredoka', 'Luckiest Guy', sans-serif !important;
       font-weight: 700 !important;
       display: inline-flex !important;
@@ -1646,8 +1803,8 @@
       box-shadow: 0 2.5px 0 var(--maroon-deep) !important;
     }
     .layout-actions .btn.big {
-      font-size: 14.5px !important;
-      letter-spacing: 0.5px !important;
+      font-size: 13px !important;
+      letter-spacing: 0.2px !important;
     }
   }
 
@@ -2409,6 +2566,7 @@
         <div class="layout-actions">
           <button class="btn blue" id="btnGoCam">📸 Kamera</button>
           <button class="btn gold big" id="btnPrint" title="Cetak foto strip & unduh ke perangkat kamu">🖨️ CETAK & UNDUH</button>
+          <button class="btn green big" id="btnShareSheet" title="Bagikan langsung ke Instagram, WhatsApp, atau Simpan ke Galeri HP">📲 BAGIKAN</button>
           <button class="btn maroon" id="btnDownloadSheetVideo" style="display:none !important;" aria-hidden="true" tabindex="-1">🎞️ Unduh Cetak Animasi (MP4)</button>
         </div>
               <!-- Section Video Boomerang Sesi Ini -->
@@ -2420,6 +2578,7 @@
               <button class="btn gold btn-sm" id="btnInsertVideoToSheet">🎬 Masukkan Video ke Cetak</button>
               <button class="btn blue btn-sm" id="btnFillSequentialFromLayout">🎞️ Cetak 8-Frame Gerak</button>
               <button class="btn ghost btn-sm" id="btnOpenStudioFromLayout">🎛️ Buka Studio Loop</button>
+              <button class="btn green btn-sm" id="btnShareLoopFromLayout" title="Bagikan video ke Instagram / WhatsApp">📲 Bagikan (IG/WA)</button>
               <button class="btn ghost btn-sm" id="btnDownloadLoopFromLayout">⬇️ Unduh Video (.mp4)</button>
             </div>
           </div>
@@ -2563,10 +2722,11 @@ const DeviceProfiler = {
   },
 
   getConfig() {
+    const avgInfer = (this.stats && this.stats.measuredInferMs) ? this.stats.measuredInferMs : 25;
     if (this.tier === 'low') {
       return {
-        detIntervalPreview: 20,  // Fast, responsive WASM detection - zero lag tracking!
-        detIntervalRec: 40,     // Smooth recording tracking
+        detIntervalPreview: Math.max(28, Math.round(avgInfer * 1.15)),  // Smooth responsive tracking
+        detIntervalRec: Math.max(75, Math.round(avgInfer * 2.2)),      // Gives CPU 50%+ breathing room during recording (Zero UI Lag!)
         recResolution: 320,     // 320p
         recFrameIntervalMs: 66.7, // 15 FPS Boomerang capture
         particleCap: 0.5
@@ -2575,7 +2735,7 @@ const DeviceProfiler = {
     if (this.tier === 'high') {
       return {
         detIntervalPreview: 16,  // 60 FPS real-time
-        detIntervalRec: 33,     
+        detIntervalRec: 35,     
         recResolution: 360,     // 360p
         recFrameIntervalMs: 50,  // 20 FPS Boomerang capture
         particleCap: 1.0
@@ -2583,8 +2743,8 @@ const DeviceProfiler = {
     }
     // 'mid'
     return {
-      detIntervalPreview: 18,  // ~55 FPS real-time tracking
-      detIntervalRec: 35,     
+      detIntervalPreview: Math.max(20, Math.round(avgInfer * 1.1)),
+      detIntervalRec: Math.max(55, Math.round(avgInfer * 1.7)),     
       recResolution: 360,     // 360p
       recFrameIntervalMs: 55,  // 18 FPS Boomerang capture
       particleCap: 0.75
@@ -9065,8 +9225,14 @@ function drawArProps(ctx, landmarks, w, h, isMirror, smileWinnerIdx, faceIdx) {
 // ============ OVERLAY LOOP (60 FPS ZERO-LAG OPTIMIZED) ============
 let rawFaces = [], rawBs = null, lastFaces = [], lastBs = null, lastDet = 0, lastLoopT = 0;
 function loop() {
+  const camPanel = $('panel-cam');
+  if (!camPanel || !camPanel.classList.contains('active')) {
+    frameT = null;
+    return;
+  }
   if (!faceMode || !landmarker) {
-    return requestAnimationFrame(loop);
+    frameT = requestAnimationFrame(loop);
+    return;
   }
   if (video.readyState >= 2 && video.videoWidth) {
     adaptFrame();
@@ -10291,6 +10457,7 @@ function renderLayout() {
     }
   }
   let hasVideoInSheet = false;
+  activeLayoutVideoSlots = []; // Reset video slot cache for zero-lag 60 FPS playback
   boxes.forEach(box => {
     const i = +box.dataset.i;
     const img = box.querySelector('img');
@@ -10330,12 +10497,28 @@ function renderLayout() {
           const bmps = item.bitmaps || (typeof recordedBitmaps !== 'undefined' ? recordedBitmaps : null);
           if (bmps && bmps[0]) {
             try {
-              if (vCanvas.width !== bmps[0].width || vCanvas.height !== bmps[0].height) {
-                vCanvas.width = bmps[0].width;
-                vCanvas.height = bmps[0].height;
+              // High performance resolution downsampling: 360px max width for retina crispness + 4x faster rendering
+              const maxW = 360;
+              const bW = bmps[0].width || 720;
+              const bH = bmps[0].height || 960;
+              const targetW = Math.min(maxW, bW);
+              const targetH = Math.round(targetW * (bH / bW));
+              if (vCanvas.width !== targetW || vCanvas.height !== targetH) {
+                vCanvas.width = targetW;
+                vCanvas.height = targetH;
               }
-              const vctx = vCanvas.getContext('2d');
-              vctx.drawImage(bmps[0], 0, 0);
+              const vctx = vCanvas.getContext('2d', { alpha: false, desynchronized: true });
+              vctx.drawImage(bmps[0], 0, 0, targetW, targetH);
+
+              activeLayoutVideoSlots.push({
+                box,
+                canvas: vCanvas,
+                ctx: vctx,
+                targetW,
+                targetH,
+                item,
+                bmps
+              });
             } catch (err) {
               console.warn('Initial video frame draw fallback to poster:', err);
             }
@@ -10596,6 +10779,9 @@ function removeAtSlot(slot) {
   if (removed[0] && removed[0].bitmaps) {
     removed[0].bitmaps.forEach(b => { try { b.close(); } catch (_) {} });
   }
+  cachedSheetPngBlob = null;
+  cachedSheetVideoBlob = null;
+  cachedSheetPngDataUrl = null;
   renderLayout();
   invalidateGallery();
   updateActionButtons();
@@ -10894,8 +11080,12 @@ function drawCanvasHeroBadge(ctx, hero, cx, cy, r) {
 async function renderSheet(asDataUrl) {
   // === 100% PRECISE DOM CLONE WITH DYNAMIC HERO & LUXURY THEMES ===
   await document.fonts.ready;
+  const layoutPanel = document.getElementById('panel-layout');
+  if (layoutPanel && !layoutPanel.classList.contains('active') && typeof setActive === 'function') {
+    setActive('layout');
+  }
   const sheetEl = document.querySelector('.sheet');
-  const sRect = sheetEl.getBoundingClientRect();
+  const sRect = sheetEl ? sheetEl.getBoundingClientRect() : { width: 560, height: 780, top: 0 };
   let contentBottomRel = sRect.height;
   const capsEl = document.querySelector('.caps');
   const footEl = document.querySelector('.sheet-foot');
@@ -10905,8 +11095,11 @@ async function renderSheet(asDataUrl) {
     contentBottomRel = (footEl.getBoundingClientRect().bottom - sRect.top) + 8;
   }
 
-  const cvW = sRect.width;
-  const cvH = Math.min(sRect.height, contentBottomRel);
+  let cvW = sRect.width;
+  let cvH = Math.min(sRect.height, contentBottomRel);
+  if (!cvW || !cvH || cvW < 100 || cvH < 100) {
+    cvW = 560; cvH = 780;
+  }
 
   const SCALE = 2.5; // Resolusi HD
   const W = Math.round(cvW * SCALE);
@@ -11694,20 +11887,280 @@ function hideDownloadLoading() {
   }, 350);
 }
 
-async function downloadSheet() {
-  if (!photos.length) return;
-  showDownloadLoading('Menyiapkan Foto Strip...', 'Merender tata letak & frame cetak HD', '📸');
+// ============ SHARE PHOTO / VIDEO ENGINE & MODAL LOGIC ============
+let cachedSheetPngBlob = null;
+let cachedSheetVideoBlob = null;
+let cachedSheetPngDataUrl = null;
+
+function openShareModal() {
+  if (!photos.length) {
+    toast('⚠️ Belum ada foto untuk dibagikan!');
+    return;
+  }
+  const modal = $('modalShareSheet');
+  if (!modal) return;
+
+  const hasAnyVideo = photos.some(p => p && p.type === 'video') || (typeof recordedBitmaps !== 'undefined' && recordedBitmaps.length > 0);
+  const cardVideo = $('cardShareVideo');
+  const btnShareVideo = $('btnShareVideoAction');
+  const btnDlVideo = $('btnDownloadVideoAgain');
+
+  if (cardVideo && btnShareVideo) {
+    if (hasAnyVideo) {
+      cardVideo.classList.remove('opt-disabled');
+      btnShareVideo.disabled = false;
+      btnShareVideo.textContent = '📲 Bagikan Video';
+      if (btnDlVideo) btnDlVideo.style.display = 'inline-flex';
+    } else {
+      cardVideo.classList.add('opt-disabled');
+      btnShareVideo.disabled = false;
+      btnShareVideo.textContent = '🎞️ Render Video Strip';
+      if (btnDlVideo) btnDlVideo.style.display = 'none';
+    }
+  }
+
+  modal.style.display = 'flex';
+}
+
+function closeShareModal() {
+  const modal = $('modalShareSheet');
+  if (modal) modal.style.display = 'none';
+}
+
+async function sharePhotoStrip() {
+  showDownloadLoading('Menyiapkan Strip Foto...', 'Merender tata letak & grafis HD...', '📸');
   try {
-    updateDownloadLoading('Merender grafis strip...', 45);
-    const dataUrl = await renderSheet(true);
-    updateDownloadLoading('Menyimpan file PNG ke perangkat...', 85);
+    let pBlob = cachedSheetPngBlob;
+    if (!pBlob) {
+      const dataUrl = cachedSheetPngDataUrl || await renderSheet(true);
+      cachedSheetPngDataUrl = dataUrl;
+      const res = await fetch(dataUrl);
+      pBlob = await res.blob();
+      cachedSheetPngBlob = pBlob;
+    }
+    hideDownloadLoading();
+    const filename = `ukmexpo-foto-${Date.now()}.png`;
+    await shareOrDownloadBlob(pBlob, filename, {
+      title: 'UKM EXPO UHN — Strip Foto',
+      text: 'Lihat keseruan foto strip aku di UKM EXPO UHN! 📸✨ #HarkatPhotobooth'
+    });
+  } catch (err) {
+    hideDownloadLoading();
+    console.error('Gagal bagikan foto:', err);
+    toast('⚠️ Kendala saat membagikan foto');
+  }
+}
+
+async function downloadPhotoStrip() {
+  try {
+    let pBlob = cachedSheetPngBlob;
+    if (!pBlob) {
+      const dataUrl = cachedSheetPngDataUrl || await renderSheet(true);
+      cachedSheetPngDataUrl = dataUrl;
+      const res = await fetch(dataUrl);
+      pBlob = await res.blob();
+      cachedSheetPngBlob = pBlob;
+    }
+    const filename = `ukmexpo-foto-${Date.now()}.png`;
+    const url = URL.createObjectURL(pBlob);
     const a = document.createElement('a');
-    a.href = dataUrl;
-    a.download = 'ukmexpo-foto-' + Date.now() + '.png';
+    a.href = url;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     a.remove();
-    updateDownloadLoading('Unduhan selesai!', 100);
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    toast('💾 Foto strip berhasil disimpan!');
+  } catch (err) {
+    console.error('Unduh foto gagal:', err);
+    toast('⚠️ Kendala saat mengunduh foto');
+  }
+}
+
+async function shareVideoStrip() {
+  showDownloadLoading('Menyiapkan Video Strip...', 'Mengoptimasi video untuk dibagikan...', '🎬');
+  try {
+    let vBlob = cachedSheetVideoBlob;
+    if (!vBlob) {
+      await downloadSheetVideo({ share: true });
+      vBlob = cachedSheetVideoBlob;
+    } else {
+      hideDownloadLoading();
+      const filename = `ukmexpo-cetak-animasi-${Date.now()}.mp4`;
+      await shareOrDownloadBlob(vBlob, filename, {
+        title: 'UKM EXPO UHN — Video Strip Animasi',
+        text: 'Lihat video animasi strip foto aku di UKM EXPO UHN! 🎬✨ #HarkatPhotobooth'
+      });
+    }
+  } catch (err) {
+    hideDownloadLoading();
+    console.error('Gagal bagikan video:', err);
+    toast('⚠️ Kendala saat membagikan video');
+  }
+}
+
+async function downloadVideoStrip() {
+  try {
+    let vBlob = cachedSheetVideoBlob;
+    if (!vBlob) {
+      await downloadSheetVideo();
+      return;
+    }
+    const filename = `ukmexpo-cetak-animasi-${Date.now()}.mp4`;
+    const url = URL.createObjectURL(vBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    toast('💾 Video strip berhasil disimpan!');
+  } catch (err) {
+    console.error('Unduh video gagal:', err);
+    toast('⚠️ Kendala saat mengunduh video');
+  }
+}
+
+function shareToWhatsApp() {
+  const targetUrl = galleryUrl || location.href;
+  const msg = encodeURIComponent(`Lihat keseruan foto & video aku di UKM EXPO UHN! 📸✨\n${targetUrl}\n#HarkatPhotobooth`);
+  window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+}
+
+async function shareToInstagram() {
+  const hasAnyVideo = photos.some(p => p && p.type === 'video') || (typeof recordedBitmaps !== 'undefined' && recordedBitmaps.length > 0);
+  if (hasAnyVideo) {
+    await shareVideoStrip();
+  } else {
+    await sharePhotoStrip();
+  }
+}
+
+function copyGalleryLink() {
+  const targetUrl = galleryUrl || location.href;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(targetUrl).then(() => {
+      toast('📋 Tautan galeri berhasil disalin!');
+    }).catch(() => {
+      prompt('Salin link galeri kamu:', targetUrl);
+    });
+  } else {
+    prompt('Salin link galeri kamu:', targetUrl);
+  }
+}
+
+function setupShareModalEvents() {
+  const btnClose = $('btnCloseShareSheet');
+  const btnDone = $('btnDoneShare');
+  const modal = $('modalShareSheet');
+  if (btnClose) btnClose.addEventListener('click', closeShareModal);
+  if (btnDone) btnDone.addEventListener('click', closeShareModal);
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeShareModal();
+    });
+  }
+  const btnSharePhoto = $('btnSharePhotoAction');
+  if (btnSharePhoto) btnSharePhoto.addEventListener('click', sharePhotoStrip);
+
+  const btnDlPhoto = $('btnDownloadPhotoAgain');
+  if (btnDlPhoto) btnDlPhoto.addEventListener('click', downloadPhotoStrip);
+
+  const btnShareVideo = $('btnShareVideoAction');
+  if (btnShareVideo) btnShareVideo.addEventListener('click', shareVideoStrip);
+
+  const btnDlVideo = $('btnDownloadVideoAgain');
+  if (btnDlVideo) btnDlVideo.addEventListener('click', downloadVideoStrip);
+
+  const btnWa = $('btnShareWa');
+  if (btnWa) btnWa.addEventListener('click', shareToWhatsApp);
+
+  const btnIg = $('btnShareIg');
+  if (btnIg) btnIg.addEventListener('click', shareToInstagram);
+
+  const btnCopy = $('btnCopyGalleryLink');
+  if (btnCopy) btnCopy.addEventListener('click', copyGalleryLink);
+}
+
+// Web Share API Helper: Native share ke Instagram / WhatsApp / Gallery dengan universal direct-download fallback
+async function shareOrDownloadBlob(blob, filename, shareData = {}) {
+  const title = shareData.title || 'UKM EXPO UHN Photobooth';
+  const text = shareData.text || 'Lihat keseruan foto aku di UKM EXPO UHN! 📸✨ #HarkatPhotobooth';
+
+  if (typeof navigator !== 'undefined' && typeof navigator.share === 'function' && typeof File !== 'undefined') {
+    try {
+      const mime = blob.type || (filename.endsWith('.mp4') ? 'video/mp4' : 'image/png');
+      const fileToShare = new File([blob], filename, { type: mime });
+      let canShare = true;
+      if (typeof navigator.canShare === 'function') {
+        canShare = navigator.canShare({ files: [fileToShare] });
+      }
+      if (canShare) {
+        await navigator.share({
+          files: [fileToShare],
+          title,
+          text
+        });
+        if (typeof toast === 'function') toast('🎉 Berhasil dibagikan!');
+        return { shared: true };
+      }
+    } catch (err) {
+      if (err && err.name === 'AbortError') {
+        if (typeof toast === 'function') toast('ℹ️ Berbagi dibatalkan');
+        return { shared: false, cancelled: true };
+      }
+      console.warn('Web Share failed or unsupported file type, falling back to direct download:', err);
+    }
+  }
+
+  // Fallback: Simpan langsung ke file unduhan perangkat
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  if (typeof toast === 'function') toast('💾 Disimpan ke memori perangkat kamu!');
+  return { shared: false, downloaded: true };
+}
+
+async function downloadSheet(options = {}) {
+  if (!photos.length) return;
+  const isShare = !!(options && options.share);
+  showDownloadLoading(
+    isShare ? 'Menyiapkan Strip Foto...' : 'Menyiapkan Foto Strip...',
+    isShare ? 'Mempersiapkan menu berbagi media...' : 'Merender tata letak & frame cetak HD',
+    isShare ? '📲' : '📸'
+  );
+  try {
+    updateDownloadLoading('Merender grafis strip...', 45);
+    const dataUrl = await renderSheet(true);
+    cachedSheetPngDataUrl = dataUrl;
+    const res = await fetch(dataUrl);
+    const pBlob = await res.blob();
+    cachedSheetPngBlob = pBlob;
+    updateDownloadLoading(isShare ? 'Menyiapkan berkas gambar...' : 'Menyimpan file PNG ke perangkat...', 80);
+    const filename = 'ukmexpo-foto-' + Date.now() + '.png';
+
+    if (isShare) {
+      updateDownloadLoading('Membuka menu berbagi...', 95);
+      await shareOrDownloadBlob(pBlob, filename, {
+        title: 'UKM EXPO UHN — Strip Foto',
+        text: 'Lihat keseruan foto aku di UKM EXPO UHN! 📸✨ #HarkatPhotobooth'
+      });
+    } else {
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      toast('📸 Foto strip (PNG) berhasil diunduh!');
+    }
+    updateDownloadLoading('Selesai!', 100);
   } finally {
     hideDownloadLoading();
   }
@@ -11730,10 +12183,19 @@ function setActive(panel) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.panel === panel));
   document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + panel));
   if (panel === 'layout') {
+    // 1. Instantly halt background camera detection & AR rendering to release 100% CPU/GPU for smooth print playback
+    if (frameT) {
+      cancelAnimationFrame(frameT);
+      frameT = null;
+    }
     renderLayout();
     if (photos.some(p => p && p.type === 'video')) startLayoutVideoLoop();
   } else {
     stopLayoutVideoLoop();
+    // 2. Safely restart camera loop when returning to camera view
+    if (panel === 'cam' && !frameT && landmarker && faceMode) {
+      frameT = requestAnimationFrame(loop);
+    }
     const frameThemeSelector = $('frameThemeSelector');
     const stickerBar = $('stickerBar');
     const btnToggleTheme = $('btnToggleTheme');
@@ -11765,6 +12227,9 @@ $('btnReset').addEventListener('click', () => {
   });
   photos = [];
   customStickers = [];
+  cachedSheetPngBlob = null;
+  cachedSheetVideoBlob = null;
+  cachedSheetPngDataUrl = null;
   stopLayoutVideoLoop();
   resetRecordedLoop();
   invalidateGallery();
@@ -11772,6 +12237,16 @@ $('btnReset').addEventListener('click', () => {
   updateActionButtons();
   toast('🗑️ Foto & video di-reset. Siap rekam lagi dari Frame 1!');
 });
+// SHARE STRIP FOTO / VIDEO KE SOSMED / GALERI
+async function shareSheet() {
+  if (!photos.length) {
+    toast('⚠️ Belum ada foto untuk dibagikan!');
+    return;
+  }
+  openShareModal();
+}
+if ($('btnShareSheet')) $('btnShareSheet').addEventListener('click', shareSheet);
+
 // CETAK & UNDUH: Menyatukan aksi cetak & download jadi 1 tombol terpadu
 // Aturan: Jika ada 1 frame video saja, unduhannya otomatis menjadi VIDEO animasi strip (tidak unduh PNG).
 // Jika seluruhnya foto murni, unduhannya menjadi FOTO strip (PNG). Tepat 1 unduhan!
@@ -11821,6 +12296,10 @@ $('btnPrint').addEventListener('click', async () => {
       btn.disabled = false;
       btn.textContent = origText;
     }
+    // Otomatis munculkan opsi bagikan foto & video setelah proses render/unduh selesai
+    setTimeout(() => {
+      if (photos && photos.length > 0) openShareModal();
+    }, 450);
   }
 });
 // hapus foto (✕ di kotak) -> QR jadi stale, buat ulang saat Done/print berikutnya
@@ -12006,6 +12485,20 @@ window.__h = {
   getStudioFrameIdx: () => studioFrameIdx,
   getRecordedBitmaps: () => recordedBitmaps,
   setRecordedBitmaps: (bmps) => { recordedBitmaps = bmps; },
+  shareSheet,
+  openShareModal,
+  closeShareModal,
+  sharePhotoStrip,
+  shareVideoStrip,
+  downloadPhotoStrip,
+  downloadVideoStrip,
+  getActiveLayoutVideoSlots: () => (typeof activeLayoutVideoSlots !== 'undefined' ? activeLayoutVideoSlots : []),
+  getLastRenderedFrameIdx: () => (typeof lastRenderedFrameIdx !== 'undefined' ? lastRenderedFrameIdx : -1),
+  getLayoutVideoRunning: () => (typeof layoutVideoRunning !== 'undefined' ? layoutVideoRunning : false),
+  setActive,
+  shareBoomerang: () => downloadBoomerangVideo({ share: true }),
+  shareOrDownloadBlob,
+  deviceProfiler: DeviceProfiler,
   setTestFace: (f, b) => { lastFaces = f; lastBs = b; window.__testFaceActive = true; }
 };
 
@@ -12059,13 +12552,21 @@ function renderCompositeToCanvas() {
   h = (h >> 1) << 1;
 
   if (!recRawCanvas) {
-    recRawCanvas = document.createElement('canvas');
+    if (typeof OffscreenCanvas !== 'undefined') {
+      try {
+        recRawCanvas = new OffscreenCanvas(w, h);
+      } catch (_) {
+        recRawCanvas = document.createElement('canvas');
+      }
+    } else {
+      recRawCanvas = document.createElement('canvas');
+    }
   }
   if (recRawCanvas.width !== w || recRawCanvas.height !== h) {
     recRawCanvas.width = w;
     recRawCanvas.height = h;
   }
-  const cx = recRawCanvas.getContext('2d');
+  const cx = recRawCanvas.getContext('2d', { alpha: false, desynchronized: true }) || recRawCanvas.getContext('2d');
 
   cx.save();
   // Mirror output directly on the canvas if selfie front camera (matches preview 1:1)
@@ -12524,33 +13025,30 @@ function fillSequentialFromVideo() {
   toast('🎞️ 8-Frame gerak video berhasil dipasang di strip!');
 }
 
-// 60 FPS V-Sync Locked Layout Strip Video Loop
+// 60 FPS V-Sync Locked Layout Strip Video Loop (Time-Locked & Zero-Allocation)
 let layoutVideoRaf = null;
-let layoutLastTime = 0;
-let layoutAccumulator = 0;
 let layoutVideoRunning = false;
-let layoutVideoTick = 0;
+let layoutStartTime = 0;
+let lastRenderedFrameIdx = -1;
+let activeLayoutVideoSlots = [];
 
 function layoutVideoLoop(now) {
   if (!layoutVideoRunning) return;
-  if (!layoutLastTime) layoutLastTime = now;
-  const dt = Math.min(100, now - layoutLastTime);
-  layoutLastTime = now;
 
-  let activeFps = 16;
+  let activeFps = 18;
   for (let p of photos) {
     if (p && p.type === 'video' && p.playbackFps) {
       activeFps = p.playbackFps;
       break;
     }
   }
-  const targetFps = activeFps * studioSpeed;
-  const frameDur = 1000 / targetFps;
+  const targetFps = activeFps * (studioSpeed || 1.0);
+  const elapsedSec = (now - layoutStartTime) * 0.001;
+  const currentTick = Math.floor(elapsedSec * targetFps);
 
-  layoutAccumulator += dt;
-  if (layoutAccumulator >= frameDur) {
-    layoutAccumulator = layoutAccumulator % frameDur;
-    stepLayoutVideoFrame();
+  if (currentTick !== lastRenderedFrameIdx) {
+    lastRenderedFrameIdx = currentTick;
+    stepLayoutVideoFrame(currentTick);
   }
 
   layoutVideoRaf = requestAnimationFrame(layoutVideoLoop);
@@ -12561,8 +13059,8 @@ function startLayoutVideoLoop() {
   const hasAnyBitmaps = photos.some(p => p && p.bitmaps && p.bitmaps.length > 0) || (typeof recordedBitmaps !== 'undefined' && recordedBitmaps.length > 0);
   if (!hasAnyBitmaps) return;
   layoutVideoRunning = true;
-  layoutLastTime = 0;
-  layoutAccumulator = 0;
+  layoutStartTime = performance.now();
+  lastRenderedFrameIdx = -1;
   layoutVideoRaf = requestAnimationFrame(layoutVideoLoop);
 }
 
@@ -12572,55 +13070,36 @@ function stopLayoutVideoLoop() {
     cancelAnimationFrame(layoutVideoRaf);
     layoutVideoRaf = null;
   }
+  lastRenderedFrameIdx = -1;
 }
 
-function stepLayoutVideoFrame() {
-  const boxes = document.querySelectorAll('.box');
-  if (!boxes.length || !photos.length) return;
+function stepLayoutVideoFrame(tick) {
+  if (!activeLayoutVideoSlots || !activeLayoutVideoSlots.length) return;
 
-  layoutVideoTick++;
-
-  let fill = [];
-  if (photos.length === 0) fill = [];
-  else {
-    for (let i = 0; i < 8; i++) fill.push(photos[i % photos.length]);
-  }
-
-  boxes.forEach(box => {
-    const i = +box.dataset.i;
-    const item = fill[i];
-    if (!item || item.type !== 'video') return;
-
-    const cv = box.querySelector('.box-video-canvas');
-    if (!cv || cv.offsetParent === null) return;
-
-    const bmps = item.bitmaps || (typeof recordedBitmaps !== 'undefined' ? recordedBitmaps : null);
-    if (!bmps || !bmps.length) return;
+  for (let k = 0; k < activeLayoutVideoSlots.length; k++) {
+    const slot = activeLayoutVideoSlots[k];
+    const bmps = slot.bmps;
+    if (!bmps || !bmps.length) continue;
 
     const n = bmps.length;
     let idx = 0;
     if (studioMode === 'bounce') {
       const cycle = Math.max(1, 2 * (n - 1));
-      const mod = layoutVideoTick % cycle;
+      const mod = tick % cycle;
       idx = mod < n ? mod : cycle - mod;
     } else {
-      idx = layoutVideoTick % n;
+      idx = tick % n;
     }
 
     const bmp = bmps[idx];
-    if (!bmp) return;
+    if (!bmp) continue;
 
     try {
-      if (cv.width !== bmp.width || cv.height !== bmp.height) {
-        cv.width = bmp.width;
-        cv.height = bmp.height;
-      }
-      const ctx = cv.getContext('2d');
-      ctx.drawImage(bmp, 0, 0);
+      slot.ctx.drawImage(bmp, 0, 0, slot.targetW, slot.targetH);
     } catch (err) {
       // Gracefully fall back to underlying <img> poster without crashing animation loop
     }
-  });
+  }
 }
 
 // Generate Boomerang Video Blob for session upload (Deterministic 30 FPS Frame-Accurate Encoding)
@@ -12700,6 +13179,7 @@ async function triggerUniversalMp4Download(rawBlob, defaultFilename, options = {
   if (!filename.endsWith('.mp4')) {
     filename = filename.replace(/\.[^.]+$/, '') + '.mp4';
   }
+  const isShare = !!(options && options.share);
   try {
     const dataUrl = await blobToDataUrl(rawBlob);
     const apiTarget = (typeof API_BASE !== 'undefined' ? API_BASE : '') + '/api/convert-video';
@@ -12711,6 +13191,15 @@ async function triggerUniversalMp4Download(rawBlob, defaultFilename, options = {
     });
     if (!res.ok) throw new Error('Server conversion returned status ' + res.status);
     const mp4Blob = await res.blob();
+    cachedSheetVideoBlob = mp4Blob;
+
+    if (isShare) {
+      return await shareOrDownloadBlob(mp4Blob, filename, {
+        title: 'UKM EXPO UHN — Video Strip Animasi',
+        text: 'Lihat video animasi strip foto aku di UKM EXPO UHN! 🎬✨ #HarkatPhotobooth'
+      });
+    }
+
     const mp4Url = URL.createObjectURL(mp4Blob);
     const a = document.createElement('a');
     a.href = mp4Url;
@@ -12722,6 +13211,12 @@ async function triggerUniversalMp4Download(rawBlob, defaultFilename, options = {
     return true;
   } catch (err) {
     console.warn('Server MP4 conversion failed, falling back to local blob:', err);
+    if (isShare) {
+      return await shareOrDownloadBlob(rawBlob, filename, {
+        title: 'UKM EXPO UHN — Video Strip Animasi',
+        text: 'Lihat video animasi strip foto aku di UKM EXPO UHN! 🎬✨ #HarkatPhotobooth'
+      });
+    }
     const fallbackUrl = URL.createObjectURL(rawBlob);
     const a = document.createElement('a');
     a.href = fallbackUrl;
@@ -12736,7 +13231,7 @@ async function triggerUniversalMp4Download(rawBlob, defaultFilename, options = {
 }
 
 // Download Animated Sheet Video (Deterministic 30 FPS Frame-Accurate Encoding)
-async function downloadSheetVideo() {
+async function downloadSheetVideo(options = {}) {
   if (!photos.length) {
     toast('⚠️ Belum ada foto/video untuk dicetak!');
     return;
@@ -12757,8 +13252,12 @@ async function downloadSheetVideo() {
 
   try {
     await document.fonts.ready;
+    const layoutPanel = document.getElementById('panel-layout');
+    if (layoutPanel && !layoutPanel.classList.contains('active') && typeof setActive === 'function') {
+      setActive('layout');
+    }
     const sheetEl = document.querySelector('.sheet');
-    const sRect = sheetEl.getBoundingClientRect();
+    const sRect = sheetEl ? sheetEl.getBoundingClientRect() : { width: 560, height: 780, top: 0 };
     let contentBottomRel = sRect.height;
     const capsEl = document.querySelector('.caps');
     const footEl = document.querySelector('.sheet-foot');
@@ -12768,8 +13267,11 @@ async function downloadSheetVideo() {
       contentBottomRel = (footEl.getBoundingClientRect().bottom - sRect.top) + 8;
     }
 
-    const cvW = sRect.width;
-    const cvH = Math.min(sRect.height, contentBottomRel);
+    let cvW = sRect.width;
+    let cvH = Math.min(sRect.height, contentBottomRel);
+    if (!cvW || !cvH || cvW < 100 || cvH < 100) {
+      cvW = 560; cvH = 780;
+    }
     const SCALE = 2.0;
     let W = Math.round(cvW * SCALE);
     let H = Math.round(cvH * SCALE);
@@ -13245,16 +13747,16 @@ async function downloadSheetVideo() {
       fullSeq = fullSeq.slice(0, targetTotalFrames);
     }
 
-    // 3. RECORDER SETUP
+    // 3. RECORDER SETUP (24 FPS Stream for exact 5.0s video duration)
     const cv = document.createElement('canvas');
     cv.width = W; cv.height = H;
     const ctx = cv.getContext('2d');
     ctx.scale(SCALE, SCALE);
 
-    const stream = (typeof cv.captureStream === 'function') ? cv.captureStream(0) : null;
+    const stream = (typeof cv.captureStream === 'function') ? cv.captureStream(targetFps) : null;
     const track = stream && stream.getVideoTracks ? stream.getVideoTracks()[0] : null;
     const useRequestFrame = !!(track && typeof track.requestFrame === 'function');
-    const activeStream = useRequestFrame ? stream : cv.captureStream(30);
+    const activeStream = stream || (typeof cv.captureStream === 'function' ? cv.captureStream(targetFps) : null);
 
     const mimeType = MediaRecorder.isTypeSupported('video/mp4;codecs=avc1') ? 'video/mp4;codecs=avc1' :
                      MediaRecorder.isTypeSupported('video/mp4') ? 'video/mp4' :
@@ -13271,11 +13773,14 @@ async function downloadSheetVideo() {
 
     recorder.start();
 
-    // 4. BUTTER-SMOOTH RENDERING LOOP (Updates only active video slots with V-Sync pacing)
-    const waitTick = () => new Promise(r => {
-      let done = false;
-      const timer = setTimeout(() => { if (!done) { done = true; r(); } }, 35);
-      requestAnimationFrame(() => { if (!done) { done = true; clearTimeout(timer); r(); } });
+    // 4. BUTTER-SMOOTH RENDERING LOOP WITH PRECISE FRAME PACING (5.0s EXACT DURATION)
+    const renderStartTime = performance.now();
+    const frameIntervalMs = 1000 / targetFps; // ~41.67ms per frame
+    const waitFrameTick = (fIndex) => new Promise(resolve => {
+      const targetTime = renderStartTime + (fIndex + 1) * frameIntervalMs;
+      const now = performance.now();
+      const delay = Math.max(1, targetTime - now);
+      setTimeout(resolve, delay);
     });
 
     for (let f = 0; f < fullSeq.length; f++) {
@@ -13341,10 +13846,10 @@ async function downloadSheetVideo() {
       if (useRequestFrame && track && track.requestFrame) {
         track.requestFrame();
       }
-      await waitTick();
+      await waitFrameTick(f);
     }
 
-    await new Promise(r => setTimeout(r, 80));
+    await new Promise(r => setTimeout(r, 60));
     recorder.stop();
     const sheetVideoBlob = await recPromise;
 
@@ -13354,9 +13859,10 @@ async function downloadSheetVideo() {
     toast('🎬 Mengoptimasi format MP4 agar lancar diputar di semua HP...');
 
     const filename = `ukmexpo-cetak-animasi-${Date.now()}.mp4`;
-    await triggerUniversalMp4Download(sheetVideoBlob, filename, { fps: 24 });
-    updateDownloadLoading('Unduhan selesai!', 100);
-    toast('🎉 Cetak Video Animasi (MP4) berhasil diunduh!');
+    const isShare = !!(options && options.share);
+    await triggerUniversalMp4Download(sheetVideoBlob, filename, { fps: 24, share: isShare });
+    updateDownloadLoading('Selesai!', 100);
+    if (!isShare) toast('🎉 Cetak Video Animasi (MP4) berhasil diunduh!');
   } catch (err) {
     console.error('Error exporting sheet video:', err);
     toast('⚠️ Gagal membuat file cetak video');
@@ -13389,7 +13895,7 @@ function extractStudioFrameToStrip() {
 }
 
 // Download Standalone Boomerang Video (Deterministic 30 FPS Frame-Accurate Encoding)
-async function downloadBoomerangVideo() {
+async function downloadBoomerangVideo(options = {}) {
   if (!recordedBitmaps.length) {
     toast('⚠️ Belum ada rekaman video loop!');
     return;
@@ -13419,10 +13925,10 @@ async function downloadBoomerangVideo() {
     expCanvas.height = h;
     const ectx = expCanvas.getContext('2d');
 
-    const stream = (typeof expCanvas.captureStream === 'function') ? expCanvas.captureStream(0) : null;
+    const stream = (typeof expCanvas.captureStream === 'function') ? expCanvas.captureStream(24) : null;
     const track = stream && stream.getVideoTracks ? stream.getVideoTracks()[0] : null;
     const useRequestFrame = !!(track && typeof track.requestFrame === 'function');
-    const activeStream = useRequestFrame ? stream : expCanvas.captureStream(30);
+    const activeStream = stream || (typeof expCanvas.captureStream === 'function' ? expCanvas.captureStream(24) : null);
 
     const mimeType = MediaRecorder.isTypeSupported('video/mp4;codecs=avc1') ? 'video/mp4;codecs=avc1' :
                      MediaRecorder.isTypeSupported('video/mp4') ? 'video/mp4' :
@@ -13444,7 +13950,7 @@ async function downloadBoomerangVideo() {
 
     recorder.start();
 
-    // Generate seamless bounce frame sequence for full ~10 seconds loop duration
+    // Generate seamless bounce frame sequence for strictly 5.0 seconds duration
     const n = recordedBitmaps.length;
     const singleCycle = [];
     if (studioMode === 'bounce') {
@@ -13454,8 +13960,8 @@ async function downloadBoomerangVideo() {
       for (let i = 0; i < n; i++) singleCycle.push(i);
     }
 
-    const activeFps = (typeof recordedBitmaps !== 'undefined' && recordedBitmaps._playbackFps) ? recordedBitmaps._playbackFps : 20;
-    const targetFrames = Math.round(activeFps * 5); // Strictly ~5 seconds duration for fast download
+    const activeFps = 24; // Standard 24 FPS for 5.0s Boomerang video (120 frames)
+    const targetFrames = activeFps * 5; // Exactly 5.0 seconds
     let fullSequence = [];
     while (fullSequence.length < targetFrames) {
       fullSequence = fullSequence.concat(singleCycle);
@@ -13463,10 +13969,15 @@ async function downloadBoomerangVideo() {
     if (fullSequence.length > targetFrames) {
       fullSequence = fullSequence.slice(0, targetFrames);
     }
-    const waitTick = () => new Promise(r => {
-      let done = false;
-      const timer = setTimeout(() => { if (!done) { done = true; r(); } }, 35);
-      requestAnimationFrame(() => { if (!done) { done = true; clearTimeout(timer); r(); } });
+    
+    // Precise Frame-Paced Encoding Loop (Strictly 5.0s Duration)
+    const renderStartTime = performance.now();
+    const frameIntervalMs = 1000 / activeFps; // ~41.67ms per frame
+    const waitFrameTick = (fIndex) => new Promise(resolve => {
+      const targetTime = renderStartTime + (fIndex + 1) * frameIntervalMs;
+      const now = performance.now();
+      const delay = Math.max(1, targetTime - now);
+      setTimeout(resolve, delay);
     });
 
     for (let f = 0; f < fullSequence.length; f++) {
@@ -13480,10 +13991,10 @@ async function downloadBoomerangVideo() {
       if (useRequestFrame && track && track.requestFrame) {
         track.requestFrame();
       }
-      await waitTick();
+      await waitFrameTick(f);
     }
 
-    await new Promise(r => setTimeout(r, 80));
+    await new Promise(r => setTimeout(r, 60));
     recorder.stop();
     const videoBlob = await recPromise;
 
@@ -13493,10 +14004,11 @@ async function downloadBoomerangVideo() {
     toast('🎬 Mengoptimasi format MP4 agar lancar diputar di semua HP...');
 
     const filename = `ukmexpo-boomerang-${Date.now()}.mp4`;
-    await triggerUniversalMp4Download(videoBlob, filename, { fps: activeFps || 20 });
-    updateDownloadLoading('Unduhan selesai!', 100);
+    const isShare = !!(options && options.share);
+    await triggerUniversalMp4Download(videoBlob, filename, { fps: activeFps, share: isShare });
+    updateDownloadLoading('Selesai!', 100);
 
-    toast('🎉 Video Boomerang (MP4) berhasil diunduh!');
+    if (!isShare) toast('🎉 Video Boomerang (MP4) berhasil diunduh!');
   } catch (err) {
     console.error('Error exporting video:', err);
     toast('⚠️ Gagal membuat file video');
@@ -13625,6 +14137,9 @@ function setupVideoLoopEvents() {
   const btnDownload = $('btnStudioDownloadVideo');
   if (btnDownload) btnDownload.addEventListener('click', downloadBoomerangVideo);
 
+  const btnShareStudio = $('btnStudioShareVideo');
+  if (btnShareStudio) btnShareStudio.addEventListener('click', () => downloadBoomerangVideo({ share: true }));
+
   const btnExtract = $('btnStudioExtractFrame');
   if (btnExtract) btnExtract.addEventListener('click', extractStudioFrameToStrip);
 
@@ -13648,6 +14163,9 @@ function setupVideoLoopEvents() {
 
   const btnDlLayout = $('btnDownloadLoopFromLayout');
   if (btnDlLayout) btnDlLayout.addEventListener('click', downloadBoomerangVideo);
+
+  const btnShareLayout = $('btnShareLoopFromLayout');
+  if (btnShareLayout) btnShareLayout.addEventListener('click', () => downloadBoomerangVideo({ share: true }));
 
   const btnDlSheetVideo = $('btnDownloadSheetVideo');
   if (btnDlSheetVideo) btnDlSheetVideo.addEventListener('click', downloadSheetVideo);
@@ -13751,6 +14269,7 @@ setupFrameThemeSelector();
 setupLayoutToggles();
 setupDragDrop();
 setupVideoLoopEvents();
+setupShareModalEvents();
   setupPopupInteractions();
   updateActionButtons();
 DeviceProfiler.init();
@@ -13800,15 +14319,96 @@ startCamera();
         <button class="btn blue" id="btnStudioFillSequential" title="Cetak gerakan video menjadi 8 frame gerak sekuensial!">
           🎞️ Cetak 8-Frame Gerak
         </button>
-        <button class="btn green" id="btnStudioDownloadVideo" title="Unduh file video MP4 mandiri">
+        <button class="btn green" id="btnStudioShareVideo" title="Bagikan langsung ke Instagram / WhatsApp">
+          📲 Bagikan (IG/WA)
+        </button>
+        <button class="btn ghost" id="btnStudioDownloadVideo" title="Unduh file video MP4 mandiri">
           ⬇️ Unduh Video (.mp4)
         </button>
         <button class="btn ghost" id="btnStudioExtractFrame" title="Ambil 1 frame foto saat ini ke strip">
           📸 Ambil 1 Frame
         </button>
-        <button class="btn ghost" id="btnStudioRetake" title="Rekam ulang video">
+        <button class="btn ghost full-w" id="btnStudioRetake" title="Rekam ulang video">
           🔄 Rekam Lagi
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SHARE PHOTO / VIDEO MODAL POPUP ============ -->
+  <div class="modal-backdrop" id="modalShareSheet" style="display:none;">
+    <div class="share-modal-card">
+      <div class="modal-header">
+        <div class="modal-title">✨ Bagikan Foto & Video</div>
+        <button class="modal-close" id="btnCloseShareSheet" title="Tutup">✕</button>
+      </div>
+
+      <div class="share-modal-body">
+        <div class="share-success-banner">
+          <div class="share-success-icon">🎉</div>
+          <div class="share-success-text">
+            <div class="share-success-title">Cetak Selesai & Berhasil Disimpan!</div>
+            <div class="share-success-sub">Pilih format strip untuk dibagikan ke media sosial & teman:</div>
+          </div>
+        </div>
+
+        <!-- Pilihan Utama: Foto vs Video Animasi -->
+        <div class="share-options-grid">
+          <!-- Kartu 1: Foto Strip (PNG) -->
+          <div class="share-opt-card" id="cardSharePhoto">
+            <div class="share-opt-top">
+              <div class="share-opt-icon">📸</div>
+              <div class="share-opt-info">
+                <div class="share-opt-title">Strip Foto HD (.png)</div>
+                <div class="share-opt-desc">Gambar resolusi tinggi • Pas untuk WhatsApp & cetak fisik</div>
+              </div>
+            </div>
+            <div class="share-opt-actions">
+              <button class="btn green btn-share-main" id="btnSharePhotoAction">
+                📲 Bagikan Foto
+              </button>
+              <button class="btn ghost btn-sm" id="btnDownloadPhotoAgain" title="Simpan file foto ke perangkat">
+                ⬇️ Unduh
+              </button>
+            </div>
+          </div>
+
+          <!-- Kartu 2: Video Animasi Boomerang (MP4) -->
+          <div class="share-opt-card" id="cardShareVideo">
+            <div class="share-opt-top">
+              <div class="share-opt-icon">🎬</div>
+              <div class="share-opt-info">
+                <div class="share-opt-title">Video Animasi (.mp4)</div>
+                <div class="share-opt-desc">Photostrip bergerak 5s • Siap untuk Instagram Story & Reels</div>
+              </div>
+            </div>
+            <div class="share-opt-actions">
+              <button class="btn gold btn-share-main" id="btnShareVideoAction">
+                📲 Bagikan Video
+              </button>
+              <button class="btn ghost btn-sm" id="btnDownloadVideoAgain" title="Simpan file video ke perangkat">
+                ⬇️ Unduh
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Social Actions -->
+        <div class="share-social-row">
+          <button class="btn-social btn-social-wa" id="btnShareWa" title="Bagikan tautan sesi ke WhatsApp">
+            💬 WhatsApp
+          </button>
+          <button class="btn-social" id="btnShareIg" title="Buka menu berbagi bawaan HP">
+            📱 Bagikan HP
+          </button>
+          <button class="btn-social" id="btnCopyGalleryLink" title="Salin link galeri sesi">
+            📋 Salin Link
+          </button>
+        </div>
+
+        <div class="share-modal-footer">
+          <button class="btn ghost full-w" id="btnDoneShare">Selesai & Tutup</button>
+        </div>
       </div>
     </div>
   </div>

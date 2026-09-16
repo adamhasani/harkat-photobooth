@@ -303,6 +303,7 @@
     flex-direction: column;
     gap: 10px;
     animation: slideUpFade 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    padding-bottom: calc(env(safe-area-inset-bottom, 16px) + 20px);
   }
   @keyframes slideUpFade {
     from { opacity: 0; transform: translateY(16px); }
@@ -424,37 +425,47 @@
     background: #ffffff;
     border: 2px solid var(--maroon-deep);
     border-radius: 14px;
-    padding: 10px 12px;
+    padding: 8px 10px;
     display: flex;
     flex-direction: column;
     gap: 3px;
     box-shadow: 0 2.5px 0 var(--maroon-deep);
+    min-width: 0;
+    overflow: hidden;
   }
   .live-card-label {
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 700;
     color: #681a34;
     display: flex;
     align-items: center;
     gap: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .live-card-val {
-    font-size: 13.5px;
+    font-size: clamp(11px, 3.1vw, 13px);
     font-weight: 800;
     color: var(--maroon-deep);
     line-height: 1.25;
     word-break: break-word;
+    overflow-wrap: break-word;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
   .live-card-sub {
-    font-size: 10.5px;
+    font-size: 10px;
     font-weight: 600;
     color: #8a5b00;
     line-height: 1.2;
-    white-space: nowrap;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
   }
@@ -1232,25 +1243,38 @@ function getFaceMetrics(landmarks, blendshapes) {
 
   // Multi-attribute Face Shape Classifier
   let faceShape = 'Oval';
-  if (jawRatio >= 0.61 && gonionRatio >= 0.76) {
+  if (jawRatio >= 0.61 && gonionRatio >= 0.75) {
     faceShape = 'Square / Angular';
-  } else if (jawRatio <= 0.51 && gonionRatio <= 0.67 && chinRatio <= 0.59) {
+  } else if (chinRatio <= 0.53 && gonionRatio <= 0.68) {
     faceShape = 'Heart / V-Shape';
-  } else if (jawRatio <= 0.55 && chinRatio <= 0.64 && faceAspectRatio >= 1.65) {
+  } else if (faceAspectRatio >= 1.62 && jawRatio <= 0.55) {
     faceShape = 'Oblong / Regal';
-  } else if (jawRatio >= 0.55 && chinRatio <= 0.61 && gonionRatio <= 0.72) {
+  } else if (jawRatio >= 0.58 && chinRatio <= 0.53 && gonionRatio <= 0.66) {
     faceShape = 'Diamond / Chiseled';
-  } else if (jawRatio >= 0.52 && gonionRatio >= 0.67 && chinRatio >= 0.62 && faceAspectRatio <= 1.55) {
+  } else if (faceAspectRatio <= 1.42 && chinRatio >= 0.62) {
     faceShape = 'Round / Soft';
   } else {
     faceShape = 'Oval';
   }
 
   // Empirical calibrated gender score (-1.0 female to +1.0 male)
-  const jawScore = (jawRatio - 0.54) * 3.2 + (gonionRatio - 0.71) * 2.8;
-  const browScore = (0.105 - browArchRatio) * 4.0;
-  const lipScore = (0.35 - lipFullness) * 2.5;
-  const rawMaleScore = jawScore + browScore + lipScore;
+  // Calibrated specifically for Asian/Indonesian facial morphometry
+  const jawScore = (jawRatio - 0.61) * 3.5 + (gonionRatio - 0.78) * 2.5;
+  const browScore = (0.092 - browArchRatio) * 3.0;
+  const lipScore = (0.28 - lipFullness) * 3.2;
+  const eyeScore = (0.375 - eyeRatio) * 2.5;
+  // Calibrate smile bias: smiling stretches lips thin and widens cheeks/jaw in 2D projection
+  const smileCompensation = (smileScore > 0.2) ? (smileScore * 0.40) : 0;
+
+  // Hijab & soft facial contour bias (if forehead ratio is compressed or jaw is sleek/smooth)
+  let hijabFeminineBias = 0;
+  if (foreheadRatio < 0.25 && jawRatio < 0.60) {
+    hijabFeminineBias = -0.35; // Strongly indicates hijab / feminine head covering
+  } else if (lipFullness > 0.30 || eyeRatio > 0.40) {
+    hijabFeminineBias = -0.20;
+  }
+
+  const rawMaleScore = (jawScore + browScore + lipScore + eyeScore) - smileCompensation + hijabFeminineBias;
 
   // Wrinkle Tension & Facial Smoothness Index
   const browTension = Math.hypot(landmarks[107].x - landmarks[336].x, landmarks[107].y - landmarks[336].y) || 0.01;
@@ -1260,16 +1284,14 @@ function getFaceMetrics(landmarks, blendshapes) {
   const wrinkleTension = (browTension * 0.6) + (nasolabialTension * 0.4);
 
   // Dynamic Biometric Age Estimation via Craniofacial Morphometry & Micro-Tensions
-  // Young adults/teens have shorter midface ratio (~0.25-0.27), smooth forehead, higher cheek fullness
-  // Mature adults (30s-40s) have elongated midface (~0.28-0.31), deeper nasolabial tension, narrower periorbital ratio
-  // Seniors (50s-70s+) have increased facial laxity, prominent nasolabial furrow depth, lower chin-to-jaw ratio
-  const baseAge = 23;
-  const midFaceDelta = (noseRatio - 0.27) * 55;
-  const wrinkleDelta = (wrinkleTension - 0.18) * 60;
-  const eyeAspectDelta = (0.39 - eyeRatio) * 35;
+  // Calibrated for realistic student/young-adult base distribution
+  const baseAge = 21;
+  const midFaceDelta = Math.max(-2, Math.min(18, (noseRatio - 0.26) * 35));
+  const wrinkleDelta = Math.max(-2, Math.min(32, (wrinkleTension - 0.13) * 50));
+  const eyeAspectDelta = Math.max(-2, Math.min(10, (0.39 - eyeRatio) * 20));
   let estAge = Math.round(baseAge + midFaceDelta + wrinkleDelta + eyeAspectDelta);
   if (smileScore > 0.6) estAge -= 1;
-  estAge = Math.max(16, Math.min(78, estAge));
+  estAge = Math.max(17, Math.min(78, estAge));
 
   let symDiff = 0;
   const pairs = [[33,263], [234,454], [61,291], [70,300], [172,397]];
@@ -1352,8 +1374,8 @@ function getSmoothedFaceMetrics(landmarks, blendshapes, faceIndex = 0) {
   s.brow = s.brow * (1 - alpha) + raw.browArchRatio * alpha;
   s.forehead = s.forehead * (1 - alpha) + raw.foreheadRatio * alpha;
 
-  const isLikelyMale = s.maleScore > 0;
-  const genderConfidence = Math.min(99, Math.round(55 + Math.min(1.0, Math.abs(s.maleScore)) * 40));
+  const isLikelyMale = s.maleScore > 0.20;
+  const genderConfidence = Math.min(99, Math.round(58 + Math.min(1.0, Math.abs(s.maleScore - 0.20)) * 40));
   const genderLabel = isLikelyMale ? 'Laki-laki 👦' : 'Perempuan 👧';
 
   const estAge = Math.round(s.age);
@@ -1384,23 +1406,27 @@ function getSmoothedFaceMetrics(landmarks, blendshapes, faceIndex = 0) {
     faceShape: raw.faceShape
   };
 
-  let bestMatch = {
-    name: isLikelyMale ? 'Iqbaal Ramadhan 🎸' : 'Maudy Ayunda 🎓',
-    role: isLikelyMale ? 'Aktor & Musisi Muda Cerdas' : 'Aktris & Edukator Cerdas',
-    faceShape: 'Oval',
-    comment: 'Struktur wajah simetris dengan ekspresi cerah positif!',
-    traits: ['Simetris proporsional', 'Ekspresi cerah positif']
-  };
+  let bestMatch = null;
   let matchPct = 95;
   let topMatches = [];
 
   if (window.findBestLookalike) {
-    const res = window.findBestLookalike(userVec, { gender: isLikelyMale ? 'Laki-laki' : 'Perempuan', topK: 5 });
+    const res = window.findBestLookalike(userVec, { gender: isLikelyMale ? 'Laki-laki' : 'Perempuan', age: estAge, topK: 5, randomizeTop: true });
     if (res && res.bestMatch) {
       bestMatch = res.bestMatch;
       matchPct = res.matchPct;
       topMatches = res.topMatches || [];
     }
+  }
+
+  if (!bestMatch) {
+    bestMatch = {
+      name: isLikelyMale ? 'Iqbaal Ramadhan 🎸' : 'Maudy Ayunda 🎓',
+      role: isLikelyMale ? 'Aktor & Musisi Muda Cerdas' : 'Aktris & Edukator Cerdas',
+      faceShape: 'Oval',
+      comment: 'Struktur wajah simetris dengan ekspresi cerah positif!',
+      traits: ['Simetris proporsional', 'Ekspresi cerah positif']
+    };
   }
 
   return {
@@ -1423,6 +1449,11 @@ function getSmoothedFaceMetrics(landmarks, blendshapes, faceIndex = 0) {
 
 // ============ REALTIME DETECTION LOOP ============
 function loop() {
+  const cw = $('camWrap');
+  if (cw && cw.style.display === 'none') {
+    frameT = requestAnimationFrame(loop);
+    return;
+  }
   if (video.readyState >= 2 && video.videoWidth) {
     adaptSize();
     const now = performance.now();
@@ -2072,6 +2103,30 @@ async function executeScanningFlow() {
   capCtx.drawImage(video, 0, 0, capCv.width, capCv.height);
   const photoDataUrl = capCv.toDataURL('image/jpeg', 0.94);
 
+  // High performance downsampling specifically for AI Vision upload (<35KB instead of 2.5MB)
+  let aiPhotoDataUrl = photoDataUrl;
+  try {
+    const maxAiDim = 480;
+    let aW = capCv.width, aH = capCv.height;
+    if (aW > maxAiDim || aH > maxAiDim) {
+      if (aW >= aH) {
+        aH = Math.round((aH * maxAiDim) / aW);
+        aW = maxAiDim;
+      } else {
+        aW = Math.round((aW * maxAiDim) / aH);
+        aH = maxAiDim;
+      }
+    }
+    const aiCv = document.createElement('canvas');
+    aiCv.width = aW;
+    aiCv.height = aH;
+    const aCtx = aiCv.getContext('2d');
+    aCtx.drawImage(capCv, 0, 0, aW, aH);
+    aiPhotoDataUrl = aiCv.toDataURL('image/jpeg', 0.75);
+  } catch (err) {
+    console.warn('AI canvas downscale fallback:', err);
+  }
+
   const currentLm = lastFaces.length ? lastFaces[0] : null;
   const currentBs = lastBs && lastBs.length ? lastBs[0] : null;
   const localTelemetry = getFaceMetrics(currentLm, currentBs);
@@ -2081,12 +2136,12 @@ async function executeScanningFlow() {
   let aiPromise = (async () => {
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 7000);
+      const timer = setTimeout(() => controller.abort(), 12000);
       const apiRes = await fetch('/api/ai-analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          photo: photoDataUrl,
+          photo: aiPhotoDataUrl,
           telemetry: localM ? {
             gender: localM.isLikelyMale ? 'Laki-laki' : 'Perempuan',
             isLikelyMale: localM.isLikelyMale,
@@ -2146,7 +2201,7 @@ async function executeScanningFlow() {
 
   const aiResult = await Promise.race([
     aiPromise,
-    new Promise(r => setTimeout(r, 4800)).then(() => null)
+    new Promise(r => setTimeout(r, 9500)).then(() => null)
   ]);
 
   // Step 4: Finalize
@@ -2158,10 +2213,16 @@ async function executeScanningFlow() {
   await new Promise(r => setTimeout(r, 300));
 
   // Compute final values
+  let fallbackMatch = (localM && localM.bestMatch);
+  if (!fallbackMatch && window.findBestLookalike) {
+    const isM = localM ? (localM.isLikelyMale ?? !String(localM.genderLabel || '').includes('Perempuan')) : false;
+    const fRes = window.findBestLookalike({}, { gender: isM ? 'Laki-laki' : 'Perempuan', age: localM?.estAge || 22, randomizeTop: true });
+    if (fRes && fRes.bestMatch) fallbackMatch = fRes.bestMatch;
+  }
   const fallbackM = localM || {
     estAge: 20, gen: 'Gen-Z Active 🌟', faceShape: 'Oval', beautyScore: 94, symmetryPct: 95,
-    genderLabel: 'Laki-laki 👦', wrinkleLabel: 'Kulit Halus & Kencang ✨',
-    bestMatch: { name: 'Iqbaal Ramadhan 🎸', role: 'Aktor & Musisi Cerdas', comment: 'Tatapan tajam dan proporsi wajah simetris penuh karisma!' }, matchPct: 95
+    genderLabel: 'Perempuan 👧', wrinkleLabel: 'Kulit Halus & Kencang ✨',
+    bestMatch: fallbackMatch || { name: 'Maudy Ayunda 🎓', role: 'Aktris & Edukator Cerdas', comment: 'Struktur wajah simetris dengan ekspresi cerdas dan anggun!' }, matchPct: 95
   };
 
   const finalGender = aiResult ? aiResult.gender : fallbackM.genderLabel;
@@ -2187,7 +2248,7 @@ async function executeScanningFlow() {
     }
   }
 
-  const finalLookalike = aiResult ? aiResult.lookalike : (fallbackM.bestMatch ? fallbackM.bestMatch.name : 'Iqbaal Ramadhan 🎸');
+  const finalLookalike = aiResult ? aiResult.lookalike : (fallbackMatch ? fallbackMatch.name : (fallbackM.bestMatch ? fallbackM.bestMatch.name : 'Iqbaal Ramadhan 🎸'));
   const finalLookalikeRole = (aiResult && aiResult.lookalikeRole) || (fallbackM.bestMatch ? fallbackM.bestMatch.role : 'Aktor & Musisi Cerdas');
   const finalMatchPct = aiResult ? (aiResult.lookalikeMatch || 95) : (fallbackM.matchPct || 95);
 
@@ -2221,8 +2282,8 @@ async function executeScanningFlow() {
       celebImgObj.onerror = () => { celebLoaded = false; resolve(false); };
       celebImgObj.src = `/api/celeb-image?name=${encodeURIComponent(cleanCelebName)}`;
     });
-    // Wait for image or timeout after 1.5s
-    await Promise.race([celebPromise, new Promise(r => setTimeout(r, 1500))]);
+    // Wait for image or timeout after 3.5s
+    await Promise.race([celebPromise, new Promise(r => setTimeout(r, 3500))]);
   }
 
   // Save full scanning context for instant (<20ms) style switching
@@ -2281,7 +2342,8 @@ async function executeScanningFlow() {
   btnScanLabel.textContent = 'SCAN WAJAH AI';
   isScanning = false;
 
-  // Swap Main Action Button with Live Result Panel under Camera
+  // Hide Camera & Swap Main Action Button with Live Result Panel for clean full-screen view
+  $('camWrap').style.display = 'none';
   $('actionWrap').style.display = 'none';
   $('liveResultPanel').style.display = 'flex';
 
@@ -2295,6 +2357,7 @@ async function executeScanningFlow() {
 }
 
 function resetToScanMode() {
+  $('camWrap').style.display = 'flex';
   $('liveResultPanel').style.display = 'none';
   $('actionWrap').style.display = 'flex';
   $('modalResult').style.display = 'none';
